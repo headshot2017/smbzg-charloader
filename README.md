@@ -4,10 +4,16 @@ Custom character loader for SMBZ-G.
 
 Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 
-## Starting point for developing custom characters
+## Custom characters location
+Custom characters are located in `SMBZ-G_Data/StreamingAssets/CustomChars`
 
+## Quick starting point for developing custom characters
+
+* Install MelonLoader on SMBZ-G
+* Install the [MelonLoader Wizard Extension for Visual Studio](https://github.com/TrevTV/MelonLoader.VSWizard/releases)
 * Download CharLoader.dll and put it in the SMBZ-G Mods folder
 * Create a new project in VS2022 using the MelonLoader Mod template
+* When asked to select an executable file, choose SMBZ-G.exe
 * Add CharLoader.dll as an assembly dependency
 * CharLoader.Core has these callbacks that you can implement:
   * afterCharacterLoad: Called after a CustomCharacter is loaded. You must check if it's your character by comparing the internalName, which by then you can replace the SonicControl component with your own character control component. This one is important.
