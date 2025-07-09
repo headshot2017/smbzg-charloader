@@ -275,6 +275,8 @@
 		<Compile Include="CustomBaseCharacter.cs" />
 		<Compile Include="CustomCharacter.cs" />
 		<Compile Include="CustomEffectSprite.cs" />
+		<Compile Include="CustomKoopaBroControl.cs" />
+		<Compile Include="CustomKoopaRedControl.cs" />
 		<Compile Include="LoaderComponent.cs" />
 	</ItemGroup>
 	

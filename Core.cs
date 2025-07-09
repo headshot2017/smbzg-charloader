@@ -77,6 +77,43 @@ namespace CharLoader
 
         public override void OnLateInitializeMelon()
         {
+            // modify koopa bros to use a custom class
+            // that way, custom characters can do shenanigans such as changing the leader,
+            // making the bros follow a different character
+            GameObject KoopaBrosPrefab = BattleCache.ins.CharacterData_KoopaBros.Prefab_BattleGameObject;
+
+            KoopaRedControl original = KoopaBrosPrefab.GetComponent<KoopaRedControl>();
+            CustomKoopaRedControl custom = KoopaBrosPrefab.AddComponent<CustomKoopaRedControl>();
+            foreach (FieldInfo field in original.GetType().GetFields(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                try
+                {
+                    custom.GetType().BaseType.GetField(field.Name, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).SetValue(custom, field.GetValue(original));
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+
+            KoopaBroControl originalBro = original.KoopaBro_Prefab.GetComponent<KoopaBroControl>();
+            CustomKoopaBroControl customBro = original.KoopaBro_Prefab.AddComponent<CustomKoopaBroControl>();
+            foreach (FieldInfo field in originalBro.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                try
+                {
+                    customBro.GetType().BaseType.GetField(field.Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).SetValue(customBro, field.GetValue(originalBro));
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+
+            GameObject.Destroy(originalBro);
+            GameObject.Destroy(original);
+
+
             LoadCustomCharList();
         }
 
