@@ -4,8 +4,33 @@ Custom character loader for SMBZ-G.
 
 Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 
-## Custom characters location
-Custom characters are located in `SMBZ-G_Data/StreamingAssets/CustomChars`
+## Custom characters folder structure
+```
+└── SMBZ-G_Data
+    └── StreamingAssets
+        └── CustomChars
+            └── (Internal Character Name)
+                ├── effects/
+                │   └── .png files
+                ├── companions/
+                │   └── (Companion character name)
+                │       ├── sheet.png
+                │       └── companion.json
+                ├── sounds/
+                │   └── .wav, .ogg or .mp3 files
+                ├── sheet.png
+                ├── battleportrait.png
+                ├── portrait.png
+                └── character.json
+```
+
+* **effects:** Assortment of png files that can be used as custom particle effects with CustomEffectSprite.
+* **companions:** "Characters" that can be used as NPCs or transformations for the base character.
+* **sounds:** Folder containing sound files
+* **sheet.png**: Character's sprite sheet
+* **battleportrait.png**: Portrait used in the battle HUD
+* **portrait.png**: Portrait used in the character select screen
+* **character.json**: Contains important definitions such as: Character's display name, scale, colors, effects (custom particles), the command list, and all of its' animations
 
 ## Quick starting point for developing custom characters
 
