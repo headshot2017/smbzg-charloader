@@ -12,7 +12,7 @@ Custom characters are located in `SMBZ-G_Data/StreamingAssets/CustomChars`
 * Install MelonLoader on SMBZ-G
 * Install the [MelonLoader Wizard Extension for Visual Studio](https://github.com/TrevTV/MelonLoader.VSWizard/releases)
 * Download CharLoader.dll and put it in the SMBZ-G Mods folder
-* Create a new project in VS2022 using the MelonLoader Mod template
+* Create a new project in Visual Studio using the MelonLoader Mod template
 * When asked to select an executable file, choose SMBZ-G.exe
 * Add CharLoader.dll as an assembly dependency
 * CharLoader.Core has these callbacks that you can implement:
