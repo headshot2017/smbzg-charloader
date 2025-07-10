@@ -23,6 +23,7 @@ Custom characters are located in `SMBZ-G_Data/StreamingAssets/CustomChars`
 ## Some info
 
 * It's recommended to use the CharLoader GUI Tool for animating your characters instead of editing character.json by hand
+  * (This GUI tool program is still in development)
 * In your character's C# code, character control classes must inherit CustomBaseCharacter instead of BaseCharacter
 * You can use CustomEffectSprite to spawn custom particles
 

@@ -55,7 +55,6 @@ public class CharLoaderComponent : MonoBehaviour
             {
                 string soundPath = _soundName.Replace('\\', '/');
                 string soundName = Path.GetFileNameWithoutExtension(soundPath);
-                Melon<CharLoader.Core>.Logger.Msg($"{cc.internalName}: sound: {soundName} {soundPath}");
                 UnityWebRequest www = null;
                 if (File.Exists($"{path}/sounds/{soundName}.wav"))
                     www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.wav", AudioType.WAV);
@@ -292,6 +291,7 @@ public class CharLoaderComponent : MonoBehaviour
                 CharacterSkinDataList.Add(characterSkinDataStore);
             }
 
+            Melon<CharLoader.Core>.Logger.Msg($"Loaded custom character \"{cc.rootCharacter.name}\"");
             Debug.Log($"Loaded custom character \"{cc.rootCharacter.name}\"");
         }
 
