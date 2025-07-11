@@ -1,0 +1,17 @@
+<RCC>
+  <qresource prefix="prefix">
+    <file>delete.png</file>
+    <file>attack.png</file>
+    <file>critical.png</file>
+    <file>down.png</file>
+    <file>fss.png</file>
+    <file>guard.png</file>
+    <file>guardbreaker.png</file>
+    <file>jump.png</file>
+    <file>left.png</file>
+    <file>right.png</file>
+    <file>up.png</file>
+    <file>z.png</file>
+    <file>default_portrait.png</file>
+  </qresource>
+</RCC>
