@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>936</width>
+    <width>943</width>
     <height>669</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget_2">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_general">
        <attribute name="title">
@@ -480,19 +480,10 @@
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
-          <property name="spacing">
-           <number>6</number>
-          </property>
-          <property name="sizeConstraint">
-           <enum>QLayout::SetDefaultConstraint</enum>
-          </property>
-          <property name="topMargin">
-           <number>0</number>
-          </property>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <widget class="QTreeWidget" name="treeWidget">
+             <widget class="QTreeWidget" name="animationsTree">
               <property name="columnCount">
                <number>1</number>
               </property>
@@ -501,80 +492,16 @@
                 <string>Animations</string>
                </property>
               </column>
-              <item>
-               <property name="text">
-                <string>Idle</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>Action 1</string>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>frame</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>delay</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Add...</string>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <weight>75</weight>
-                   <italic>false</italic>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                </item>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Action 2</string>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>frame</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>delay</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Add...</string>
-                 </property>
-                 <property name="font">
-                  <font>
-                   <weight>75</weight>
-                   <bold>true</bold>
-                   <kerning>true</kerning>
-                  </font>
-                 </property>
-                </item>
-               </item>
-              </item>
              </widget>
             </item>
             <item>
-             <widget class="QTabWidget" name="tabWidget">
+             <widget class="QTabWidget" name="actionTabs">
               <property name="currentIndex">
                <number>0</number>
               </property>
               <widget class="QWidget" name="tab">
                <attribute name="title">
-                <string>frame</string>
-               </attribute>
-              </widget>
-              <widget class="QWidget" name="tab_2">
-               <attribute name="title">
-                <string>delay</string>
+                <string>Page</string>
                </attribute>
               </widget>
              </widget>
@@ -582,7 +509,53 @@
            </layout>
           </item>
           <item>
-           <widget class="QGraphicsView" name="graphicsView"/>
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <widget class="AnimatorGraphicsView" name="characterView"/>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item alignment="Qt::AlignRight">
+               <widget class="QPushButton" name="btn_stopCharacter">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>75</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Stop</string>
+                </property>
+               </widget>
+              </item>
+              <item alignment="Qt::AlignLeft">
+               <widget class="QPushButton" name="btn_playCharacter">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>75</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Play</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -608,7 +581,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>892</width>
+             <width>899</width>
              <height>18</height>
             </rect>
            </property>
@@ -649,7 +622,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>936</width>
+     <width>943</width>
      <height>21</height>
     </rect>
    </property>
@@ -660,10 +633,18 @@
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuDebug">
+    <property name="title">
+     <string>Debug</string>
+    </property>
+    <addaction name="actionPrintJson"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuDebug"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
@@ -686,6 +667,16 @@
     <string>Quit</string>
    </property>
   </action>
+  <action name="actionSaveAs">
+   <property name="text">
+    <string>Save as</string>
+   </property>
+  </action>
+  <action name="actionPrintJson">
+   <property name="text">
+    <string>Print json to console</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -697,6 +688,11 @@
    <class>ColorGraphicsView</class>
    <extends>QGraphicsView</extends>
    <header>colorgraphicsview</header>
+  </customwidget>
+  <customwidget>
+   <class>AnimatorGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>animatorgraphicsview</header>
   </customwidget>
  </customwidgets>
  <resources>
