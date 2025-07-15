@@ -72,16 +72,7 @@ public class CharLoaderComponent : MonoBehaviour
                 }
             }
 
-            GameObject CharPrefab = GameObject.Instantiate(BattleCache.ins.CharacterData_Sonic.Prefab_BattleGameObject);
-            CharPrefab.name = cc.internalName;
-            CharPrefab.SetActive(false);
-            CharPrefab.AddComponent<CustomAnimator>();
-            GameObject.DontDestroyOnLoad(CharPrefab);
-
-            cc.rootCharacter.prefab = CharPrefab;
-
             CharacterData_SO Data = ScriptableObject.CreateInstance<CharacterData_SO>();
-            Data.Prefab_BattleGameObject = CharPrefab;
             Data.Prefab_SpecialCharacterSettingsUI = BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI;
             Data.Character = (BattleCache.CharacterEnum)(100 + CharLoader.Core.customCharacters.Count);
             Data.name = $"[CharacterData] {cc.internalName}";
@@ -106,8 +97,22 @@ public class CharLoaderComponent : MonoBehaviour
                         colors["secondary"][2] / 255f
                     );
             }
-            
+
             cc.characterData = Data;
+
+            GameObject CharPrefab = GameObject.Instantiate(BattleCache.ins.CharacterData_Sonic.Prefab_BattleGameObject);
+            CharPrefab.name = cc.internalName;
+            CharPrefab.SetActive(false);
+            CharPrefab.AddComponent<CustomAnimator>();
+            SonicControl old = CharPrefab.GetComponent<SonicControl>();
+            CustomBaseCharacter baseChar = CharPrefab.AddComponent<CustomBaseCharacter>();
+            baseChar.Comp_Hurtbox = old.Comp_Hurtbox;
+            baseChar.CharacterData = cc.characterData;
+            GameObject.Destroy(old);
+            GameObject.DontDestroyOnLoad(CharPrefab);
+
+            cc.rootCharacter.prefab = CharPrefab;
+            Data.Prefab_BattleGameObject = CharPrefab;
 
             cc.getUpTimer = 0;
 
