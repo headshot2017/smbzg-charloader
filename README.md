@@ -41,7 +41,7 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 * When asked to select an executable file, choose SMBZ-G.exe
 * Add CharLoader.dll as an assembly dependency
 * CharLoader.Core has these callbacks that you can implement:
-  * afterCharacterLoad: Called after a CustomCharacter is loaded. You must check if it's your character by comparing the internalName, which by then you can replace the SonicControl component with your own character control component. This one is important.
+  * afterCharacterLoad: Called after a CustomCharacter is loaded. You must check if it's your character by comparing the internalName, which by then you can replace the CustomBaseCharacter component with your own character control component. This one is important.
   * resetBattleParticipant: Called on BattleParticipantDataModel.Reset(). Compare participant.InitialCharacterData with CustomCharacter.characterData to check if it's your custom character. This is used for setting up participant.AdditionalCharacterSpecificDataDictionary, for things like inventory data models. If your character doesn't have an inventory, this can be ignored
   * setupSpecificInventory: Called when setting up the character's inventory UI. Compare participant.InitialCharacterData with CustomCharacter.characterData to check if it's your custom character. This is where you'd call the SetupInventoryUI function on your Inventory data model. If your character doesn't have an inventory, this can be ignored
 
