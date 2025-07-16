@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>943</width>
+    <width>1121</width>
     <height>669</height>
    </rect>
   </property>
@@ -46,6 +46,9 @@
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>portrait.png (Click to refresh)</string>
+              </property>
               <property name="text">
                <string/>
               </property>
@@ -67,6 +70,9 @@
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>battleportrait.png (Click to refresh)</string>
               </property>
               <property name="text">
                <string/>
@@ -515,6 +521,25 @@
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item alignment="Qt::AlignLeft">
+               <widget class="QPushButton" name="btn_reloadSheetCharacter">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>106</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Reload sheet.png</string>
+                </property>
+               </widget>
+              </item>
               <item alignment="Qt::AlignRight">
                <widget class="QPushButton" name="btn_stopCharacter">
                 <property name="sizePolicy">
@@ -537,7 +562,7 @@
               <item alignment="Qt::AlignLeft">
                <widget class="QPushButton" name="btn_playCharacter">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
@@ -551,6 +576,27 @@
                 <property name="text">
                  <string>Play</string>
                 </property>
+               </widget>
+              </item>
+              <item alignment="Qt::AlignRight">
+               <widget class="QComboBox" name="comboBox_backgroundCharacter">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>106</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>No background</string>
+                 </property>
+                </item>
                </widget>
               </item>
              </layout>
@@ -622,7 +668,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>943</width>
+     <width>1121</width>
      <height>21</height>
     </rect>
    </property>

@@ -2,7 +2,13 @@ from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
 import characterdata
 
-class ActionTab_General(QtWidgets.QWidget):
+class BaseActionTab(QtWidgets.QWidget):
+    valueChanged = QtCore.pyqtSignal()
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+class ActionTab_General(BaseActionTab):
     def __init__(self, parent, anim):
         super().__init__(parent)
         uic.loadUi("actiontab_general.ui", self)
@@ -26,33 +32,39 @@ class ActionTab_General(QtWidgets.QWidget):
     @QtCore.pyqtSlot(int)
     def onSetInterpolate(self, value):
         self.anim["interpolate"] = value > 0
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeLoops(self, value):
         self.anim["loops"] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeOffsetX(self, value):
         if "offset" not in self.anim: self.anim["offset"] = [0, 0]
         self.anim["offset"][0] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeOffsetY(self, value):
         if "offset" not in self.anim: self.anim["offset"] = [0, 0]
         self.anim["offset"][1] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeScaleX(self, value):
         if "scale" not in self.anim: self.anim["scale"] = [1, 1]
         self.anim["scale"][0] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeScaleY(self, value):
         if "scale" not in self.anim: self.anim["scale"] = [1, 1]
         self.anim["scale"][1] = value
+        self.valueChanged.emit()
 
 
-class ActionTab_Frame(QtWidgets.QWidget):
+class ActionTab_Frame(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_frame.ui", self)
@@ -73,21 +85,25 @@ class ActionTab_Frame(QtWidgets.QWidget):
     @QtCore.pyqtSlot(int)
     def onChangeX(self, value):
         self.actionInfo[0] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeY(self, value):
         self.actionInfo[1] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeW(self, value):
         self.actionInfo[2] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeH(self, value):
         self.actionInfo[3] = value
+        self.valueChanged.emit()
 
 
-class ActionTab_Delay(QtWidgets.QWidget):
+class ActionTab_Delay(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_delay.ui", self)
@@ -101,9 +117,10 @@ class ActionTab_Delay(QtWidgets.QWidget):
     @QtCore.pyqtSlot(float)
     def onChange(self, value):
         self.action["delay"] = value
+        self.valueChanged.emit()
 
 
-class ActionTab_SetAnim(QtWidgets.QWidget):
+class ActionTab_SetAnim(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_setAnim.ui", self)
@@ -122,9 +139,10 @@ class ActionTab_SetAnim(QtWidgets.QWidget):
     @QtCore.pyqtSlot(str)
     def onChange(self, newText):
         self.action["setAnim"] = newText
+        self.valueChanged.emit()
 
 
-class ActionTab_Offset(QtWidgets.QWidget):
+class ActionTab_Offset(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_offset.ui", self)
@@ -141,13 +159,15 @@ class ActionTab_Offset(QtWidgets.QWidget):
     @QtCore.pyqtSlot(float)
     def onChangeX(self, value):
         self.actionInfo[0] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeY(self, value):
         self.actionInfo[1] = value
+        self.valueChanged.emit()
 
 
-class ActionTab_Scale(QtWidgets.QWidget):
+class ActionTab_Scale(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_scale.ui", self)
@@ -164,13 +184,15 @@ class ActionTab_Scale(QtWidgets.QWidget):
     @QtCore.pyqtSlot(float)
     def onChangeX(self, value):
         self.actionInfo[0] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeY(self, value):
         self.actionInfo[1] = value
+        self.valueChanged.emit()
 
 
-class ActionTab_Angle(QtWidgets.QWidget):
+class ActionTab_Angle(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_angle.ui", self)
@@ -184,9 +206,10 @@ class ActionTab_Angle(QtWidgets.QWidget):
     @QtCore.pyqtSlot(float)
     def onChange(self, value):
         self.action["angle"] = value
+        self.valueChanged.emit()
 
 
-class ActionTab_Sound(QtWidgets.QWidget):
+class ActionTab_Sound(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_sound.ui", self)
@@ -205,6 +228,7 @@ class ActionTab_Sound(QtWidgets.QWidget):
     @QtCore.pyqtSlot(str)
     def onChange(self, newText):
         self.action["sound"] = newText
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(bool)
     def onPlay(self, checked):
@@ -212,7 +236,7 @@ class ActionTab_Sound(QtWidgets.QWidget):
         characterdata.sounds[i].play()
 
 
-class ActionTab_Color(QtWidgets.QWidget):
+class ActionTab_Color(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_color.ui", self)
@@ -226,9 +250,10 @@ class ActionTab_Color(QtWidgets.QWidget):
     @QtCore.pyqtSlot(QtGui.QColor)
     def onChange(self, color):
         self.action["color"] = [color.red(), color.green(), color.blue()]
+        self.valueChanged.emit()
 
 
-class ActionTab_Hitbox(QtWidgets.QWidget):
+class ActionTab_Hitbox(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_hitbox.ui", self)
@@ -250,26 +275,31 @@ class ActionTab_Hitbox(QtWidgets.QWidget):
 
     @QtCore.pyqtSlot(int)
     def onSetActive(self, value):
-        self.actionInfo["on"] = value == 1
+        self.actionInfo["on"] = value > 0
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeOffsetX(self, value):
         self.actionInfo["pos"][0] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeOffsetY(self, value):
         self.actionInfo["pos"][1] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeScaleX(self, value):
         self.actionInfo["scale"][0] = value
+        self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
     def onChangeScaleY(self, value):
         self.actionInfo["scale"][1] = value
+        self.valueChanged.emit()
 
 
-class ActionTab_CustomQueue(QtWidgets.QWidget):
+class ActionTab_CustomQueue(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
         uic.loadUi("actiontab_callCustomQueue.ui", self)

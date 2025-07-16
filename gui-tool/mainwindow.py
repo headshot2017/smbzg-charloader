@@ -26,6 +26,13 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         self.animationsTree.currentItemChanged.connect(self.onAnimationTreeChange)
         self.animationsTree.itemDoubleClicked.connect(self.onAnimationTreeDoubleClick)
+        self.btn_stopCharacter.clicked.connect(self.onStopCharacter)
+        self.btn_playCharacter.clicked.connect(self.onPlayCharacter)
+        self.btn_reloadSheetCharacter.clicked.connect(self.onRefreshCharacter)
+
+        if os.path.exists("backgrounds"):
+            for f in os.listdir("backgrounds"): self.comboBox_backgroundCharacter.addItem(f)
+        self.comboBox_backgroundCharacter.currentTextChanged.connect(self.onChangeBackground)
 
         self.btn_addCmd.clicked.connect(self.onAddCommand)
 
@@ -52,6 +59,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.animationsTree.clear()
         self.actionTabs.clear()
 
+        self.characterView.animator.setSprite(0,0,0,0)
+
         addAnim = QtWidgets.QTreeWidgetItem(self.animationsTree, ["Add animation..."])
         addAnim.itemLevel = -1
 
@@ -69,6 +78,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         self.refreshPortrait()
         self.refreshBattlePortrait()
+        self.characterView.reloadCharacter()
 
         if "general" in jsonFile:
             general = jsonFile["general"]
@@ -168,7 +178,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.actionTabs.clear()
 
         general = actiontabs.ActionTab_General(self.actionTabs, anim)
+        general.valueChanged.connect(self.onActionTabValueChange)
         self.actionTabs.addTab(general, animName)
+
+        self.characterView.animator.setAnimation(anim)
 
     def populateAnimTabs(self, animName, frameInd):
         json = characterdata.jsonFile
@@ -181,8 +194,26 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         for action in actions:
             if action in actiontabs.actionTabsDict:
                 widget = actiontabs.actionTabsDict[action](self.actionTabs, actions[action], actions)
+                widget.valueChanged.connect(self.onActionTabValueChange)
                 self.actionTabs.addTab(widget, action)
 
+        frameAction = None
+        frameIndSearch = frameInd
+        while not frameAction and frameIndSearch >= 0:
+            if "frame" not in json["anims"][animName]["frames"][frameIndSearch]:
+                frameIndSearch -= 1
+                continue
+            frameAction = json["anims"][animName]["frames"][frameIndSearch]["frame"]
+
+        if not frameAction: frameAction = [0, 0, 0, 0]
+
+        self.characterView.animator.setAnimation(json["anims"][animName])
+        self.characterView.animator.setFrame(frameInd)
+
+
+    @QtCore.pyqtSlot()
+    def onActionTabValueChange(self):
+        self.characterView.animator.refresh()
 
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, int)
     def onAnimationTreeDoubleClick(self, item, column):
@@ -191,6 +222,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if item.itemLevel == -1:
             animName, ok = QtWidgets.QInputDialog.getText(self, "Add animation", "Enter a name for the animation")
             if ok:
+                if animName in characterdata.jsonFile["anims"]:
+                    QtWidgets.QMessageBox.warning(self, "Error", "Animation '%s' already exists" % animName)
+                    return
+
                 animTree = QtWidgets.QTreeWidgetItem([animName])
                 animTree.itemLevel = 0
                 addFrame = QtWidgets.QTreeWidgetItem(animTree, ["Add frame..."])
@@ -216,15 +251,19 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             actionDialog = actiontabs.ActionDialog(self)
             if actionDialog.exec():
                 actionName = actionDialog.comboBox.currentText()
-
                 rootFrameTree = item.parent()
+                animTree = rootFrameTree.parent()
+                frameInd = animTree.indexOfChild(rootFrameTree)
+                animName = animTree.text(0)
+
+                if actionName in characterdata.jsonFile["anims"][animName]["frames"][frameInd]:
+                    QtWidgets.QMessageBox.warning(self, "Error", "Action '%s' already exists" % actionName)
+                    return
+
                 thisFrameTree = QtWidgets.QTreeWidgetItem([actionName])
                 thisFrameTree.itemLevel = 2
                 rootFrameTree.insertChild(rootFrameTree.childCount()-1, thisFrameTree)
 
-                animTree = rootFrameTree.parent()
-                frameInd = animTree.indexOfChild(rootFrameTree)
-                animName = animTree.text(0)
                 characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName] = characterdata.defaultAction(actionName)
                 self.populateAnimTabs(animName, frameInd)
                 
@@ -248,6 +287,24 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             animName = animTree.text(0)
             self.populateAnimTabs(animName, frameInd)
             self.actionTabs.setCurrentIndex(actionInd)
+
+    @QtCore.pyqtSlot()
+    def onStopCharacter(self):
+        self.characterView.animator.stop()
+
+    @QtCore.pyqtSlot()
+    def onPlayCharacter(self):
+        self.characterView.animator.stop()
+        self.characterView.animator.setFrame(0)
+        self.characterView.animator.start()
+
+    @QtCore.pyqtSlot()
+    def onRefreshCharacter(self):
+        self.characterView.reloadCharacter()
+
+    @QtCore.pyqtSlot(str)
+    def onChangeBackground(self, value):
+        self.characterView.setBackground(None if value == "No background" else QtGui.QPixmap("backgrounds/"+value))
 
     @QtCore.pyqtSlot(QtWidgets.QLabel)
     def onPortraitClicked(self, label):
