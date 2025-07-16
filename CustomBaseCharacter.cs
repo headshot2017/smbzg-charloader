@@ -341,7 +341,7 @@ public class CustomBaseCharacter : BaseCharacter
     {
         private static bool Prefix(BaseCharacter __instance)
         {
-            if (!__instance.GetType().IsSubclassOf(typeof(CustomBaseCharacter)))
+            if (!__instance.GetType().IsSubclassOf(typeof(CustomBaseCharacter)) && __instance.GetType() != typeof(CustomBaseCharacter))
                 return true;
 
             CustomBaseCharacter c = (CustomBaseCharacter)__instance;
