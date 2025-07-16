@@ -56,9 +56,9 @@ def defaultCharacterData():
         "anims": {}
     }
 
-def reset():
+def reset(defaultName=""):
     global name, jsonFile, sounds, effects, companions
-    name = ""
+    name = defaultName
     jsonFile = defaultCharacterData()
     sounds = {}
     effects = []
@@ -83,3 +83,11 @@ def load(charName):
     companions = os.listdir("%s/companions" % path) if os.path.exists("%s/companions" % path) else []
 
     return jsonFile
+
+def save():
+    if not name:
+        return False
+
+    path = gamepath.getCharacterPath(name)
+    json.dump(jsonFile, open("%s/character.json" % path, "w"), indent=2)
+    return True

@@ -38,8 +38,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         self.reset()
 
-    def reset(self):
-        characterdata.reset()
+        for i in range(1, self.tabWidget.count()):
+            self.tabWidget.setTabEnabled(i, False)
+
+    def reset(self, charName=""):
+        characterdata.reset(charName)
 
         self.refreshPortrait()
         self.refreshBattlePortrait()
@@ -60,6 +63,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.actionTabs.clear()
 
         self.characterView.animator.setSprite(0,0,0,0)
+        self.characterView.reloadCharacter()
 
         addAnim = QtWidgets.QTreeWidgetItem(self.animationsTree, ["Add animation..."])
         addAnim.itemLevel = -1
@@ -67,6 +71,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         cmdlistLayout = self.cmdlist_scrollContents.layout()
         for i in reversed(range(cmdlistLayout.count())): 
             cmdlistLayout.itemAt(i).widget().deleteLater()
+
+        for i in range(self.tabWidget.count()):
+            self.tabWidget.setTabEnabled(i, True)
 
     def loadCharacter(self, name):
         if not os.path.exists("%s/character.json" % gamepath.getCharacterPath(name)):
@@ -210,6 +217,87 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.characterView.animator.setAnimation(json["anims"][animName])
         self.characterView.animator.setFrame(frameInd)
 
+    def addAnimation(self, animName):
+        animTree = QtWidgets.QTreeWidgetItem([animName])
+        animTree.itemLevel = 0
+        addFrame = QtWidgets.QTreeWidgetItem(animTree, ["Add frame..."])
+        addFrame.itemLevel = -2
+        self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, animTree)
+
+        characterdata.jsonFile["anims"][animName] = {"frames": []}
+        return animTree
+
+    def addFrame(self, animTree):
+        frameInd = animTree.childCount()-1
+        rootFrameTree = QtWidgets.QTreeWidgetItem([ "Frame %d" % (frameInd+1) ])
+        rootFrameTree.itemLevel = 1
+        rootFrameTree.frame = frameInd
+        animTree.insertChild(frameInd, rootFrameTree)
+        addAction = QtWidgets.QTreeWidgetItem(rootFrameTree, ["Add action..."])
+        addAction.itemLevel = -3
+
+        animName = animTree.text(0)
+        characterdata.jsonFile["anims"][animName]["frames"].append({})
+
+        self.addAction("delay", rootFrameTree)
+
+        return rootFrameTree
+
+    def addAction(self, actionName, rootFrameTree):
+        animTree = rootFrameTree.parent()
+        frameInd = animTree.indexOfChild(rootFrameTree)
+        animName = animTree.text(0)
+
+        if actionName in characterdata.jsonFile["anims"][animName]["frames"][frameInd]:
+            return None
+
+        thisFrameTree = QtWidgets.QTreeWidgetItem([actionName])
+        thisFrameTree.itemLevel = 2
+        rootFrameTree.insertChild(rootFrameTree.childCount()-1, thisFrameTree)
+
+        characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName] = characterdata.defaultAction(actionName)
+        return thisFrameTree
+
+    def addNecessaryAnimations(self):
+        allAnimations = [
+            "OnSelect",
+            "Victory",
+            "Defeat",
+            "Idle",
+            "IdleB",
+            "Guard",
+            "Block",
+            "Slide",
+            "Hit",
+            "Hurt",
+            "Hurt_AirUpwards",
+            "Hurt_AirDownwards",
+            "Tumble",
+            "Grounded",
+            "GetUp",
+            "Jump",
+            "Fall",
+            "Land",
+            "Walk",
+            "Run",
+            "Sprint",
+            "Bursting",
+            "MR_Air_Idle",
+            "MR_Air_MoveDownward",
+            "MR_Air_MoveUpward",
+            "MR_Air_MoveForward",
+            "MR_Ground_Idle",
+            "MR_Ground_Land",
+            "MR_Ground_MoveForward",
+            "MR_Strike_Approach",
+            "MR_Strike_Attack",
+            "MR_Strike_Finale",
+            "MR_Dodge"
+        ]
+
+        for animName in allAnimations:
+            animTree = self.addAnimation(animName)
+
 
     @QtCore.pyqtSlot()
     def onActionTabValueChange(self):
@@ -226,45 +314,22 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                     QtWidgets.QMessageBox.warning(self, "Error", "Animation '%s' already exists" % animName)
                     return
 
-                animTree = QtWidgets.QTreeWidgetItem([animName])
-                animTree.itemLevel = 0
-                addFrame = QtWidgets.QTreeWidgetItem(animTree, ["Add frame..."])
-                addFrame.itemLevel = -2
-                self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, animTree)
-
-                characterdata.jsonFile["anims"][animName] = {"frames": []}
+                self.addAnimation(animName)
 
         if item.itemLevel == -2:
             animTree = item.parent()
-            frameInd = animTree.childCount()-1
-            rootFrameTree = QtWidgets.QTreeWidgetItem([ "Frame %d" % (frameInd+1) ])
-            rootFrameTree.itemLevel = 1
-            rootFrameTree.frame = frameInd
-            animTree.insertChild(frameInd, rootFrameTree)
-            addAction = QtWidgets.QTreeWidgetItem(rootFrameTree, ["Add action..."])
-            addAction.itemLevel = -3
-
-            animName = animTree.text(0)
-            characterdata.jsonFile["anims"][animName]["frames"].append({})
+            self.addFrame(animTree)
 
         if item.itemLevel == -3:
             actionDialog = actiontabs.ActionDialog(self)
             if actionDialog.exec():
                 actionName = actionDialog.comboBox.currentText()
                 rootFrameTree = item.parent()
-                animTree = rootFrameTree.parent()
-                frameInd = animTree.indexOfChild(rootFrameTree)
-                animName = animTree.text(0)
 
-                if actionName in characterdata.jsonFile["anims"][animName]["frames"][frameInd]:
+                if not self.addAction(actionName, rootFrameTree):
                     QtWidgets.QMessageBox.warning(self, "Error", "Action '%s' already exists" % actionName)
                     return
 
-                thisFrameTree = QtWidgets.QTreeWidgetItem([actionName])
-                thisFrameTree.itemLevel = 2
-                rootFrameTree.insertChild(rootFrameTree.childCount()-1, thisFrameTree)
-
-                characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName] = characterdata.defaultAction(actionName)
                 self.populateAnimTabs(animName, frameInd)
                 
 
@@ -333,20 +398,57 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def onActionNew(self):
-        self.reset()
+        charName, ok = QtWidgets.QInputDialog.getText(self, "New character", "Enter the character's folder name.\n\nThis name will also be used for the character's internal name in SMBZ-G.")
+        if not ok: return
+
+        path = gamepath.getCharacterPath(charName)
+
+        if os.path.exists(path) and os.path.exists(path+"/character.json"):
+            result = QtWidgets.QMessageBox.warning(self, "Warning",
+                "The character '%s' already exists in your custom characters folder.\n\nDo you want to continue and replace it?" % charName,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+
+            if result != QtWidgets.QMessageBox.Yes:
+                return
+
+        elif not os.path.exists(path):
+            os.makedirs(path)
+
+        self.reset(charName)
+
+        self.actionSave.setEnabled(True)
+        self.actionSaveAs.setEnabled(True)
+
+        if self.tabWidget.tabText(0) == "Welcome":
+            self.tabWidget.removeTab(0)
+
+        self.addNecessaryAnimations()
 
     @QtCore.pyqtSlot()
     def onActionOpen(self):
         fileName, type = QtWidgets.QFileDialog.getOpenFileName(self, "Open character.json", gamepath.customCharsPath, "JSON (*.json)")
+        if not fileName: return
+
         self.loadCharacter(os.path.basename(os.path.dirname(fileName)))
+
+        self.actionSave.setEnabled(True)
+        self.actionSaveAs.setEnabled(True)
+
+        if self.tabWidget.tabText(0) == "Welcome":
+            self.tabWidget.removeTab(0)
 
     @QtCore.pyqtSlot()
     def onActionSave(self):
-        pass
+        characterdata.save()
 
     @QtCore.pyqtSlot()
     def onActionSaveAs(self):
-        pass
+        charName, ok = QtWidgets.QInputDialog.getText(self, "New character", "Enter the character's folder name.\n\nThis name will also be used for the character's internal name in SMBZ-G.")
+        if not ok: return
+
+        characterdata.name = charName
+        characterdata.save()
 
     @QtCore.pyqtSlot()
     def onActionPrintJson(self):
