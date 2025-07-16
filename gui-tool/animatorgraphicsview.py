@@ -58,6 +58,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         self.onFrameChange()
 
     def refresh(self):
+        if not self.animDict: return
+
         self.onFrameChange(False)
         self.animDuration = 0
         for frame in self.animDict["frames"]:
@@ -98,8 +100,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         return True
 
     def interpolateFrames(self, x):
-        globalOffset = convertPosToUnity(self.animDict["offset"] if "offset" in self.animDict else [0, 0])
-        globalCharOffset = convertPosToUnity(characterdata.jsonFile["general"]["offset"]["ingame"])
+        globalOffset = self.animDict["offset"] if "offset" in self.animDict else [0, 0]
+        globalCharOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
         globalOffset[0] += globalCharOffset[0]
         globalOffset[1] += globalCharOffset[1]
         globalScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
@@ -132,7 +134,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             )
         ]
 
-        offsetLerp = [
+        offsetLerp = convertPosToUnity([
             globalOffset[0] + lerp(
                 currAction["offset"][0] if "offset" in currAction else 0,
                 nextAction["offset"][0] if "offset" in nextAction else 0,
@@ -143,7 +145,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
                 nextAction["offset"][1] if "offset" in nextAction else 0,
                 x
             )
-        ]
+        ])
 
         self.pixmapItem.resetTransform()
         self.pixmapItem.setPos(self.graphicsView.sceneRect().width()/2, self.graphicsView.sceneRect().height()/2)
