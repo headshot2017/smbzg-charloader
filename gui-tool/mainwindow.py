@@ -57,17 +57,17 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.refreshPortrait()
         self.refreshBattlePortrait()
         self.lineEdit_displayName.clear()
-        self.spinbox_scale_charselect.setValue(1)
-        self.spinbox_scale_results.setValue(1)
-        self.spinbox_scale_ingame.setValue(0.4)
-        self.spinbox_offsetX_charselect.setValue(0)
-        self.spinbox_offsetY_charselect.setValue(0)
-        self.spinbox_offsetX_results.setValue(0)
-        self.spinbox_offsetY_results.setValue(0)
-        self.spinbox_offsetX_ingame.setValue(0)
-        self.spinbox_offsetY_ingame.setValue(0)
-        self.view_primaryColor.setColor(QtCore.Qt.white)
-        self.view_secondaryColor.setColor(QtCore.Qt.black)
+        self.spinbox_scale_charselect.setValue(characterdata.jsonFile["general"]["scale"]["charSelect"])
+        self.spinbox_scale_results.setValue(characterdata.jsonFile["general"]["scale"]["results"])
+        self.spinbox_scale_ingame.setValue(characterdata.jsonFile["general"]["scale"]["ingame"])
+        self.spinbox_offsetX_charselect.setValue(characterdata.jsonFile["general"]["offset"]["charSelect"][0])
+        self.spinbox_offsetY_charselect.setValue(characterdata.jsonFile["general"]["offset"]["charSelect"][1])
+        self.spinbox_offsetX_results.setValue(characterdata.jsonFile["general"]["offset"]["results"][0])
+        self.spinbox_offsetY_results.setValue(characterdata.jsonFile["general"]["offset"]["results"][1])
+        self.spinbox_offsetX_ingame.setValue(characterdata.jsonFile["general"]["offset"]["ingame"][0])
+        self.spinbox_offsetY_ingame.setValue(characterdata.jsonFile["general"]["offset"]["ingame"][1])
+        self.view_primaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["primary"]))
+        self.view_secondaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["secondary"]))
 
         self.animationsTree.clear()
         self.actionTabs.clear()
@@ -124,10 +124,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                 colors = general["colors"]
                 if "primary" in colors:
                     primary = colors["primary"]
-                    self.view_primaryColor.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(primary[0], primary[1], primary[2])))
+                    self.view_primaryColor.setColor(QtGui.QColor(primary[0], primary[1], primary[2]))
                 if "secondary" in colors:
                     secondary = colors["secondary"]
-                    self.view_secondaryColor.setBackgroundBrush(QtGui.QBrush(QtGui.QColor(secondary[0], secondary[1], secondary[2])))
+                    self.view_secondaryColor.setColor(QtGui.QColor(secondary[0], secondary[1], secondary[2]))
 
         if "anims" in jsonFile:
             anims = jsonFile["anims"]

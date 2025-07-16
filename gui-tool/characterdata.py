@@ -36,7 +36,7 @@ def defaultCharacterData():
             "scale": {
                 "charSelect": 1,
                 "results": 1,
-                "ingame": 1
+                "ingame": 0.4
             },
             "offset": {
                 "charSelect": [ 0, 0 ],
