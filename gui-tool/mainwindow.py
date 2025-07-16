@@ -1,4 +1,5 @@
 import os
+import copy
 
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
@@ -36,6 +37,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         self.animationsTree.currentItemChanged.connect(self.onAnimationTreeChange)
         self.animationsTree.itemDoubleClicked.connect(self.onAnimationTreeDoubleClick)
+        self.animationsTree.customContextMenuRequested.connect(self.onAnimationTreeContextMenu)
         self.btn_stopCharacter.clicked.connect(self.onStopCharacter)
         self.btn_playCharacter.clicked.connect(self.onPlayCharacter)
         self.btn_reloadSheetCharacter.clicked.connect(self.onRefreshCharacter)
@@ -130,28 +132,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                     self.view_secondaryColor.setColor(QtGui.QColor(secondary[0], secondary[1], secondary[2]))
 
         if "anims" in jsonFile:
-            anims = jsonFile["anims"]
-            for animName in anims:
-                anim = anims[animName]
-                animTree = QtWidgets.QTreeWidgetItem([animName])
-                animTree.itemLevel = 0
-
-                if "frames" in anim:
-                    frames = anim["frames"]
-                    for frameDict in frames:
-                        frameInd = frames.index(frameDict)
-                        rootFrameTree = QtWidgets.QTreeWidgetItem(animTree, [ "Frame %d" % (frameInd+1) ] )
-                        rootFrameTree.itemLevel = 1
-                        for frameName in frameDict:
-                            frame = frameDict[frameName]
-                            thisFrameTree = QtWidgets.QTreeWidgetItem(rootFrameTree, [frameName])
-                            thisFrameTree.itemLevel = 2
-                        addAction = QtWidgets.QTreeWidgetItem(rootFrameTree, ["Add action..."])
-                        addAction.itemLevel = -3
-                        
-                addFrame = QtWidgets.QTreeWidgetItem(animTree, ["Add frame..."])
-                addFrame.itemLevel = -2
-                self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, animTree)
+            self.reloadAnimationsTree(self.animationsTree, jsonFile["anims"])
 
         if "commandList" in jsonFile:
             commandList = jsonFile["commandList"]
@@ -308,6 +289,34 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         for animName in allAnimations:
             animTree = self.addAnimation(animName)
 
+    def reloadAnimationsTree(self, treeWidget, anims):
+        treeWidget.clear()
+
+        addAnim = QtWidgets.QTreeWidgetItem(treeWidget, ["Add animation..."])
+        addAnim.itemLevel = -1
+
+        for animName in anims:
+            anim = anims[animName]
+            animTree = QtWidgets.QTreeWidgetItem([animName])
+            animTree.itemLevel = 0
+
+            if "frames" in anim:
+                frames = anim["frames"]
+                for frameInd in range(len(frames)):
+                    frameDict = frames[frameInd]
+                    rootFrameTree = QtWidgets.QTreeWidgetItem(animTree, [ "Frame %d" % (frameInd+1) ] )
+                    rootFrameTree.itemLevel = 1
+                    for frameName in frameDict:
+                        frame = frameDict[frameName]
+                        thisFrameTree = QtWidgets.QTreeWidgetItem(rootFrameTree, [frameName])
+                        thisFrameTree.itemLevel = 2
+                    addAction = QtWidgets.QTreeWidgetItem(rootFrameTree, ["Add action..."])
+                    addAction.itemLevel = -3
+
+            addFrame = QtWidgets.QTreeWidgetItem(animTree, ["Add frame..."])
+            addFrame.itemLevel = -2
+            treeWidget.insertTopLevelItem(treeWidget.topLevelItemCount()-1, animTree)
+
 
     @QtCore.pyqtSlot()
     def onActionTabValueChange(self):
@@ -367,6 +376,146 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             animName = animTree.text(0)
             self.populateAnimTabs(animName, frameInd)
             self.actionTabs.setCurrentIndex(actionInd)
+
+    @QtCore.pyqtSlot(QtCore.QPoint)
+    def onAnimationTreeContextMenu(self, point):
+        item = self.animationsTree.itemAt(point)
+        if item.itemLevel < 0: return
+
+        menu = QtWidgets.QMenu()
+        if item.itemLevel == 0:
+            actionRename = menu.addAction("Rename")
+            actionDuplicate = menu.addAction("Duplicate")
+            actionRename.triggered.connect(self.onMenuActionRename)
+            actionDuplicate.triggered.connect(self.onMenuActionDuplicateAnim)
+            actionRename.setData(item)
+            actionDuplicate.setData(item)
+
+        elif item.itemLevel == 1:
+            actionMoveUp = menu.addAction("Move up")
+            actionMoveDown = menu.addAction("Move down")
+            actionDuplicate = menu.addAction("Duplicate")
+            actionMoveUp.triggered.connect(self.onMenuActionMoveUp)
+            actionMoveDown.triggered.connect(self.onMenuActionMoveDown)
+            actionDuplicate.triggered.connect(self.onMenuActionDuplicateFrame)
+            actionMoveUp.setData(item)
+            actionMoveDown.setData(item)
+            actionDuplicate.setData(item)
+
+        actionDelete = menu.addAction("Delete")
+        actionDelete.triggered.connect(self.onMenuActionDelete)
+        actionDelete.setData(item)
+
+        menu.exec(self.animationsTree.mapToGlobal(point))
+
+    @QtCore.pyqtSlot()
+    def onMenuActionRename(self):
+        item = self.sender().data()
+        oldName = item.text(0)
+        newName, ok = QtWidgets.QInputDialog.getText(self, "Rename animation", "Rename the animation '%s' to..." % oldName)
+        if not ok or not newName: return
+
+        newAnimsDict = {}
+        for anim in characterdata.jsonFile["anims"]:
+            newAnimsDict[newName if anim == oldName else anim] = characterdata.jsonFile["anims"][anim]
+
+        characterdata.jsonFile["anims"] = newAnimsDict
+        self.reloadAnimationsTree(self.animationsTree, characterdata.jsonFile["anims"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionDuplicateAnim(self):
+        item = self.sender().data()
+        oldName = item.text(0)
+        newName, ok = QtWidgets.QInputDialog.getText(self, "Duplicate animation", "Enter a name for the duplicated animation")
+        if not ok or not newName: return
+
+        newAnimsDict = {}
+        for anim in characterdata.jsonFile["anims"]:
+            newAnimsDict[anim] = characterdata.jsonFile["anims"][anim]
+            if anim == oldName:
+                newAnimsDict[newName] = copy.deepcopy(characterdata.jsonFile["anims"][anim])
+
+        characterdata.jsonFile["anims"] = newAnimsDict
+        self.reloadAnimationsTree(self.animationsTree, characterdata.jsonFile["anims"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionDuplicateFrame(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+
+        duplicatedFrame = copy.deepcopy(characterdata.jsonFile["anims"][animName]["frames"][frameInd])
+        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd, duplicatedFrame)
+
+        self.reloadAnimationsTree(self.animationsTree, characterdata.jsonFile["anims"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveUp(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        if frameInd == 0: return
+
+        anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
+        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd-1, anim)
+
+        self.reloadAnimationsTree(self.animationsTree, characterdata.jsonFile["anims"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveDown(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        if frameInd >= len(characterdata.jsonFile["anims"][animName]["frames"])-1: return
+
+        anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
+        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd+1, anim)
+
+        self.reloadAnimationsTree(self.animationsTree, characterdata.jsonFile["anims"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionDelete(self):
+        message = ""
+        item = self.sender().data()
+
+        if item.itemLevel == 0:
+            animName = item.text(0)
+            message = "You are about to delete the animation '%s'.\nAre you sure?" % animName
+        elif item.itemLevel == 1:
+            animTree = item.parent()
+            animName = animTree.text(0)
+            message = "You are about to delete %s from the animation '%s'.\nAre you sure?" % (item.text(0), animName)
+        elif item.itemLevel == 2:
+            rootFrameTree = item.parent()
+            frameName = rootFrameTree.text(0)
+            animTree = rootFrameTree.parent()
+            animName = animTree.text(0)
+            message = "You are about to delete action '%s' from %s of the animation '%s'.\nAre you sure?" % (item.text(0), frameName, animName)
+
+        result = QtWidgets.QMessageBox.warning(self, "Warning", message,
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+
+        if result != QtWidgets.QMessageBox.Yes: return
+
+        if item.itemLevel == 0:
+            del characterdata.jsonFile["anims"][item.text(0)]
+        elif item.itemLevel == 1:
+            animTree = item.parent()
+            animName = animTree.text(0)
+            frameInd = animTree.indexOfChild(item)
+            del characterdata.jsonFile["anims"][animName]["frames"][frameInd]
+        elif item.itemLevel == 2:
+            rootFrameTree = item.parent()
+            animTree = rootFrameTree.parent()
+            animName = animTree.text(0)
+            frameInd = animTree.indexOfChild(rootFrameTree)
+            del characterdata.jsonFile["anims"][animName]["frames"][frameInd][item.text(0)]
+
+        self.reloadAnimationsTree(self.animationsTree, characterdata.jsonFile["anims"])
 
     @QtCore.pyqtSlot()
     def onStopCharacter(self):

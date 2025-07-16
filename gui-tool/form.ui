@@ -527,6 +527,9 @@ Create a new character or open an existing character from the File menu to get s
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
              <widget class="QTreeWidget" name="animationsTree">
+              <property name="contextMenuPolicy">
+               <enum>Qt::CustomContextMenu</enum>
+              </property>
               <property name="columnCount">
                <number>1</number>
               </property>
