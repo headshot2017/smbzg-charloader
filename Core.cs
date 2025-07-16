@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using HarmonyLib;
 using System.Collections.Generic;
 
-[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.0.1", "Headshotnoby/headshot2017", null)]
+[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.0.2", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
 
 namespace CharLoader
