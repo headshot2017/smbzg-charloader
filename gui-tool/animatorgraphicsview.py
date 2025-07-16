@@ -59,6 +59,10 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
     def refresh(self):
         self.onFrameChange(False)
+        self.animDuration = 0
+        for frame in self.animDict["frames"]:
+            if "delay" in frame:
+                self.animDuration += frame["delay"]*1000
 
 
     def onFrameChange(self, playSound=True):
@@ -66,6 +70,9 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             return False
 
         globalOffset = convertPosToUnity(self.animDict["offset"] if "offset" in self.animDict else [0, 0])
+        globalCharOffset = convertPosToUnity(characterdata.jsonFile["general"]["offset"]["ingame"])
+        globalOffset[0] += globalCharOffset[0]
+        globalOffset[1] += globalCharOffset[1]
         globalScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
 
         frame = self.animDict["frames"][self.frame]
@@ -91,7 +98,10 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         return True
 
     def interpolateFrames(self, x):
-        globalOffset = self.animDict["offset"] if "offset" in self.animDict else [0, 0]
+        globalOffset = convertPosToUnity(self.animDict["offset"] if "offset" in self.animDict else [0, 0])
+        globalCharOffset = convertPosToUnity(characterdata.jsonFile["general"]["offset"]["ingame"])
+        globalOffset[0] += globalCharOffset[0]
+        globalOffset[1] += globalCharOffset[1]
         globalScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
 
         currAction = self.animDict["frames"][self.frame]
@@ -122,7 +132,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             )
         ]
 
-        offsetLerp = convertPosToUnity([
+        offsetLerp = [
             globalOffset[0] + lerp(
                 currAction["offset"][0] if "offset" in currAction else 0,
                 nextAction["offset"][0] if "offset" in nextAction else 0,
@@ -133,7 +143,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
                 nextAction["offset"][1] if "offset" in nextAction else 0,
                 x
             )
-        ])
+        ]
 
         self.pixmapItem.resetTransform()
         self.pixmapItem.setPos(self.graphicsView.sceneRect().width()/2, self.graphicsView.sceneRect().height()/2)
@@ -145,6 +155,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         timeToNextFrame = 0
         timeFromLastFrame = 0
         for i in range(self.frame+1):
+            if i >= len(self.animDict["frames"]): break
             frame = self.animDict["frames"][i]
             if "delay" in frame:
                 timeToNextFrame += frame["delay"]*1000
