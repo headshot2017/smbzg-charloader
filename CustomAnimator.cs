@@ -97,7 +97,7 @@ public class CustomAnimator : MonoBehaviour
         while ((m_Time += Time.deltaTime) > currAction.delay)
         {
             if (currAction.delay <= 0)
-                m_Time = currAction.delay;
+                m_Time = currAction.delay - Time.deltaTime;
             else
                 m_Time -= currAction.delay;
 
@@ -322,7 +322,7 @@ public class CustomAnimator : MonoBehaviour
 
     void HandleIngameSprite()
     {
-        if (IgnoreIngameSprite || !m_CompSpriteRenderer || (m_CurrentAnimation != null && m_CurrentAnimation.hash == ASN_Land)) return;
+        if (IgnoreIngameSprite || !m_CompSpriteRenderer || (m_CurrentAnimation != null && m_CurrentAnimation.hash == ASN_Land && !m_Ended)) return;
 
         Properties p = m_CurrentProperties;
 
