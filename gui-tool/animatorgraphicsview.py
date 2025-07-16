@@ -10,6 +10,9 @@ def lerp(a, b, x):
 def convertPosToUnity(posList):
     return [posList[0]*50, -posList[1]*50]
 
+def convertScaleToUnity(scale):
+    return scale/0.4
+
 
 class PixmapAnimator(QtCore.QAbstractAnimation):
     def __init__(self, graphicsView):
@@ -75,7 +78,11 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         globalCharOffset = convertPosToUnity(characterdata.jsonFile["general"]["offset"]["ingame"])
         globalOffset[0] += globalCharOffset[0]
         globalOffset[1] += globalCharOffset[1]
+
         globalScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
+        globalCharScale = convertScaleToUnity(characterdata.jsonFile["general"]["scale"]["ingame"])
+        globalScale[0] *= globalCharScale
+        globalScale[1] *= globalCharScale
 
         frame = self.animDict["frames"][self.frame]
 
@@ -104,7 +111,11 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         globalCharOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
         globalOffset[0] += globalCharOffset[0]
         globalOffset[1] += globalCharOffset[1]
+
         globalScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
+        globalCharScale = convertScaleToUnity(characterdata.jsonFile["general"]["scale"]["ingame"])
+        globalScale[0] *= globalCharScale
+        globalScale[1] *= globalCharScale
 
         currAction = self.animDict["frames"][self.frame]
         if currAction["delay"] <= 0: return

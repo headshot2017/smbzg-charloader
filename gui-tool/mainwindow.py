@@ -555,6 +555,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(float)
     def onScaleIngameChanged(self, value):
         characterdata.jsonFile["general"]["scale"]["ingame"] = value
+        self.characterView.animator.refresh()
 
     @QtCore.pyqtSlot(float)
     def onXOffsetCharSelectChanged(self, value):
