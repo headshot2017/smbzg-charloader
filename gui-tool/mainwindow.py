@@ -23,6 +23,16 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         self.lbl_portrait.clicked.connect(self.onPortraitClicked)
         self.lbl_battlePortrait.clicked.connect(self.onPortraitClicked)
+        self.lineEdit_displayName.textChanged.connect(self.onDisplayNameChanged)
+        self.spinbox_scale_charselect.valueChanged.connect(self.onScaleCharSelectChanged)
+        self.spinbox_scale_results.valueChanged.connect(self.onScaleResultsChanged)
+        self.spinbox_scale_ingame.valueChanged.connect(self.onScaleIngameChanged)
+        self.spinbox_offsetX_charselect.valueChanged.connect(self.onXOffsetCharSelectChanged)
+        self.spinbox_offsetY_charselect.valueChanged.connect(self.onYOffsetCharSelectChanged)
+        self.spinbox_offsetX_results.valueChanged.connect(self.onXOffsetResultsChanged)
+        self.spinbox_offsetY_results.valueChanged.connect(self.onYOffsetResultsChanged)
+        self.spinbox_offsetX_ingame.valueChanged.connect(self.onXOffsetIngameChanged)
+        self.spinbox_offsetY_ingame.valueChanged.connect(self.onYOffsetIngameChanged)
 
         self.animationsTree.currentItemChanged.connect(self.onAnimationTreeChange)
         self.animationsTree.itemDoubleClicked.connect(self.onAnimationTreeDoubleClick)
@@ -49,15 +59,15 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.lineEdit_displayName.clear()
         self.spinbox_scale_charselect.setValue(1)
         self.spinbox_scale_results.setValue(1)
-        self.spinbox_scale_ingame.setValue(1)
+        self.spinbox_scale_ingame.setValue(0.4)
         self.spinbox_offsetX_charselect.setValue(0)
         self.spinbox_offsetY_charselect.setValue(0)
         self.spinbox_offsetX_results.setValue(0)
         self.spinbox_offsetY_results.setValue(0)
         self.spinbox_offsetX_ingame.setValue(0)
         self.spinbox_offsetY_ingame.setValue(0)
-        self.view_primaryColor.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.white))
-        self.view_secondaryColor.setBackgroundBrush(QtGui.QBrush(QtCore.Qt.black))
+        self.view_primaryColor.setColor(QtCore.Qt.white)
+        self.view_secondaryColor.setColor(QtCore.Qt.black)
 
         self.animationsTree.clear()
         self.actionTabs.clear()
@@ -325,12 +335,17 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             if actionDialog.exec():
                 actionName = actionDialog.comboBox.currentText()
                 rootFrameTree = item.parent()
+                animTree = rootFrameTree.parent()
+                frameInd = animTree.indexOfChild(rootFrameTree)
+                animName = animTree.text(0)
 
-                if not self.addAction(actionName, rootFrameTree):
+                actionTree = self.addAction(actionName, rootFrameTree)
+                if not actionTree:
                     QtWidgets.QMessageBox.warning(self, "Error", "Action '%s' already exists" % actionName)
                     return
 
                 self.populateAnimTabs(animName, frameInd)
+                self.actionTabs.setCurrentIndex(rootFrameTree.indexOfChild(actionTree))
                 
 
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, QtWidgets.QTreeWidgetItem)
@@ -376,6 +391,48 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if label == self.lbl_portrait: self.refreshPortrait()
         if label == self.lbl_battlePortrait: self.refreshBattlePortrait()
 
+    @QtCore.pyqtSlot(str)
+    def onDisplayNameChanged(self, text):
+        characterdata.jsonFile["general"]["displayName"] = text
+
+    @QtCore.pyqtSlot(float)
+    def onScaleCharSelectChanged(self, value):
+        characterdata.jsonFile["general"]["scale"]["charSelect"] = value
+
+    @QtCore.pyqtSlot(float)
+    def onScaleResultsChanged(self, value):
+        characterdata.jsonFile["general"]["scale"]["results"] = value
+
+    @QtCore.pyqtSlot(float)
+    def onScaleIngameChanged(self, value):
+        characterdata.jsonFile["general"]["scale"]["ingame"] = value
+
+    @QtCore.pyqtSlot(float)
+    def onXOffsetCharSelectChanged(self, value):
+        characterdata.jsonFile["general"]["offset"]["charSelect"][0] = value
+
+    @QtCore.pyqtSlot(float)
+    def onYOffsetCharSelectChanged(self, value):
+        characterdata.jsonFile["general"]["offset"]["charSelect"][1] = value
+
+    @QtCore.pyqtSlot(float)
+    def onXOffsetResultsChanged(self, value):
+        characterdata.jsonFile["general"]["offset"]["results"][0] = value
+
+    @QtCore.pyqtSlot(float)
+    def onYOffsetResultsChanged(self, value):
+        characterdata.jsonFile["general"]["offset"]["results"][1] = value
+
+    @QtCore.pyqtSlot(float)
+    def onXOffsetIngameChanged(self, value):
+        characterdata.jsonFile["general"]["offset"]["ingame"][0] = value
+        self.characterView.animator.refresh()
+
+    @QtCore.pyqtSlot(float)
+    def onYOffsetIngameChanged(self, value):
+        characterdata.jsonFile["general"]["offset"]["ingame"][1] = value
+        self.characterView.animator.refresh()
+
     @QtCore.pyqtSlot()
     def onAddCommand(self):
         self.addCommand()
@@ -415,6 +472,14 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         elif not os.path.exists(path):
             os.makedirs(path)
 
+        extraPaths = [
+            path+"/sounds",
+            path+"/effects",
+            path+"/companions"
+        ]
+        for extraPath in extraPaths:
+            if not os.path.exists(extraPath): os.mkdir(extraPath)
+
         self.reset(charName)
 
         self.actionSave.setEnabled(True)
@@ -425,12 +490,15 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         self.addNecessaryAnimations()
 
+        self.statusbar.showMessage("Created character '%s'" % charName, 3000)
+
     @QtCore.pyqtSlot()
     def onActionOpen(self):
         fileName, type = QtWidgets.QFileDialog.getOpenFileName(self, "Open character.json", gamepath.customCharsPath, "JSON (*.json)")
         if not fileName: return
 
-        self.loadCharacter(os.path.basename(os.path.dirname(fileName)))
+        charName = os.path.basename(os.path.dirname(fileName))
+        self.loadCharacter(charName)
 
         self.actionSave.setEnabled(True)
         self.actionSaveAs.setEnabled(True)
@@ -438,9 +506,12 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if self.tabWidget.tabText(0) == "Welcome":
             self.tabWidget.removeTab(0)
 
+        self.statusbar.showMessage("Loaded character '%s'" % charName, 3000)
+
     @QtCore.pyqtSlot()
     def onActionSave(self):
         characterdata.save()
+        self.statusbar.showMessage("Saved character '%s'" % characterdata.name, 3000)
 
     @QtCore.pyqtSlot()
     def onActionSaveAs(self):
@@ -449,6 +520,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         characterdata.name = charName
         characterdata.save()
+        self.statusbar.showMessage("Saved character '%s'" % characterdata.name, 3000)
 
     @QtCore.pyqtSlot()
     def onActionPrintJson(self):
