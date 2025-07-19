@@ -47,9 +47,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         self.pixmapItem.setPixmap(self.fullPixmap.copy(x, y, w, h))
         self.pixmapItem.setOffset(-w/2, -h/2)
 
-    def reloadCharacter(self):
-        path = gamepath.getCharacterPath(characterdata.name)
-        self.fullPixmap = QtGui.QPixmap("%s/sheet.png" % path)
+    def reloadSprite(self, file):
+        self.fullPixmap = QtGui.QPixmap(file)
         self.setSprite(0,0,0,0)
         self.hitboxItem.setRect(0, 0, 0, 0)
 
@@ -290,8 +289,8 @@ class AnimatorGraphicsView(QtWidgets.QGraphicsView):
 
         self.animator = PixmapAnimator(self)
 
-    def reloadCharacter(self):
-        self.animator.reloadCharacter()
+    def reloadSprite(self, file):
+        self.animator.reloadSprite(file)
 
     def setBackground(self, pixmap):
         if not pixmap:

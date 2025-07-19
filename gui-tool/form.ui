@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_welcome">
        <attribute name="title">
@@ -516,140 +516,19 @@ Create a new character or open an existing character from the File menu to get s
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_anims">
+      <widget class="CharacterAnimatorWidget" name="tab_anims">
        <attribute name="title">
         <string>Animations</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QTreeWidget" name="animationsTree">
-              <property name="contextMenuPolicy">
-               <enum>Qt::CustomContextMenu</enum>
-              </property>
-              <property name="columnCount">
-               <number>1</number>
-              </property>
-              <column>
-               <property name="text">
-                <string>Animations</string>
-               </property>
-              </column>
-             </widget>
-            </item>
-            <item>
-             <widget class="QTabWidget" name="actionTabs">
-              <property name="currentIndex">
-               <number>0</number>
-              </property>
-              <widget class="QWidget" name="tab">
-               <attribute name="title">
-                <string>Page</string>
-               </attribute>
-              </widget>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QVBoxLayout" name="verticalLayout_10">
-            <item>
-             <widget class="AnimatorGraphicsView" name="characterView"/>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_4">
-              <item alignment="Qt::AlignLeft">
-               <widget class="QPushButton" name="btn_reloadSheetCharacter">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>106</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Reload sheet.png</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignRight">
-               <widget class="QPushButton" name="btn_stopCharacter">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>75</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Stop</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignLeft">
-               <widget class="QPushButton" name="btn_playCharacter">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>75</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Play</string>
-                </property>
-               </widget>
-              </item>
-              <item alignment="Qt::AlignRight">
-               <widget class="QComboBox" name="comboBox_backgroundCharacter">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>106</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>No background</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </item>
-       </layout>
       </widget>
       <widget class="QWidget" name="tab_effects">
        <attribute name="title">
         <string>Effects</string>
+       </attribute>
+      </widget>
+      <widget class="QWidget" name="tab_companions">
+       <attribute name="title">
+        <string>Companions</string>
        </attribute>
       </widget>
       <widget class="QWidget" name="tab_cmdlist">
@@ -803,9 +682,10 @@ Create a new character or open an existing character from the File menu to get s
    <header>colorgraphicsview</header>
   </customwidget>
   <customwidget>
-   <class>AnimatorGraphicsView</class>
-   <extends>QGraphicsView</extends>
-   <header>animatorgraphicsview</header>
+   <class>CharacterAnimatorWidget</class>
+   <extends>QWidget</extends>
+   <header>animatorwidgets</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
