@@ -238,8 +238,8 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="resource.qrc">
-            <normaloff>:/prefix/up.png</normaloff>:/prefix/up.png</iconset>
+           <iconset>
+            <normaloff>../images/up.png</normaloff>../images/up.png</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -258,8 +258,8 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="resource.qrc">
-            <normaloff>:/prefix/down.png</normaloff>:/prefix/down.png</iconset>
+           <iconset>
+            <normaloff>../images/down.png</normaloff>../images/down.png</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -278,8 +278,8 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset resource="resource.qrc">
-            <normaloff>:/prefix/delete.png</normaloff>:/prefix/delete.png</iconset>
+           <iconset>
+            <normaloff>../images/delete.png</normaloff>../images/delete.png</iconset>
           </property>
           <property name="iconSize">
            <size>

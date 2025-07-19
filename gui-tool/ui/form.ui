@@ -90,7 +90,7 @@ Create a new character or open an existing character from the File menu to get s
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resource.qrc">:/prefix/default_portrait.png</pixmap>
+               <pixmap>../images/default_portrait.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>
@@ -115,7 +115,7 @@ Create a new character or open an existing character from the File menu to get s
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="resource.qrc">:/prefix/default_portrait.png</pixmap>
+               <pixmap>../images/default_portrait.png</pixmap>
               </property>
               <property name="scaledContents">
                <bool>false</bool>
