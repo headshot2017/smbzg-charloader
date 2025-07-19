@@ -11,7 +11,7 @@ class BaseActionTab(QtWidgets.QWidget):
 class ActionTab_General(BaseActionTab):
     def __init__(self, parent, anim):
         super().__init__(parent)
-        uic.loadUi("actiontab_general.ui", self)
+        uic.loadUi("ui/actiontab_general.ui", self)
 
         self.anim = anim
 
@@ -67,7 +67,7 @@ class ActionTab_General(BaseActionTab):
 class ActionTab_Frame(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_frame.ui", self)
+        uic.loadUi("ui/actiontab_frame.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -106,7 +106,7 @@ class ActionTab_Frame(BaseActionTab):
 class ActionTab_Delay(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_delay.ui", self)
+        uic.loadUi("ui/actiontab_delay.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -123,7 +123,7 @@ class ActionTab_Delay(BaseActionTab):
 class ActionTab_SetAnim(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_setAnim.ui", self)
+        uic.loadUi("ui/actiontab_setAnim.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -145,7 +145,7 @@ class ActionTab_SetAnim(BaseActionTab):
 class ActionTab_Offset(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_offset.ui", self)
+        uic.loadUi("ui/actiontab_offset.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -170,7 +170,7 @@ class ActionTab_Offset(BaseActionTab):
 class ActionTab_Scale(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_scale.ui", self)
+        uic.loadUi("ui/actiontab_scale.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -195,7 +195,7 @@ class ActionTab_Scale(BaseActionTab):
 class ActionTab_Angle(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_angle.ui", self)
+        uic.loadUi("ui/actiontab_angle.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -212,7 +212,7 @@ class ActionTab_Angle(BaseActionTab):
 class ActionTab_Sound(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_sound.ui", self)
+        uic.loadUi("ui/actiontab_sound.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -239,7 +239,7 @@ class ActionTab_Sound(BaseActionTab):
 class ActionTab_Color(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_color.ui", self)
+        uic.loadUi("ui/actiontab_color.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -256,7 +256,7 @@ class ActionTab_Color(BaseActionTab):
 class ActionTab_Hitbox(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_hitbox.ui", self)
+        uic.loadUi("ui/actiontab_hitbox.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -302,7 +302,7 @@ class ActionTab_Hitbox(BaseActionTab):
 class ActionTab_CustomQueue(BaseActionTab):
     def __init__(self, parent, actionInfo, action):
         super().__init__(parent)
-        uic.loadUi("actiontab_callCustomQueue.ui", self)
+        uic.loadUi("ui/actiontab_callCustomQueue.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -325,7 +325,7 @@ actionTabsDict = {
 class ActionDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
-        uic.loadUi("actiondialog.ui", self)
+        uic.loadUi("ui/actiondialog.ui", self)
 
         for action in actionTabsDict:
             self.comboBox.addItem(action)

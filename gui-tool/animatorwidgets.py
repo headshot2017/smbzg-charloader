@@ -10,7 +10,7 @@ import actiontabs
 class BaseAnimatorWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        uic.loadUi("animatorwidget.ui", self)
+        uic.loadUi("ui/animatorwidget.ui", self)
 
         if os.path.exists("backgrounds"):
             for f in os.listdir("backgrounds"): self.comboBox_background.addItem(f)

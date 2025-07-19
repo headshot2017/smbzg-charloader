@@ -10,7 +10,7 @@ import commandwidget
 class GUIToolMainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi("form.ui", self)
+        uic.loadUi("ui/form.ui", self)
 
         self.setCentralWidget(self.centralwidget)
 
@@ -134,11 +134,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
     def refreshPortrait(self):
         portrait = "%s/portrait.png" % gamepath.getCharacterPath(characterdata.name)
-        self.lbl_portrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else ":/prefix/default_portrait.png"))
+        self.lbl_portrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else "images/default_portrait.png"))
 
     def refreshBattlePortrait(self):
         portrait = "%s/battleportrait.png" % gamepath.getCharacterPath(characterdata.name)
-        self.lbl_battlePortrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else ":/prefix/default_portrait.png"))
+        self.lbl_battlePortrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else "images/default_portrait.png"))
 
     def addCommand(self):
         cmdWidget = commandwidget.AttackCommandWidget(self)

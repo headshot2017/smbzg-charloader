@@ -29,7 +29,7 @@ class AttackCommandWidget(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        uic.loadUi("commandwidget.ui", self)
+        uic.loadUi("ui/commandwidget.ui", self)
 
         self.btn_moveUp.clicked.connect(self.onMoveUp)
         self.btn_moveDown.clicked.connect(self.onMoveDown)
@@ -39,11 +39,11 @@ class AttackCommandWidget(QtWidgets.QWidget):
         menu2 = QtWidgets.QMenu()
         for cmd in commands:
             action = QtWidgets.QAction(cmd[0], self)
-            action.setIcon(QtGui.QIcon(":/prefix/%s.png" % cmd[0]))
+            action.setIcon(QtGui.QIcon("images/%s.png" % cmd[0]))
             menu1.addAction(action)
         for cmd in commands:
             action = QtWidgets.QAction(cmd[0], self)
-            action.setIcon(QtGui.QIcon(":/prefix/%s.png" % cmd[0]))
+            action.setIcon(QtGui.QIcon("images/%s.png" % cmd[0]))
             menu2.addAction(action)
         menu1.triggered.connect(self.onAddButton)
         menu2.triggered.connect(self.onAddFeature)
@@ -52,7 +52,7 @@ class AttackCommandWidget(QtWidgets.QWidget):
 
     def createCommandButton(self, parent, image):
         btn = QtWidgets.QPushButton(parent)
-        btn.setIcon(QtGui.QIcon(":/prefix/%s.png" % image))
+        btn.setIcon(QtGui.QIcon("images/%s.png" % image))
         btn.setIconSize(QtCore.QSize(32, 32))
         btn.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         btn.setStyleSheet("QPushButton::menu-indicator{width:0px;}")

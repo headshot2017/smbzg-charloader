@@ -1,7 +1,6 @@
 from PyQt5 import QtWidgets
 from pygame import mixer
 
-import resource
 import gamepath
 from mainwindow import GUIToolMainWindow
 
