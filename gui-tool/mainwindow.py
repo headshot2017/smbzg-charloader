@@ -60,6 +60,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.view_secondaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["secondary"]))
 
         self.tab_anims.reset()
+        self.tab_effects.reset()
+        self.tab_companions.reset()
 
         cmdlistLayout = self.cmdlist_scrollContents.layout()
         for i in reversed(range(cmdlistLayout.count())): 

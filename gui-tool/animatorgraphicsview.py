@@ -87,28 +87,28 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         if not self.animDict or self.frame < 0 or self.frame >= len(self.animDict["frames"]):
             return False
 
-        globalOffset = convertPosToUnity(self.animDict["offset"] if "offset" in self.animDict else [0, 0])
+        globalAnimOffset = convertPosToUnity(self.animDict["offset"] if "offset" in self.animDict else [0, 0])
         globalCharOffset = convertPosToUnity(characterdata.jsonFile["general"]["offset"]["ingame"])
-        globalOffset[0] += globalCharOffset[0]
-        globalOffset[1] += globalCharOffset[1]
+        globalAnimOffset[0] += globalCharOffset[0]
+        globalAnimOffset[1] += globalCharOffset[1]
 
-        globalScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
+        globalAnimScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
         globalCharScale = convertScaleToUnity(characterdata.jsonFile["general"]["scale"]["ingame"])
-        globalScale = [globalScale[0] * globalCharScale, globalScale[1] * globalCharScale]
+        globalAnimScale = [globalAnimScale[0] * globalCharScale, globalAnimScale[1] * globalCharScale]
 
         frame = self.animDict["frames"][self.frame]
 
         offsetPos = convertPosToUnity(frame["offset"] if "offset" in frame else [0, 0])
-        offsetPos[0] += globalOffset[0]
-        offsetPos[1] += globalOffset[1]
+        offsetPos[0] += globalAnimOffset[0]
+        offsetPos[1] += globalAnimOffset[1]
 
         self.pixmapItem.resetTransform()
         self.pixmapItem.setPos(self.graphicsView.sceneRect().width()/2, self.graphicsView.sceneRect().height()/2)
         self.pixmapItem.setRotation(frame["angle"] if "angle" in frame else 0)
         self.pixmapItem.moveBy(*offsetPos)
         self.pixmapItem.setTransform(self.pixmapItem.transform().scale(
-            globalScale[0] * (frame["scale"][0] if "scale" in frame else 1),
-            globalScale[1] * (frame["scale"][1] if "scale" in frame else 1)
+            globalAnimScale[0] * (frame["scale"][0] if "scale" in frame else 1),
+            globalAnimScale[1] * (frame["scale"][1] if "scale" in frame else 1)
         ))
 
         if playSound and "sound" in frame and frame["sound"] in characterdata.sounds:
@@ -144,13 +144,13 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         return True
 
     def interpolateFrames(self, x):
-        globalOffset = self.animDict["offset"] if "offset" in self.animDict else [0, 0]
+        globalAnimOffset = self.animDict["offset"] if "offset" in self.animDict else [0, 0]
         globalCharOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
-        globalOffset = [globalOffset[0] + globalCharOffset[0], globalOffset[1] + globalCharOffset[1]]
+        globalAnimOffset = [globalAnimOffset[0] + globalCharOffset[0], globalAnimOffset[1] + globalCharOffset[1]]
 
-        globalScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
+        globalAnimScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
         globalCharScale = convertScaleToUnity(characterdata.jsonFile["general"]["scale"]["ingame"])
-        globalScale = [globalScale[0] * globalCharScale, globalScale[1] * globalCharScale]
+        globalAnimScale = [globalAnimScale[0] * globalCharScale, globalAnimScale[1] * globalCharScale]
 
         currAction = self.animDict["frames"][self.frame]
         if currAction["delay"] <= 0: return
@@ -210,12 +210,12 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         )
 
         scaleLerp = [
-            globalScale[0] * lerp(
+            globalAnimScale[0] * lerp(
                 currAction["scale"][0] if "scale" in currAction else 1,
                 nextAction["scale"][0] if "scale" in nextAction else 1,
                 x
             ),
-            globalScale[1] * lerp(
+            globalAnimScale[1] * lerp(
                 currAction["scale"][1] if "scale" in currAction else 1,
                 nextAction["scale"][1] if "scale" in nextAction else 1,
                 x
@@ -223,12 +223,12 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         ]
 
         offsetLerp = convertPosToUnity([
-            globalOffset[0] + lerp(
+            globalAnimOffset[0] + lerp(
                 currAction["offset"][0] if "offset" in currAction else 0,
                 nextAction["offset"][0] if "offset" in nextAction else 0,
                 x
             ),
-            globalOffset[1] + lerp(
+            globalAnimOffset[1] + lerp(
                 currAction["offset"][1] if "offset" in currAction else 0,
                 nextAction["offset"][1] if "offset" in nextAction else 0,
                 x

@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tab_welcome">
        <attribute name="title">
@@ -521,12 +521,12 @@ Create a new character or open an existing character from the File menu to get s
         <string>Animations</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tab_effects">
+      <widget class="EffectAnimatorWidget" name="tab_effects">
        <attribute name="title">
         <string>Effects</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tab_companions">
+      <widget class="CompanionAnimatorWidget" name="tab_companions">
        <attribute name="title">
         <string>Companions</string>
        </attribute>
@@ -683,6 +683,18 @@ Create a new character or open an existing character from the File menu to get s
   </customwidget>
   <customwidget>
    <class>CharacterAnimatorWidget</class>
+   <extends>QWidget</extends>
+   <header>animatorwidgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EffectAnimatorWidget</class>
+   <extends>QWidget</extends>
+   <header>animatorwidgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CompanionAnimatorWidget</class>
    <extends>QWidget</extends>
    <header>animatorwidgets</header>
    <container>1</container>

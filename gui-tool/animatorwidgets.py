@@ -408,3 +408,41 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
     def onRefresh(self):
         path = gamepath.getCharacterPath(characterdata.name)
         self.animatorView.reloadSprite("%s/sheet.png" % path)
+
+
+class EffectAnimatorWidget(BaseAnimatorWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.animationsTree.setHeaderLabel("Effects")
+        #self.animationsTree.currentItemChanged.connect(self.onAnimationTreeChange)
+        #self.animationsTree.itemDoubleClicked.connect(self.onAnimationTreeDoubleClick)
+        #self.animationsTree.customContextMenuRequested.connect(self.onAnimationTreeContextMenu)
+        #self.btn_stop.clicked.connect(self.onStopCharacter)
+        #self.btn_play.clicked.connect(self.onPlayCharacter)
+        #self.btn_reloadSprite.clicked.connect(self.onRefresh)
+
+    def reset(self):
+        super().reset()
+
+        addEffect = QtWidgets.QTreeWidgetItem(self.animationsTree, ["New effect..."])
+        addEffect.itemLevel = -1
+
+
+class CompanionAnimatorWidget(BaseAnimatorWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.animationsTree.setHeaderLabel("Companions")
+        #self.animationsTree.currentItemChanged.connect(self.onAnimationTreeChange)
+        #self.animationsTree.itemDoubleClicked.connect(self.onAnimationTreeDoubleClick)
+        #self.animationsTree.customContextMenuRequested.connect(self.onAnimationTreeContextMenu)
+        #self.btn_stop.clicked.connect(self.onStopCharacter)
+        #self.btn_play.clicked.connect(self.onPlayCharacter)
+        #self.btn_reloadSprite.clicked.connect(self.onRefresh)
+
+    def reset(self):
+        super().reset()
+
+        addEffect = QtWidgets.QTreeWidgetItem(self.animationsTree, ["New companion..."])
+        addEffect.itemLevel = -1
