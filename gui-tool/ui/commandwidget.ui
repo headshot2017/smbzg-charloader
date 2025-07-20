@@ -297,7 +297,6 @@
   </layout>
  </widget>
  <resources>
-  <include location="resource.qrc"/>
  </resources>
  <connections/>
 </ui>
