@@ -1,4 +1,5 @@
 import os
+import shutil
 import json
 import copy
 
@@ -21,7 +22,7 @@ __defaultaction = {
     "scale": [1, 1],
     "angle": 0,
     "sound": "",
-    "color": [255, 255, 255],
+    "color": [255, 255, 255, 255],
     "hitbox": {"on": False, "pos": [0, 0], "scale": [1, 1]},
     "callCustomQueue": True,
 }
@@ -55,6 +56,28 @@ def defaultCharacterData():
         
         "anims": {}
     }
+
+def defaultCompanion():
+    return {
+        "general": {
+            "scale": 0.4,
+            "offset": [0, 0]
+        },
+
+        "anims": {}
+    }
+
+def createCompanionDir(companionName):
+    path = gamepath.getCharacterPath(name)
+    companionPath = "%s/companions/%s" % (path, companionName)
+    if not os.path.exists(companionPath): os.makedirs(companionPath)
+
+def deleteCompanion(companionName):
+    path = gamepath.getCharacterPath(name)
+    companionPath = "%s/companions/%s" % (path, companionName)
+
+    if os.path.exists(companionPath): shutil.rmtree(companionPath)
+    if companionName in companionJson: del companionJson[companionName]
 
 def reset(defaultName=""):
     global name, jsonFile, sounds, effects, companionJson
@@ -97,6 +120,8 @@ def save():
     json.dump(jsonFile, open("%s/character.json" % path, "w"), indent=2)
 
     for companion in companionJson:
-        json.dump(companionJson[companion], open("%s/companions/%s/companion.json" % (path, companion), "w"), indent=2)
+        companionPath = "%s/companions/%s" % (path, companion)
+        if not os.path.exists(companionPath): os.makedirs(companionPath)
+        json.dump(companionJson[companion], open("%s/companion.json" % companionPath, "w"), indent=2)
 
     return True

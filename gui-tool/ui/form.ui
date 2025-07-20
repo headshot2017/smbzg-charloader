@@ -61,9 +61,12 @@ Create a new character or open an existing character from the File menu to get s
        <attribute name="title">
         <string>General</string>
        </attribute>
+       <attribute name="toolTip">
+        <string>General settings such as display name, offsets, scales and trail colors</string>
+       </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <layout class="QVBoxLayout" name="layout_tabGeneral" stretch="0,0,0,0">
+         <layout class="QVBoxLayout" name="layout_tabGeneral" stretch="0,0,0,0,0">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -76,54 +79,100 @@ Create a new character or open an existing character from the File menu to get s
              <enum>QLayout::SetDefaultConstraint</enum>
             </property>
             <item>
-             <widget class="PortraitLabel" name="lbl_portrait">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>portrait.png (Click to refresh)</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="pixmap">
-               <pixmap>../images/default_portrait.png</pixmap>
-              </property>
-              <property name="scaledContents">
-               <bool>false</bool>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
+             <layout class="QVBoxLayout" name="verticalLayout_10">
+              <item>
+               <widget class="PortraitLabel" name="lbl_portrait">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Character select portrait (Click to refresh)</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="pixmap">
+                 <pixmap>../images/default_portrait.png</pixmap>
+                </property>
+                <property name="scaledContents">
+                 <bool>false</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_7">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Character select portrait (Click to refresh)</string>
+                </property>
+                <property name="text">
+                 <string>portrait.png</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
-             <widget class="PortraitLabel" name="lbl_battlePortrait">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>battleportrait.png (Click to refresh)</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="pixmap">
-               <pixmap>../images/default_portrait.png</pixmap>
-              </property>
-              <property name="scaledContents">
-               <bool>false</bool>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
+             <layout class="QVBoxLayout" name="verticalLayout">
+              <item>
+               <widget class="PortraitLabel" name="lbl_battlePortrait">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Ingame HUD portrait (Click to refresh)</string>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="pixmap">
+                 <pixmap>../images/default_portrait.png</pixmap>
+                </property>
+                <property name="scaledContents">
+                 <bool>false</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="label_8">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="toolTip">
+                 <string>Ingame HUD portrait (Click to refresh)</string>
+                </property>
+                <property name="text">
+                 <string>battleportrait.png</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
@@ -140,6 +189,12 @@ Create a new character or open an existing character from the File menu to get s
               <width>256</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="toolTip">
+             <string>The character name to show ingame</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
             </property>
             <property name="placeholderText">
              <string>Display name</string>
@@ -512,6 +567,13 @@ Create a new character or open an existing character from the File menu to get s
             </layout>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="btn_openFolder">
+            <property name="text">
+             <string>Open custom character folder</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -520,20 +582,32 @@ Create a new character or open an existing character from the File menu to get s
        <attribute name="title">
         <string>Animations</string>
        </attribute>
+       <attribute name="toolTip">
+        <string>Edit animations for your base character</string>
+       </attribute>
       </widget>
       <widget class="EffectAnimatorWidget" name="tab_effects">
        <attribute name="title">
         <string>Effects</string>
+       </attribute>
+       <attribute name="toolTip">
+        <string>Custom particle effects that your character can use with CharLoader's CustomEffectSprite</string>
        </attribute>
       </widget>
       <widget class="CompanionAnimatorWidget" name="tab_companions">
        <attribute name="title">
         <string>Companions</string>
        </attribute>
+       <attribute name="toolTip">
+        <string>Extra characters that exist alongside your character, such as NPCs, or transformations for the base character</string>
+       </attribute>
       </widget>
       <widget class="QWidget" name="tab_cmdlist">
        <attribute name="title">
         <string>Command List</string>
+       </attribute>
+       <attribute name="toolTip">
+        <string>Design for your character's command list menu</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_9">
         <item>
@@ -700,8 +774,7 @@ Create a new character or open an existing character from the File menu to get s
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
- </resources>
+ <resources/>
  <connections/>
  <slots>
   <slot>slot1()</slot>

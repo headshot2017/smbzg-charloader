@@ -1,5 +1,5 @@
 import os
-import copy
+import webbrowser
 
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
@@ -33,6 +33,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_results.valueChanged.connect(self.onYOffsetResultsChanged)
         self.spinbox_offsetX_ingame.valueChanged.connect(self.onXOffsetIngameChanged)
         self.spinbox_offsetY_ingame.valueChanged.connect(self.onYOffsetIngameChanged)
+        self.btn_openFolder.clicked.connect(self.onOpenFolder)
 
         self.btn_addCmd.clicked.connect(self.onAddCommand)
 
@@ -117,6 +118,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             self.tab_anims.reloadTree()
         if "effects" in jsonFile:
             self.tab_effects.reloadTree()
+        if characterdata.companionJson:
+            self.tab_companions.reloadTree()
 
         if "commandList" in jsonFile:
             commandList = jsonFile["commandList"]
@@ -200,6 +203,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.tab_anims.onRefresh()
 
     @QtCore.pyqtSlot()
+    def onOpenFolder(self):
+        webbrowser.open(gamepath.getCharacterPath(characterdata.name))
+
+    @QtCore.pyqtSlot()
     def onAddCommand(self):
         self.addCommand()
 
@@ -254,7 +261,16 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if self.tabWidget.tabText(0) == "Welcome":
             self.tabWidget.removeTab(0)
 
-        self.addNecessaryAnimations()
+        self.tab_anims.addNecessaryAnimations()
+
+        QtWidgets.QMessageBox.information(self, "Done",
+            "Character '%s' created.\n" % (charName) +
+            "Remember to do the following:\n" +
+            "* Add a sprite sheet for your character with the file name 'sheet.png'\n" +
+            "* Add portrait images for your character: portrait.png and battleportrait.png\n" +
+            "* OPTIONAL: Add custom sounds to the 'sounds' directory: .wav, .ogg and .mp3 files are accepted\n" +
+            "* OPTIONAL: Add custom particle images to the 'effects' directory: .png only"
+        )
 
         self.statusbar.showMessage("Created character '%s'" % charName, 3000)
 

@@ -143,7 +143,50 @@ class ActionTab_GeneralEffect(BaseActionTab):
     def onChangeScaleY(self, value):
         if "scale" not in self.effect: self.effect["scale"] = [1, 1]
         self.effect["scale"][1] = value
-        self.valueChanged.emit()        
+        self.valueChanged.emit()
+
+
+class ActionTab_Companion(BaseActionTab):
+    def __init__(self, parent, companionName):
+        super().__init__(parent)
+        uic.loadUi("ui/actiontab_companion.ui", self)
+
+        self.companionName = companionName
+        self.companion = characterdata.companionJson[companionName]
+
+        self.spinbox_offsetX.setValue(self.companion.get("general", {}).get("offset", [0, 0])[0])
+        self.spinbox_offsetX.setValue(self.companion.get("general", {}).get("offset", [0, 0])[1])
+        self.spinbox_scale.setValue(self.companion.get("general", {}).get("scale", 0.4))
+
+        self.btn_openFolder.clicked.connect(self.onOpenCompanionFolder)
+        self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
+        self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
+        self.spinbox_scale.valueChanged.connect(self.onChangeScale)
+
+    @QtCore.pyqtSlot()
+    def onOpenCompanionFolder(self):
+        path = gamepath.getCharacterPath(characterdata.name)
+        webbrowser.open("%s/companions/%s" % (path, self.companionName))
+
+    @QtCore.pyqtSlot(float)
+    def onChangeOffsetX(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        if "offset" not in self.companion["general"]: self.companion["general"]["offset"] = [0, 0]
+        self.companion["general"]["offset"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeOffsetY(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        if "offset" not in self.companion["general"]: self.companion["general"]["offset"] = [0, 0]
+        self.companion["general"]["offset"][1] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeScale(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        self.companion["general"]["scale"] = value
+        self.valueChanged.emit()
 
 
 class ActionTab_Frame(BaseActionTab):
