@@ -262,6 +262,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             self.tabWidget.removeTab(0)
 
         self.tab_anims.addNecessaryAnimations()
+        open(path+"/portrait.png", "wb").write(open("images/default_portrait.png", "rb").read())
+        open(path+"/battleportrait.png", "wb").write(open("images/default_battleportrait.png", "rb").read())
 
         QtWidgets.QMessageBox.information(self, "Done",
             "Character '%s' created.\n" % (charName) +
