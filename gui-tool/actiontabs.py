@@ -1,6 +1,11 @@
+import os
+import webbrowser
+
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
 import characterdata
+import gamepath
+
 
 class BaseActionTab(QtWidgets.QWidget):
     valueChanged = QtCore.pyqtSignal()
@@ -62,6 +67,83 @@ class ActionTab_General(BaseActionTab):
         if "scale" not in self.anim: self.anim["scale"] = [1, 1]
         self.anim["scale"][1] = value
         self.valueChanged.emit()
+
+
+class ActionTab_GeneralEffect(BaseActionTab):
+    def __init__(self, parent, effect):
+        super().__init__(parent)
+        uic.loadUi("ui/actiontab_generalEffect.ui", self)
+
+        self.effect = effect
+
+        self.checkbox_interpolate.setChecked(effect["interpolate"] if "interpolate" in effect else True)
+        self.spinbox_offsetX.setValue(effect["offset"][0] if "offset" in effect else 0)
+        self.spinbox_offsetY.setValue(effect["offset"][1] if "offset" in effect else 0)
+        self.spinbox_scaleX.setValue(effect["scale"][0] if "scale" in effect else 1)
+        self.spinbox_scaleY.setValue(effect["scale"][1] if "scale" in effect else 1)
+
+        self.checkbox_interpolate.stateChanged.connect(self.onSetInterpolate)
+        self.combobox_textures.currentTextChanged.connect(self.onChangeTexture)
+        self.btn_openFolder.clicked.connect(self.onOpenEffectsFolder)
+        self.btn_refresh.clicked.connect(self.onRefreshClicked)
+        self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
+        self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
+        self.spinbox_scaleX.valueChanged.connect(self.onChangeScaleX)
+        self.spinbox_scaleY.valueChanged.connect(self.onChangeScaleY)
+
+        self.refreshList()
+
+    def refreshList(self):
+        self.combobox_textures.clear()
+        for _fx in characterdata.effects:
+            fx = os.path.splitext(_fx)[0]
+            self.combobox_textures.addItem(fx)
+            if "texture" in self.effect and fx == self.effect["texture"]:
+                self.combobox_textures.setCurrentIndex(self.combobox_textures.count()-1)
+
+
+    @QtCore.pyqtSlot(int)
+    def onSetInterpolate(self, value):
+        self.effect["interpolate"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(str)
+    def onChangeTexture(self, value):
+        self.effect["texture"] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot()
+    def onOpenEffectsFolder(self):
+        path = gamepath.getCharacterPath(characterdata.name)
+        webbrowser.open("%s/effects" % path)
+
+    @QtCore.pyqtSlot()
+    def onRefreshClicked(self):
+        self.refreshList()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeOffsetX(self, value):
+        if "offset" not in self.effect: self.effect["offset"] = [0, 0]
+        self.effect["offset"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeOffsetY(self, value):
+        if "offset" not in self.effect: self.effect["offset"] = [0, 0]
+        self.effect["offset"][1] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeScaleX(self, value):
+        if "scale" not in self.effect: self.effect["scale"] = [1, 1]
+        self.effect["scale"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeScaleY(self, value):
+        if "scale" not in self.effect: self.effect["scale"] = [1, 1]
+        self.effect["scale"][1] = value
+        self.valueChanged.emit()        
 
 
 class ActionTab_Frame(BaseActionTab):
@@ -246,10 +328,11 @@ class ActionTab_Color(BaseActionTab):
 
         self.colorView.setColor(QtGui.QColor(actionInfo[0], actionInfo[1], actionInfo[2]))
         self.colorView.changed.connect(self.onChange)
+        self.colorView.allowAlpha = True
 
     @QtCore.pyqtSlot(QtGui.QColor)
     def onChange(self, color):
-        self.action["color"] = [color.red(), color.green(), color.blue()]
+        self.action["color"] = [color.red(), color.green(), color.blue(), color.alpha()]
         self.valueChanged.emit()
 
 

@@ -7,17 +7,20 @@ class ColorGraphicsView(QtWidgets.QGraphicsView):
         super().__init__(mainWindow)
         self.mainWindow = mainWindow
 
-        self.theScene = QtWidgets.QGraphicsScene(0, 0, 128, 128)
+        self.theScene = QtWidgets.QGraphicsScene(0, 0, 64, 64)
         self.setScene(self.theScene)
         self.setColor(QtGui.QColor(0, 0, 0))
+
+        self.allowAlpha = False
 
     def setColor(self, color):
         self.setBackgroundBrush(QtGui.QBrush(color))
 
     def mousePressEvent(self, ev):
-        dialog = QtWidgets.QColorDialog()
-        res = dialog.exec_()
-        if res == 1:
-            color = dialog.currentColor()
+        kwargs = {}
+        if self.allowAlpha: kwargs = {"options": QtWidgets.QColorDialog.ShowAlphaChannel}
+
+        color = QtWidgets.QColorDialog.getColor(self.backgroundBrush().color(), self, **kwargs)
+        if color.isValid():
             self.setColor(color)
             self.changed.emit(color)

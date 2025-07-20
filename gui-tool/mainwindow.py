@@ -114,7 +114,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                     self.view_secondaryColor.setColor(QtGui.QColor(secondary[0], secondary[1], secondary[2]))
 
         if "anims" in jsonFile:
-            self.tab_anims.reloadAnimationsTree()
+            self.tab_anims.reloadTree()
+        if "effects" in jsonFile:
+            self.tab_effects.reloadTree()
 
         if "commandList" in jsonFile:
             commandList = jsonFile["commandList"]
@@ -288,7 +290,12 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def onActionPrintJson(self):
+        print("character.json:")
         print(characterdata.jsonFile)
+        for companion in characterdata.companionJson:
+            print()
+            print("'%s' companion.json:" % companion)
+            print(characterdata.companionJson[companion])
 
     @QtCore.pyqtSlot()
     def onActionQuit(self):

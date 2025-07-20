@@ -37,6 +37,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
         self.fullPixmap = None
         self.animDict = None
+        self.globalOffset = [0, 0]
+        self.globalScale = 1
 
         self.frame = 0
         self.animDuration = 0
@@ -44,6 +46,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
     def setSprite(self, x, y, w, h):
         if not self.fullPixmap: return
+        if w < 0: w = self.fullPixmap.width()
+        if h < 0: h = self.fullPixmap.height()
         self.pixmapItem.setPixmap(self.fullPixmap.copy(x, y, w, h))
         self.pixmapItem.setOffset(-w/2, -h/2)
 
@@ -88,13 +92,13 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             return False
 
         globalAnimOffset = convertPosToUnity(self.animDict["offset"] if "offset" in self.animDict else [0, 0])
-        globalCharOffset = convertPosToUnity(characterdata.jsonFile["general"]["offset"]["ingame"])
-        globalAnimOffset[0] += globalCharOffset[0]
-        globalAnimOffset[1] += globalCharOffset[1]
+        globalOffset = convertPosToUnity(self.globalOffset)
+        globalAnimOffset[0] += globalOffset[0]
+        globalAnimOffset[1] += globalOffset[1]
 
         globalAnimScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
-        globalCharScale = convertScaleToUnity(characterdata.jsonFile["general"]["scale"]["ingame"])
-        globalAnimScale = [globalAnimScale[0] * globalCharScale, globalAnimScale[1] * globalCharScale]
+        globalScale = convertScaleToUnity(self.globalScale)
+        globalAnimScale = [globalAnimScale[0] * globalScale, globalAnimScale[1] * globalScale]
 
         frame = self.animDict["frames"][self.frame]
 
@@ -113,6 +117,11 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
         if playSound and "sound" in frame and frame["sound"] in characterdata.sounds:
             characterdata.sounds[frame["sound"]].play()
+
+        if "color" in frame:
+            self.pixmapItem.setOpacity(frame["color"][3]/255. if len(frame["color"]) >= 4 else 1)
+        else:
+            self.pixmapItem.setOpacity(1)
 
         spriteFrame = frame
         spriteFrameInd = self.frame
@@ -145,12 +154,12 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
     def interpolateFrames(self, x):
         globalAnimOffset = self.animDict["offset"] if "offset" in self.animDict else [0, 0]
-        globalCharOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
-        globalAnimOffset = [globalAnimOffset[0] + globalCharOffset[0], globalAnimOffset[1] + globalCharOffset[1]]
+        globalOffset = self.globalOffset
+        globalAnimOffset = [globalAnimOffset[0] + globalOffset[0], globalAnimOffset[1] + globalOffset[1]]
 
         globalAnimScale = self.animDict["scale"] if "scale" in self.animDict else [1, 1]
-        globalCharScale = convertScaleToUnity(characterdata.jsonFile["general"]["scale"]["ingame"])
-        globalAnimScale = [globalAnimScale[0] * globalCharScale, globalAnimScale[1] * globalCharScale]
+        globalScale = convertScaleToUnity(self.globalScale)
+        globalAnimScale = [globalAnimScale[0] * globalScale, globalAnimScale[1] * globalScale]
 
         currAction = self.animDict["frames"][self.frame]
         if currAction["delay"] <= 0: return
@@ -203,6 +212,16 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             self.hitboxItem.setBrush(QtGui.QColor(255, 0, 0, 0 if not on else 128))
 
 
+        colorLerp = [
+            lerp(currAction["color"][0] if "color" in currAction else 255, nextAction["color"][0] if "color" in nextAction else 255, x),
+            lerp(currAction["color"][1] if "color" in currAction else 255, nextAction["color"][1] if "color" in nextAction else 255, x),
+            lerp(currAction["color"][2] if "color" in currAction else 255, nextAction["color"][2] if "color" in nextAction else 255, x),
+            255
+        ]
+        currAlpha = currAction["color"][3] if ("color" in currAction and len(currAction["color"]) >= 4) else 255
+        nextAlpha = nextAction["color"][3] if ("color" in nextAction and len(nextAction["color"]) >= 4) else 255
+        colorLerp[3] = lerp(currAlpha, nextAlpha, x)
+
         angleLerp = lerp(
             currAction["angle"] if "angle" in currAction else 0,
             nextAction["angle"] if "angle" in nextAction else 0,
@@ -240,6 +259,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         self.pixmapItem.setRotation(angleLerp)
         self.pixmapItem.moveBy(*offsetLerp)
         self.pixmapItem.setTransform(self.pixmapItem.transform().scale(*scaleLerp))
+        self.pixmapItem.setOpacity(colorLerp[3]/255.)
 
     def getTimeFrames(self):
         timeToNextFrame = 0
@@ -256,12 +276,17 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         return self.animDuration
 
     def updateCurrentTime(self, currentTime):
+        if not self.animDict:
+            self.stop()
+            return
+
         timeToNextFrame, timeFromLastFrame = self.getTimeFrames()
 
         if "interpolate" not in self.animDict or self.animDict["interpolate"]:
             a = currentTime - timeFromLastFrame
             b = timeToNextFrame - timeFromLastFrame
-            self.interpolateFrames(a/b)
+            if b != 0:
+                self.interpolateFrames(a/b)
 
         while currentTime >= timeToNextFrame:
             self.frame += 1

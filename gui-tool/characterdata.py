@@ -11,7 +11,7 @@ name = ""
 jsonFile = None
 sounds = {}
 effects = []
-companions = []
+companionJson = {}
 
 __defaultaction = {
     "frame": [0, 0, 0, 0],
@@ -57,12 +57,12 @@ def defaultCharacterData():
     }
 
 def reset(defaultName=""):
-    global name, jsonFile, sounds, effects, companions
+    global name, jsonFile, sounds, effects, companionJson
     name = defaultName
     jsonFile = defaultCharacterData()
     sounds = {}
     effects = []
-    companions = []
+    companionJson = {}
 
 def load(charName):
     global name, jsonFile, sounds, effects, companions
@@ -80,7 +80,12 @@ def load(charName):
             sounds[os.path.splitext(f)[0]] = mixer.Sound("%s/sounds/%s" % (path, f))
 
     effects = os.listdir("%s/effects" % path) if os.path.exists("%s/effects" % path) else []
-    companions = os.listdir("%s/companions" % path) if os.path.exists("%s/companions" % path) else []
+
+    if os.path.exists("%s/companions" % path):
+        for f in os.listdir("%s/companions" % path):
+            if not os.path.isdir("%s/companions/%s" % (path, f)): continue
+            jsonFilePath = "%s/companions/%s/companion.json" % (path, f)
+            companionJson[f] = json.load(open(jsonFilePath)) if os.path.exists(jsonFilePath) else {}
 
     return jsonFile
 
@@ -90,4 +95,8 @@ def save():
 
     path = gamepath.getCharacterPath(name)
     json.dump(jsonFile, open("%s/character.json" % path, "w"), indent=2)
+
+    for companion in companionJson:
+        json.dump(companionJson[companion], open("%s/companions/%s/companion.json" % (path, companion), "w"), indent=2)
+
     return True
