@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SMBZ-G CharLoader tool</string>
+   <string>SMBZ-G CharLoader Editor</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -620,7 +620,7 @@ Create a new character or open an existing character from the File menu to get s
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>980</width>
+             <width>98</width>
              <height>18</height>
             </rect>
            </property>
