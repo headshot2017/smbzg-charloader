@@ -27,7 +27,7 @@ def init():
 def getCharacterPath(name):
     return "%s/SMBZ-G_Data/StreamingAssets/CustomChars/%s" % (smbzgPath, name)
 
-def askGamePath(parent):
-    fileName, type = QtWidgets.QFileDialog.getOpenFileName(parent, "Find SMBZ-G.exe", ".", "SMBZ-G.exe")
+def askGamePath():
+    fileName, type = QtWidgets.QFileDialog.getOpenFileName(None, "Find SMBZ-G.exe", ".", "SMBZ-G.exe")
     print("Game path: %s" % os.path.dirname(fileName))
     return os.path.dirname(fileName)
