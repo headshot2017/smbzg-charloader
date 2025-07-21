@@ -63,7 +63,7 @@ public class CharLoaderComponent : MonoBehaviour
                     else if (File.Exists($"{path}/sounds/{soundName}.ogg"))
                         www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.OGGVORBIS);
                     else if (File.Exists($"{path}/sounds/{soundName}.mp3"))
-                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.MPEG);
+                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.mp3", AudioType.MPEG);
 
                     if (www != null)
                     {
