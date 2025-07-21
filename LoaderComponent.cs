@@ -51,24 +51,27 @@ public class CharLoaderComponent : MonoBehaviour
             cc.battlePortrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
 
             cc.sounds = new Dictionary<string, AudioClip>();
-            foreach (string _soundName in Directory.GetFiles($"{path}/sounds"))
+            if (Directory.Exists($"{path}/sounds"))
             {
-                string soundPath = _soundName.Replace('\\', '/');
-                string soundName = Path.GetFileNameWithoutExtension(soundPath);
-                UnityWebRequest www = null;
-                if (File.Exists($"{path}/sounds/{soundName}.wav"))
-                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.wav", AudioType.WAV);
-                else if (File.Exists($"{path}/sounds/{soundName}.ogg"))
-                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.OGGVORBIS);
-                else if (File.Exists($"{path}/sounds/{soundName}.mp3"))
-                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.MPEG);
-
-                if (www != null)
+                foreach (string _soundName in Directory.GetFiles($"{path}/sounds"))
                 {
-                    www.SendWebRequest();
-                    while (!www.isDone) ;
+                    string soundPath = _soundName.Replace('\\', '/');
+                    string soundName = Path.GetFileNameWithoutExtension(soundPath);
+                    UnityWebRequest www = null;
+                    if (File.Exists($"{path}/sounds/{soundName}.wav"))
+                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.wav", AudioType.WAV);
+                    else if (File.Exists($"{path}/sounds/{soundName}.ogg"))
+                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.OGGVORBIS);
+                    else if (File.Exists($"{path}/sounds/{soundName}.mp3"))
+                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.MPEG);
 
-                    cc.sounds[soundName] = DownloadHandlerAudioClip.GetContent(www);
+                    if (www != null)
+                    {
+                        www.SendWebRequest();
+                        while (!www.isDone) ;
+
+                        cc.sounds[soundName] = DownloadHandlerAudioClip.GetContent(www);
+                    }
                 }
             }
 
