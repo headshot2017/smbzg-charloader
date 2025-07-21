@@ -246,6 +246,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             os.makedirs(path)
 
         extraPaths = [
+            path+"/music",
             path+"/sounds",
             path+"/effects",
             path+"/companions"
