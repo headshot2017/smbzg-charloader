@@ -28,7 +28,10 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 
 * **effects:** Assortment of png files that can be used as custom particle effects with CustomEffectSprite.
 * **companions:** Extra "characters" that can be used as NPCs or transformations for the base character.
-* **sounds:** Folder containing sound files
+* **sounds:** Folder containing sound files.
+  * Special sound effects:
+    * **jump**: Automatically replaces the default DBZ jump with this file when the character loads.
+    * **land**: Automatically replaces the default DBZ land with this file when the character loads.
 * **music:** Folder containing music files. These can be played ingame using SMBZ-G's "PersistantBGM" class.
 * **sheet.png**: Character's sprite sheet
 * **battleportrait.png**: Portrait used in the ingame battle HUD
