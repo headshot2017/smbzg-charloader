@@ -67,5 +67,6 @@ public class CustomCharacter
     public Dictionary<string, CustomEffectEntry> effects;
     public Dictionary<string, CharacterCompanion> companions;
     public Dictionary<string, AudioClip> sounds;
+    public Dictionary<string, AudioClip> music;
     public float getUpTimer;
 }

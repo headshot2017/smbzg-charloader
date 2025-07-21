@@ -75,6 +75,45 @@ public class CharLoaderComponent : MonoBehaviour
                 }
             }
 
+            cc.music = new Dictionary<string, AudioClip>();
+            if (Directory.Exists($"{path}/music"))
+            {
+                foreach (string _musicName in Directory.GetFiles($"{path}/music"))
+                {
+                    string musicPath = _musicName.Replace('\\', '/');
+                    string musicName = Path.GetFileNameWithoutExtension(musicPath);
+                    Melon<CharLoader.Core>.Logger.Msg($"Load music {musicName}");
+
+                    UnityWebRequest www = null;
+                    DownloadHandlerAudioClip handler = null;
+
+                    if (File.Exists($"{path}/music/{musicName}.wav"))
+                    {
+                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.wav", AudioType.WAV);
+                        handler = new DownloadHandlerAudioClip(string.Empty, AudioType.WAV);
+                    }
+                    else if (File.Exists($"{path}/music/{musicName}.ogg"))
+                    {
+                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.ogg", AudioType.OGGVORBIS);
+                        handler = new DownloadHandlerAudioClip(string.Empty, AudioType.OGGVORBIS);
+                    }
+                    else if (File.Exists($"{path}/music/{musicName}.mp3"))
+                    {
+                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.mp3", AudioType.MPEG);
+                        handler = new DownloadHandlerAudioClip(string.Empty, AudioType.MPEG);
+                    }
+
+                    if (www != null)
+                    {
+                        handler.streamAudio = true;
+                        www.downloadHandler = handler;
+                        www.SendWebRequest();
+                        yield return www;
+                        cc.music[musicName] = handler.audioClip;
+                    }
+                }
+            }
+
             CharacterData_SO Data = ScriptableObject.CreateInstance<CharacterData_SO>();
             Data.Prefab_SpecialCharacterSettingsUI = BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI;
             Data.Character = (BattleCache.CharacterEnum)(100 + CharLoader.Core.customCharacters.Count);
