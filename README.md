@@ -18,6 +18,8 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
                 │       └── companion.json
                 ├── sounds/
                 │   └── .wav, .ogg or .mp3 files
+                ├── music/
+                │   └── .wav, .ogg or .mp3 files
                 ├── sheet.png
                 ├── battleportrait.png
                 ├── portrait.png
@@ -27,6 +29,7 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 * **effects:** Assortment of png files that can be used as custom particle effects with CustomEffectSprite.
 * **companions:** Extra "characters" that can be used as NPCs or transformations for the base character.
 * **sounds:** Folder containing sound files
+* **music:** Folder containing music files. These can be played ingame using SMBZ-G's "PersistantBGM" class.
 * **sheet.png**: Character's sprite sheet
 * **battleportrait.png**: Portrait used in the ingame battle HUD
 * **portrait.png**: Portrait used in the character select screen
