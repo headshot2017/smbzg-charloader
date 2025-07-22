@@ -95,7 +95,7 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
                 self.actionTabs.addTab(widget, action)
 
         frameIndSearch = frameInd
-        while frameIndSearch >= 0 and "frame" not in characterdata.jsonFile["effects"][fxName]["frames"][frameIndSearch]:
+        while frameIndSearch >= 0 and "frame" not in characterdata.jsonFile["anims"][animName]["frames"][frameIndSearch]:
             frameIndSearch -= 1
             continue
 
