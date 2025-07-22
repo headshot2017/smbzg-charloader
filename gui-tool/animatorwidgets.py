@@ -1218,14 +1218,14 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             companionTree = item.parent()
             companionName = companionTree.text(0)
             del characterdata.companionJson[companionName]["anims"][item.text(0)]
-        elif item.itemLevel == 1:
+        elif item.itemLevel == 2:
             animTree = item.parent()
             companionTree = animTree.parent()
             animName = animTree.text(0)
             frameInd = animTree.indexOfChild(item)
             companionName = companionTree.text(0)
             del characterdata.companionJson[companionName]["anims"][animName]["frames"][frameInd]
-        elif item.itemLevel == 2:
+        elif item.itemLevel == 3:
             rootFrameTree = item.parent()
             animTree = rootFrameTree.parent()
             companionTree = animTree.parent()
