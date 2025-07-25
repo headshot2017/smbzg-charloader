@@ -16,8 +16,17 @@ public static class SMBZGlobals
 
     public static bool IsThereTwoOrLessPlayersAreAlive()
     {
-        MethodInfo IsThereTwoOrLessPlayersAreAlive = typeof(BattleController).GetMethod("IsThereTwoOrLessPlayersAreAlive", BindingFlags.NonPublic | BindingFlags.Instance);
-        return (bool)IsThereTwoOrLessPlayersAreAlive.Invoke(BattleController.instance, null);
+        return ActiveCharacterControlList.Count((CharacterControl c) => c.ParticipantDataReference.Health.GetCurrent() > 0f) <= 2;
+    }
+
+    public static bool IsThereMoreThanTwoPlayersAreAlive()
+    {
+        return ActiveCharacterControlList.Count((CharacterControl c) => c.ParticipantDataReference.Health.GetCurrent() > 0f) > 2;
+    }
+
+    public static bool IsThereMoreThanTwoPlayersInThisBattle()
+    {
+        return ActiveCharacterControlList.Count > 2;
     }
 
     public static ClashAndBurstManager ClashAndBurstManager =>
