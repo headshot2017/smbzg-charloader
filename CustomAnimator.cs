@@ -8,7 +8,7 @@ public class CustomAnimator : MonoBehaviour
     public CustomAnimation m_CurrentAnimation = null;
     AttackBundle m_CurrentAttack;
     HitBox m_Hitbox;
-    Dictionary<AudioClip, AudioSource> m_PlayingSounds = null;
+    Dictionary<AudioClip, AudioSource> m_PlayingSounds = new Dictionary<AudioClip, AudioSource>();
 
     UnityEngine.UI.Image m_CompImage;
     SpriteRenderer m_CompSpriteRenderer;
@@ -72,7 +72,6 @@ public class CustomAnimator : MonoBehaviour
         m_OriginalAnimator = GetComponent<Animator>();
         if (m_Animations == null || m_CurrentAnimation == null)
         {
-            m_PlayingSounds = new Dictionary<AudioClip, AudioSource>();
             m_CompImage = null;
             m_CompSpriteRenderer = null;
             m_GlobalScale = 1;
