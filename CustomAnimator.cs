@@ -153,8 +153,7 @@ public class CustomAnimator : MonoBehaviour
 
         if (currAction.sound != null)
         {
-            MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool) }, null);
-            PlaySoundMethod.Invoke(SoundCache.ins, new object[] { currAction.sound, 1f, true, null, 1f, false });
+            SMBZGlobals.PlaySound(currAction.sound);
         }
 
         if (currAction.setAnim != null)

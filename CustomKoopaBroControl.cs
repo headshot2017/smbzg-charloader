@@ -235,8 +235,7 @@ public class CustomKoopaBroControl : KoopaBroControl
         Comp_Animator.SetBool("InputingLeft", MoveLeft);
         Comp_Animator.SetBool("InputingRight", MoveRight);
 
-        MovementRushManager MRManager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-        if (BattleController.instance.BackgroundTreadmillEffect != 0 && ActualLeader != null && (ActualLeader.IsHurt || MRManager.ActiveMovementRush != null))
+        if (BattleController.instance.BackgroundTreadmillEffect != 0 && ActualLeader != null && (ActualLeader.IsHurt || SMBZGlobals.MovementRushManager.ActiveMovementRush != null))
         {
             if (BattleController.instance.BackgroundTreadmillEffect == BattleController.BackgroundTreadmillEffectENUM.RushLeft)
             {

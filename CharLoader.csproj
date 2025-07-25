@@ -278,6 +278,7 @@
 		<Compile Include="CustomKoopaBroControl.cs" />
 		<Compile Include="CustomKoopaRedControl.cs" />
 		<Compile Include="LoaderComponent.cs" />
+		<Compile Include="SMBZGlobals.cs" />
 	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">

@@ -239,7 +239,7 @@ public class CustomBaseCharacter : BaseCharacter
     {
         base.Update();
 
-        if ((bool)typeof(BattleController).GetField("IsPaused", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(BattleController.instance))
+        if (SMBZGlobals.IsPaused)
         {
             return;
         }
@@ -252,9 +252,7 @@ public class CustomBaseCharacter : BaseCharacter
             Comp_CustomAnimator.Play(stateNameHash);
         }
 
-        BattleController.BattleStateENUM BattleState = (BattleController.BattleStateENUM)
-            typeof(BattleController).GetField("BattleState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-        bool MovementRushIntro = Comp_Animator.GetBool(AP_IsMovementRushing) && BattleState == BattleController.BattleStateENUM.Normal;
+        bool MovementRushIntro = Comp_Animator.GetBool(AP_IsMovementRushing) && SMBZGlobals.BattleState == BattleController.BattleStateENUM.Normal;
 
         Comp_CustomAnimator.m_CurrentProperties.hspeed = Comp_Animator.GetFloat("hspeed");
         Comp_CustomAnimator.m_CurrentProperties.vspeed = Comp_Animator.GetFloat("vspeed");
@@ -276,8 +274,7 @@ public class CustomBaseCharacter : BaseCharacter
 
         if (MovementRushIntro)
         {
-            MovementRushManager MRManager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-            bool flag = MRManager.ActiveMovementRush?.IsDirectionOfRushRight ?? true;
+            bool flag = SMBZGlobals.MovementRushManager.ActiveMovementRush?.IsDirectionOfRushRight ?? true;
             Comp_CustomAnimator.m_CurrentProperties.hspeed = 9;
             Comp_CustomAnimator.m_CurrentProperties.InputingLeft = !flag;
             Comp_CustomAnimator.m_CurrentProperties.InputingRight = flag;
@@ -289,12 +286,8 @@ public class CustomBaseCharacter : BaseCharacter
 
     protected override void Update_MovementRushAnimator()
     {
-        MovementRushManager MRManager = (MovementRushManager)typeof(BattleController).GetField("MovementRushManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-        BattleController.BattleStateENUM BattleState = (BattleController.BattleStateENUM)
-            typeof(BattleController).GetField("BattleState", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
-
-        bool flag = MRManager.ActiveMovementRush?.IsDirectionOfRushRight ?? true;
-        if (BattleState == BattleController.BattleStateENUM.MovementRush_Grounded)
+        bool flag = SMBZGlobals.MovementRushManager.ActiveMovementRush?.IsDirectionOfRushRight ?? true;
+        if (SMBZGlobals.BattleState == BattleController.BattleStateENUM.MovementRush_Grounded)
         {
             if (IsHurt || GetPlayerState() != PlayerStateENUM.Idle || GetMovementRushState() != MovementRushStateENUM.Idle)
                 return;
@@ -317,7 +310,7 @@ public class CustomBaseCharacter : BaseCharacter
         }
         else
         {
-            if (BattleState != BattleController.BattleStateENUM.MovementRush_Aerial)
+            if (SMBZGlobals.BattleState != BattleController.BattleStateENUM.MovementRush_Aerial)
                 return;
 
             if (!IsHurt && GetPlayerState() == PlayerStateENUM.Idle && GetMovementRushState() == MovementRushStateENUM.Idle)
@@ -403,8 +396,7 @@ public class CustomBaseCharacter : BaseCharacter
     public IEnumerator LateCustomAnimatorDisable()
     {
         yield return new WaitForEndOfFrame();
-        FieldInfo IsFrozen = typeof(BaseCharacter).GetField("IsFrozen", BindingFlags.Instance | BindingFlags.NonPublic);
-        if ((bool)IsFrozen.GetValue(this))
+        if ((bool)GetField("IsFrozen"))
         {
             Comp_CustomAnimator.enabled = false;
         }
@@ -426,32 +418,27 @@ public class CustomBaseCharacter : BaseCharacter
 
     protected override void OnMovementRush_Dodge()
     {
-        MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool) }, null);
-        PlaySoundMethod.Invoke(SoundCache.ins, new object[] { SoundEffect_MR_Dodge, 0.75f, true, null, 1f, false });
+        SMBZGlobals.PlaySound(SoundEffect_MR_Dodge);
     }
 
     public override void OnMovementRush_DodgeSuccess()
     {
-        MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool) }, null);
-        PlaySoundMethod.Invoke(SoundCache.ins, new object[] { SoundEffect_MR_DodgeSuccess, 0.75f, true, null, 1f, false });
+        SMBZGlobals.PlaySound(SoundEffect_MR_DodgeSuccess);
     }
 
     protected override void OnMovementRush_Engage()
     {
-        MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool) }, null);
-        PlaySoundMethod.Invoke(SoundCache.ins, new object[] { SoundEffect_MR_Engage, 1f, true, null, 1f, false });
+        SMBZGlobals.PlaySound(SoundEffect_MR_Engage);
     }
 
     protected override void OnMovementRush_Whiff()
     {
-        MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool) }, null);
-        PlaySoundMethod.Invoke(SoundCache.ins, new object[] { SoundEffect_MR_Whiff, 1f, true, null, 1f, false });
+        SMBZGlobals.PlaySound(SoundEffect_MR_Whiff);
     }
 
     protected override void OnMovementRush_Strike()
     {
-        MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool) }, null);
-        PlaySoundMethod.Invoke(SoundCache.ins, new object[] { SoundEffect_MR_Strike, 1f, true, null, 1f, false });
+        SMBZGlobals.PlaySound(SoundEffect_MR_Strike);
     }
 
     public override void PrepareAnAttack(AttackBundle AttackToPrepare, float MinimumPrepTime = 0)
