@@ -1,3 +1,5 @@
+import random
+
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
 import gamepath
@@ -40,9 +42,15 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         self.globalOffset = [0, 0]
         self.globalScale = 1
 
+        self.playingSounds = set()
         self.frame = 0
         self.animDuration = 0
         self.currentLoopChanged.connect(self.onLoop)
+
+    def clearSounds(self):
+        for snd in self.playingSounds:
+            characterdata.sounds[snd].stop()
+        self.playingSounds.clear()
 
     def setSprite(self, x, y, w, h):
         if not self.fullPixmap: return
@@ -75,7 +83,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
     def setFrame(self, ind):
         self.frame = ind
-        self.onFrameChange()
+        self.onFrameChange(False)
 
     def refresh(self):
         if not self.animDict: return
@@ -115,8 +123,24 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             globalAnimScale[1] * (frame["scale"][1] if "scale" in frame else 1)
         ))
 
-        if playSound and "sound" in frame and frame["sound"] in characterdata.sounds:
-            characterdata.sounds[frame["sound"]].play()
+        if playSound and "sound" in frame:
+            snd = ""
+            loop = False
+
+            # CharLoader v1.2: new SoundAction class
+            if type(frame["sound"]) == str:
+                snd = frame["sound"]
+                loop = False
+            else:
+                snd = random.choice(frame["sound"]["sounds"])
+                loop = frame["sound"]["loop"]
+
+            if snd in characterdata.sounds:
+                if not loop:
+                    characterdata.sounds[snd].play()
+                elif snd not in self.playingSounds:
+                    characterdata.sounds[snd].play(loops=-1)
+                    self.playingSounds.add(snd)
 
         if "color" in frame:
             self.pixmapItem.setOpacity(frame["color"][3]/255. if len(frame["color"]) >= 4 else 1)
@@ -274,6 +298,13 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
     def duration(self):
         return self.animDuration
+
+    def updateState(self, oldState, newState):
+        if newState == 0:
+            self.frame = 0
+            self.onFrameChange()
+        elif newState == 2:
+            self.clearSounds()
 
     def updateCurrentTime(self, currentTime):
         if not self.animDict:

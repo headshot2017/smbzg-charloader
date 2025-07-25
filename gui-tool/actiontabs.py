@@ -342,23 +342,59 @@ class ActionTab_Sound(BaseActionTab):
         self.actionInfo = actionInfo
         self.action = action
 
-        for snd in characterdata.sounds:
-            self.combobox_soundlist.addItem(snd)
-            if snd == actionInfo:
-                self.combobox_soundlist.setCurrentIndex(self.combobox_soundlist.count()-1)
+        if type(self.actionInfo) == str:
+            self.legacyActionSetup()
 
-        self.combobox_soundlist.currentTextChanged.connect(self.onChange)
-        self.btn_play.clicked.connect(self.onPlay)
+        self.refresh()
 
-    @QtCore.pyqtSlot(str)
-    def onChange(self, newText):
-        self.action["sound"] = newText
+        self.checkbox_loop.setChecked(self.actionInfo["loop"] if "loop" in self.actionInfo else False)
+
+        self.checkbox_loop.stateChanged.connect(self.onSetLoop)
+        self.btn_add.clicked.connect(self.onAdd)
+        self.btn_remove.clicked.connect(self.onRemove)
+
+    def legacyActionSetup(self):
+        # CharLoader v1.2: new SoundAction class
+        newAction = {
+            "sounds": [self.actionInfo],
+            "loop": False
+        }
+
+        self.actionInfo = newAction
+        self.action["sound"] = self.actionInfo
+
+    def refresh(self):
+        self.list_sounds.clear()
+        for snd in self.actionInfo["sounds"]:
+            self.list_sounds.addItem(snd)
+
+
+    @QtCore.pyqtSlot(int)
+    def onSetLoop(self, value):
+        self.actionInfo["loop"] = value > 0
         self.valueChanged.emit()
 
-    @QtCore.pyqtSlot(bool)
-    def onPlay(self, checked):
-        i = self.combobox_soundlist.currentText()
-        characterdata.sounds[i].play()
+    @QtCore.pyqtSlot()
+    def onAdd(self):
+        actionDialog = ActionDialog_Sound(self)
+        if actionDialog.exec():
+            snd = actionDialog.comboBox.currentText()
+            if snd in self.actionInfo["sounds"]: return
+            self.actionInfo["sounds"].append(snd)
+            self.valueChanged.emit()
+            self.refresh()
+
+    @QtCore.pyqtSlot()
+    def onRemove(self):
+        item = self.list_sounds.currentItem()
+        if not item: return
+
+        snd = item.text()
+        if snd not in self.actionInfo["sounds"]: return
+
+        self.actionInfo["sounds"].remove(snd)
+        self.valueChanged.emit()
+        self.refresh()
 
 
 class ActionTab_Color(BaseActionTab):
@@ -434,6 +470,31 @@ class ActionTab_CustomQueue(BaseActionTab):
         self.action = action
 
 
+class ActionDialog(QtWidgets.QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        uic.loadUi("ui/actiondialog.ui", self)
+
+        for action in actionTabsDict:
+            self.comboBox.addItem(action)
+
+
+class ActionDialog_Sound(QtWidgets.QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        uic.loadUi("ui/actiondialog_sound.ui", self)
+
+        for snd in characterdata.sounds:
+            self.comboBox.addItem(snd)
+
+        self.btn_play.clicked.connect(self.onPlay)
+
+    @QtCore.pyqtSlot(bool)
+    def onPlay(self, checked):
+        i = self.comboBox.currentText()
+        characterdata.sounds[i].play()
+
+
 actionTabsDict = {
 	"frame": ActionTab_Frame,
 	"delay": ActionTab_Delay,
@@ -446,12 +507,3 @@ actionTabsDict = {
     "hitbox": ActionTab_Hitbox,
     "callCustomQueue": ActionTab_CustomQueue,
 }
-
-
-class ActionDialog(QtWidgets.QDialog):
-    def __init__(self, parent):
-        super().__init__(parent)
-        uic.loadUi("ui/actiondialog.ui", self)
-
-        for action in actionTabsDict:
-            self.comboBox.addItem(action)
