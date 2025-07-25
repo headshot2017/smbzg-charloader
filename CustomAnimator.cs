@@ -8,6 +8,7 @@ public class CustomAnimator : MonoBehaviour
     public CustomAnimation m_CurrentAnimation = null;
     AttackBundle m_CurrentAttack;
     HitBox m_Hitbox;
+    Dictionary<AudioClip, AudioSource> m_PlayingSounds = null;
 
     UnityEngine.UI.Image m_CompImage;
     SpriteRenderer m_CompSpriteRenderer;
@@ -71,6 +72,7 @@ public class CustomAnimator : MonoBehaviour
         m_OriginalAnimator = GetComponent<Animator>();
         if (m_Animations == null || m_CurrentAnimation == null)
         {
+            m_PlayingSounds = new Dictionary<AudioClip, AudioSource>();
             m_CompImage = null;
             m_CompSpriteRenderer = null;
             m_GlobalScale = 1;
@@ -80,6 +82,20 @@ public class CustomAnimator : MonoBehaviour
             m_Time = 0;
             m_Frame = 0;
         }
+    }
+
+    public void ClearSounds()
+    {
+        foreach (AudioSource snd in m_PlayingSounds.Values)
+        {
+            try
+            {
+                snd.Stop();
+                GameObject.Destroy(snd.gameObject);
+            }
+            catch (NullReferenceException) {}
+        }
+        m_PlayingSounds.Clear();
     }
 
     public void Update()
@@ -153,7 +169,13 @@ public class CustomAnimator : MonoBehaviour
 
         if (currAction.sound != null)
         {
-            SMBZGlobals.PlaySound(currAction.sound);
+            AudioClip sound = currAction.sound.sounds[UnityEngine.Random.Range(0, currAction.sound.sounds.Count)];
+            AudioSource src = SMBZGlobals.PlaySound(sound, DestroyAfterPlay: !currAction.sound.loop);
+            if (currAction.sound.loop && !m_PlayingSounds.ContainsKey(sound))
+            {
+                src.loop = true;
+                m_PlayingSounds[sound] = src;
+            }
         }
 
         if (currAction.setAnim != null)
@@ -195,6 +217,8 @@ public class CustomAnimator : MonoBehaviour
             throw new Exception($"This GameObject ({obj.name}) doesn't have an UI.Image or SpriteRenderer component to set the sprite into");
         }
         if (m_CompImage) m_CompImage.preserveAspect = true;
+
+        ClearSounds();
 
         m_Time = 0;
         m_Frame = 0;
@@ -276,6 +300,7 @@ public class CustomAnimator : MonoBehaviour
     public void Stop()
     {
         if (!m_Playing) return;
+        ClearSounds();
         m_Playing = false;
         m_OriginalAnimator.enabled = true;
         m_CurrentAnimation = null;
@@ -289,6 +314,7 @@ public class CustomAnimator : MonoBehaviour
         if (m_CurrentAnimation != null && m_CurrentAnimation.hash == animHash && !replay)
             return true;
 
+        ClearSounds();
         m_CurrentAnimation = m_Animations[animHash];
         m_OriginalAnimator.enabled = false;
         m_Time = 0;

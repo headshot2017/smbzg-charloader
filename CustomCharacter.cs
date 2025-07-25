@@ -7,11 +7,17 @@ public class HitboxAction
     public Vector2 scale;
 }
 
+public class SoundAction
+{
+    public List<AudioClip> sounds = new List<AudioClip>();
+    public bool loop;
+}
+
 public class AnimAction
 {
     public Sprite frame = null;
     public string setAnim = null;
-    public AudioClip sound = null;
+    public SoundAction sound = null;
     public HitboxAction hitbox = null;
     public Vector2 scale = Vector2.one;
     public Vector2 offset;

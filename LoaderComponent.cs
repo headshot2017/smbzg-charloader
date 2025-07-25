@@ -383,8 +383,24 @@ public class CharLoaderComponent : MonoBehaviour
         if (actionVar.Keys.Contains("angle"))
             action.angle = actionVar["angle"];
 
-        if (actionVar.Keys.Contains("sound") && soundKeys != null && soundKeys.ContainsKey(actionVar["sound"]))
-            action.sound = soundKeys[actionVar["sound"]];
+        if (actionVar.Keys.Contains("sound") && soundKeys != null)
+        {
+            // v1.2: change from string to "SoundAction" class
+            Variant soundVar = actionVar["sound"];
+            action.sound = new SoundAction();
+
+            if (soundVar as ProxyString != null)
+            {
+                if (soundKeys.ContainsKey(soundVar)) action.sound.sounds.Add(soundKeys[soundVar]);
+                action.sound.loop = false;
+            }
+            else
+            {
+                foreach (Variant soundName in soundVar["sounds"] as ProxyArray)
+                    if (soundKeys.ContainsKey(soundName)) action.sound.sounds.Add(soundKeys[soundName]);
+                action.sound.loop = soundVar["loop"];
+            }
+        }
 
         if (actionVar.Keys.Contains("color"))
             action.color = new Color(
