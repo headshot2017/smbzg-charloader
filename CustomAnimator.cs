@@ -86,7 +86,7 @@ public class CustomAnimator : MonoBehaviour
     {
         HandleIngameSprite();
 
-        if (!m_Playing) return;
+        if (!m_Playing || m_CurrentAnimation.actions.Count <= 0) return;
 
         if (m_OriginalAnimator != null)
             m_OriginalAnimator.enabled = false;
