@@ -170,9 +170,13 @@ public class CustomAnimator : MonoBehaviour
         if (currAction.sound != null)
         {
             AudioClip sound = currAction.sound.sounds[UnityEngine.Random.Range(0, currAction.sound.sounds.Count)];
-            AudioSource src = SMBZGlobals.PlaySound(sound, DestroyAfterPlay: !currAction.sound.loop);
-            if (currAction.sound.loop && !m_PlayingSounds.ContainsKey(sound))
+            if (!currAction.sound.loop)
             {
+                SMBZGlobals.PlaySound(sound);
+            }
+            else if (!m_PlayingSounds.ContainsKey(sound))
+            {
+                AudioSource src = SMBZGlobals.PlaySound(sound, DestroyAfterPlay: false);
                 src.loop = true;
                 m_PlayingSounds[sound] = src;
             }
