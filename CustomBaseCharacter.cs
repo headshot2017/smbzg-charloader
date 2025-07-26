@@ -467,4 +467,11 @@ public class CustomBaseCharacter : BaseCharacter
         }
         Comp_CustomAnimator.Play(AttackToPrepare.AnimationNameHash, AttackToPrepare);
     }
+
+    public override void OnDeath()
+    {
+        base.OnDeath();
+        if (cc.sounds.ContainsKey("death"))
+            SMBZGlobals.PlaySound(cc.sounds["death"]);
+    }
 }
