@@ -32,6 +32,7 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
   * Special sound effects:
     * **jump**: Automatically replaces the default DBZ jump with this file when the character loads.
     * **land**: Automatically replaces the default DBZ land with this file when the character loads.
+    * **death**: Plays when the character dies.
 * **music:** Folder containing music files. These can be played ingame using SMBZ-G's "PersistantBGM" class.
 * **sheet.png**: Character's sprite sheet
 * **battleportrait.png**: Portrait used in the ingame battle HUD
