@@ -33,6 +33,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_results.valueChanged.connect(self.onYOffsetResultsChanged)
         self.spinbox_offsetX_ingame.valueChanged.connect(self.onXOffsetIngameChanged)
         self.spinbox_offsetY_ingame.valueChanged.connect(self.onYOffsetIngameChanged)
+        self.view_primaryColor.changed.connect(self.onPrimaryColorChanged)
+        self.view_secondaryColor.changed.connect(self.onSecondaryColorChanged)
         self.btn_openFolder.clicked.connect(self.onOpenFolder)
 
         self.btn_addCmd.clicked.connect(self.onAddCommand)
@@ -201,6 +203,14 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     def onYOffsetIngameChanged(self, value):
         characterdata.jsonFile["general"]["offset"]["ingame"][1] = value
         self.tab_anims.onRefresh()
+
+    @QtCore.pyqtSlot(QtGui.QColor)
+    def onPrimaryColorChanged(self, color):
+        characterdata.jsonFile["general"]["colors"]["primary"] = color.getRgb()[:3]
+
+    @QtCore.pyqtSlot(QtGui.QColor)
+    def onSecondaryColorChanged(self, color):
+        characterdata.jsonFile["general"]["colors"]["secondary"] = color.getRgb()[:3]
 
     @QtCore.pyqtSlot()
     def onOpenFolder(self):
