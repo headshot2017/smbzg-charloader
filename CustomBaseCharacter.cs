@@ -257,10 +257,10 @@ public class CustomBaseCharacter : BaseCharacter
         Comp_CustomAnimator.m_CurrentProperties.hspeed = Comp_Animator.GetFloat("hspeed");
         Comp_CustomAnimator.m_CurrentProperties.vspeed = Comp_Animator.GetFloat("vspeed");
         Comp_CustomAnimator.m_CurrentProperties.HitStun = Comp_Animator.GetFloat("HitStun");
-        Comp_CustomAnimator.m_CurrentProperties.BlockStun = Comp_Animator.GetFloat("BlockStun");
+        Comp_CustomAnimator.m_CurrentProperties.BlockStun = (float)GetField("BlockStun");
         Comp_CustomAnimator.m_CurrentProperties.Intensity = Comp_Animator.GetFloat("Intensity");
         Comp_CustomAnimator.m_CurrentProperties.OnGround = Comp_Animator.GetBool("OnGround");
-        Comp_CustomAnimator.m_CurrentProperties.Guarding = Comp_Animator.GetBool("Guarding");
+        Comp_CustomAnimator.m_CurrentProperties.Guarding = GetPlayerState() == PlayerStateENUM.Guarding;
         Comp_CustomAnimator.m_CurrentProperties.Bursting = Comp_Animator.GetBool("Bursting");
         Comp_CustomAnimator.m_CurrentProperties.InputingLeft = Comp_Animator.GetBool("InputingLeft");
         Comp_CustomAnimator.m_CurrentProperties.InputingRight = Comp_Animator.GetBool("InputingRight");
