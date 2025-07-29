@@ -169,14 +169,16 @@ public class CustomBaseCharacter : BaseCharacter
         return ((CharacterControl)GetField("MyCharacterControl")).ParticipantDataReference;
     }
 
-    public HitBoxDamageParameters GetHitboxDamageProperties()
+    public HitBoxDamageParameters GetHitboxDamageProperties(HitBox which=null)
     {
-        return (HitBoxDamageParameters)typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(base.HitBox_0);
+        if (!which) which = base.HitBox_0;
+        return (HitBoxDamageParameters)typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(which);
     }
 
-    public void SetHitboxDamageProperties(HitBoxDamageParameters properties)
+    public void SetHitboxDamageProperties(HitBoxDamageParameters properties, HitBox which=null)
     {
-        typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(base.HitBox_0, properties);
+        if (!which) which = base.HitBox_0;
+        typeof(HitBox).GetField("DamageProperties", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(which, properties);
     }
 
     [HarmonyPatch(typeof(BaseCharacter), "GetMyParticipantDataReference")]
@@ -439,6 +441,28 @@ public class CustomBaseCharacter : BaseCharacter
     protected override void OnMovementRush_Strike()
     {
         SMBZGlobals.PlaySound(SoundEffect_MR_Strike);
+    }
+
+    public override void PerformAction_Dodge(Vector2? directionOverride = null)
+    {
+        base.PerformAction_Dodge(directionOverride);
+        CurrentAttackData.ExecuteCustomQueue();
+    }
+
+    public override void PerformAction_Strike()
+    {
+        base.PerformAction_Strike();
+        base.HitBox_0.transform.localPosition = Vector3.zero;
+        base.HitBox_0.transform.localScale = new Vector3(2, 2, 1);
+        base.HitBox_0.IsActive = true;
+    }
+
+    public override void PerformAction_Finale(CharacterControl target)
+    {
+        base.PerformAction_Finale(target);
+
+        Comp_CustomAnimator.m_CurrentProperties.Bursting = false;
+        Comp_CustomAnimator.m_CurrentProperties.DontChangeSprite = true;
     }
 
     public override void PrepareAnAttack(AttackBundle AttackToPrepare, float MinimumPrepTime = 0)
