@@ -95,13 +95,8 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
                 widget.valueChanged.connect(self.onActionTabValueChange)
                 self.actionTabs.addTab(widget, action)
 
-        frameIndSearch = frameInd
-        while frameIndSearch >= 0 and "frame" not in characterdata.jsonFile["anims"][animName]["frames"][frameIndSearch]:
-            frameIndSearch -= 1
-            continue
-
         self.animatorView.animator.setAnimation(characterdata.jsonFile["anims"][animName])
-        self.animatorView.animator.setFrame(frameIndSearch)
+        self.animatorView.animator.setFrame(frameInd)
 
     def addAnimation(self, animName):
         animTree = QtWidgets.QTreeWidgetItem([animName])
@@ -479,13 +474,8 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
                 widget.valueChanged.connect(self.onActionTabValueChange)
                 self.actionTabs.addTab(widget, action)
 
-        frameIndSearch = frameInd
-        while frameIndSearch >= 0 and "frame" not in characterdata.jsonFile["effects"][fxName]["frames"][frameIndSearch]:
-            frameIndSearch -= 1
-            continue
-
         self.animatorView.animator.setAnimation(characterdata.jsonFile["effects"][fxName])
-        self.animatorView.animator.setFrame(frameIndSearch)
+        self.animatorView.animator.setFrame(frameInd)
         self.animatorView.animator.setLoopCount(1)
 
     def addEffect(self, fxName):
@@ -836,14 +826,9 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
                 widget.valueChanged.connect(self.onActionTabValueChange)
                 self.actionTabs.addTab(widget, action)
 
-        frameIndSearch = frameInd
-        while frameIndSearch >= 0 and "frame" not in companion["anims"][animName]["frames"][frameIndSearch]:
-            frameIndSearch -= 1
-            continue
-
         self.setCompanionSprite(companionName)
         self.animatorView.animator.setAnimation(companion["anims"][animName])
-        self.animatorView.animator.setFrame(frameIndSearch)
+        self.animatorView.animator.setFrame(frameInd)
 
     def addCompanion(self, companionName):
         companionTree = QtWidgets.QTreeWidgetItem([companionName])
