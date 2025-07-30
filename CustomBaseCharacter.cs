@@ -122,6 +122,17 @@ public class CustomBaseCharacter : BaseCharacter
         SetField("EnergyMax", 200f);
         SetField("EnergyStart", 100f);
         IsFacingRight = base.tag == "Team1";
+
+        // just to be safe
+        if (CharacterData == null) return;
+        foreach (CustomCharacter ch in CharLoader.Core.customCharacters)
+        {
+            if (ch.characterData == CharacterData)
+            {
+                cc = ch;
+                break;
+            }
+        }
     }
 
     public object GetField(string name)
@@ -495,7 +506,7 @@ public class CustomBaseCharacter : BaseCharacter
     public override void OnDeath()
     {
         base.OnDeath();
-        if (cc.sounds.ContainsKey("death"))
+        if (cc != null && cc.sounds.ContainsKey("death"))
             SMBZGlobals.PlaySound(cc.sounds["death"]);
     }
 }
