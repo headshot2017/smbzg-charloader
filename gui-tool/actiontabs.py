@@ -349,6 +349,7 @@ class ActionTab_Sound(BaseActionTab):
 
         self.checkbox_loop.setChecked(self.actionInfo["loop"] if "loop" in self.actionInfo else False)
 
+        self.list_sounds.itemDoubleClicked.connect(self.onItemDoubleClick)
         self.checkbox_loop.stateChanged.connect(self.onSetLoop)
         self.btn_add.clicked.connect(self.onAdd)
         self.btn_remove.clicked.connect(self.onRemove)
@@ -368,6 +369,12 @@ class ActionTab_Sound(BaseActionTab):
         for snd in self.actionInfo["sounds"]:
             self.list_sounds.addItem(snd)
 
+
+    @QtCore.pyqtSlot(QtWidgets.QListWidgetItem)
+    def onItemDoubleClick(self, item):
+        name = item.text()
+        if name in characterdata.sounds:
+            characterdata.sounds[name].play()
 
     @QtCore.pyqtSlot(int)
     def onSetLoop(self, value):
