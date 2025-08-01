@@ -17,6 +17,7 @@ public class CustomBaseCharacter : BaseCharacter
     protected AudioClip SoundEffect_MR_Whiff;
     protected AudioClip SoundEffect_MR_Strike;
 
+    bool IsMovementRushing;
 
     public CharacterData_SO CharacterData
     {
@@ -122,6 +123,8 @@ public class CustomBaseCharacter : BaseCharacter
         SetField("EnergyMax", 200f);
         SetField("EnergyStart", 100f);
         IsFacingRight = base.tag == "Team1";
+
+        IsMovementRushing = false;
 
         // just to be safe
         if (CharacterData == null) return;
@@ -261,11 +264,11 @@ public class CustomBaseCharacter : BaseCharacter
         if (!IsFrozen && GetPlayerState() == PlayerStateENUM.Hurt && HitStun <= 0f)
         {
             SetPlayerState(PlayerStateENUM.Idle);
-            int stateNameHash = !Comp_Animator.GetBool(AP_IsMovementRushing) ? ASN_Idle : (IsOnGround ? ASN_MR_Ground_Land : ASN_MR_Air_Idle);
+            int stateNameHash = !IsMovementRushing ? ASN_Idle : (IsOnGround ? ASN_MR_Ground_Land : ASN_MR_Air_Idle);
             Comp_CustomAnimator.Play(stateNameHash);
         }
 
-        bool MovementRushIntro = Comp_Animator.GetBool(AP_IsMovementRushing) && SMBZGlobals.BattleState == BattleController.BattleStateENUM.Normal;
+        bool MovementRushIntro = IsMovementRushing && SMBZGlobals.BattleState == BattleController.BattleStateENUM.Normal;
 
         Comp_CustomAnimator.m_CurrentProperties.hspeed = Comp_Animator.GetFloat("hspeed");
         Comp_CustomAnimator.m_CurrentProperties.vspeed = Comp_Animator.GetFloat("vspeed");
@@ -282,8 +285,9 @@ public class CustomBaseCharacter : BaseCharacter
                 GetPlayerState() == PlayerStateENUM.Attacking ||
                 GetPlayerState() == PlayerStateENUM.Pursuing ||
                 GetPlayerState() == PlayerStateENUM.Cinematic_NoInput ||
-                (Comp_Animator.GetBool(AP_IsMovementRushing) && !MovementRushIntro)
+                (IsMovementRushing && !MovementRushIntro)
             );
+        Comp_CustomAnimator.IgnoreIngameSprite = GetMovementRushState() == MovementRushStateENUM.IsDodging;
 
         if (MovementRushIntro)
         {
@@ -295,6 +299,18 @@ public class CustomBaseCharacter : BaseCharacter
 
         if (!Comp_CustomAnimator.m_CurrentProperties.DontChangeSprite && CurrentAttackData != null)
             CurrentAttackData = null;
+    }
+
+    public override void OnActivateMovementRush()
+    {
+        base.OnActivateMovementRush();
+        IsMovementRushing = true;
+    }
+
+    public override void OnDeactivateMovementRush()
+    {
+        base.OnDeactivateMovementRush();
+        IsMovementRushing = false;
     }
 
     protected override void Update_MovementRushAnimator()
@@ -321,11 +337,8 @@ public class CustomBaseCharacter : BaseCharacter
                     Comp_CustomAnimator.Play(IsOnGround ? ASN_MR_Ground_Idle : ASN_MR_Air_Idle);
             }
         }
-        else
+        else if (SMBZGlobals.BattleState == BattleController.BattleStateENUM.MovementRush_Aerial)
         {
-            if (SMBZGlobals.BattleState != BattleController.BattleStateENUM.MovementRush_Aerial)
-                return;
-
             if (!IsHurt && GetPlayerState() == PlayerStateENUM.Idle && GetMovementRushState() == MovementRushStateENUM.Idle)
             {
                 if (MyCharacterControl.IsInputtingUp)
