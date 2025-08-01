@@ -9,6 +9,8 @@ public class CharLoaderComponent : MonoBehaviour
 {
     public Texture2D texture;
 
+    string CurrCharacterLoading;
+
     void Start()
     {
         StartCoroutine(Load());
@@ -28,6 +30,7 @@ public class CharLoaderComponent : MonoBehaviour
             Variant json = JSON.Load(File.ReadAllText($"{path}/character.json"));
             CustomCharacter cc = new CustomCharacter();
 
+            CurrCharacterLoading = charName;
             cc.internalName = charName;
             cc.charSelectScale = json["general"]["scale"]["charSelect"];
             cc.resultsScale = json["general"]["scale"]["results"];
@@ -367,6 +370,13 @@ public class CharLoaderComponent : MonoBehaviour
             int h = frameVar[3];
             if (w < 0) w = texture.width;
             if (h < 0) h = texture.height;
+
+            if (h == 0)
+            {
+                // don't divide by zero, warn the user too
+                Melon<CharLoader.Core>.Logger.Msg($"WARNING: {CurrCharacterLoading} has a 'frame' action with height = zero! ({x}, {y}, {w}, {h})");
+                h = texture.height;
+            }
 
             action.frame = Sprite.Create(texture, new Rect(x, -y + (h * (texture.height / h - 1)), w, h), new Vector2(.5f, .5f), 20);
         }
