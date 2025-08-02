@@ -30,6 +30,15 @@ __defaultaction = {
 def defaultAction(name):
     return copy.deepcopy(__defaultaction[name]) if name in __defaultaction else None
 
+def defaultCommand():
+    return {
+        "title": "",
+        "subtitle": "",
+        "additionalInfo": "",
+        "imageList": [],
+        "featureList": []
+    }
+
 def defaultCharacterData():
     return {
         "general": {

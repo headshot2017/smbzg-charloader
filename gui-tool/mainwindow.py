@@ -126,18 +126,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if "commandList" in jsonFile:
             commandList = jsonFile["commandList"]
             for command in commandList:
-                title = command["title"] if "title" in command else ""
-                subtitle = command["subtitle"] if "subtitle" in command else ""
-                addinfo = command["additionalInfo"] if "additionalInfo" in command else ""
-                imageList = command["imageList"] if "imageList" in command else ""
-                featureList = command["featureList"] if "featureList" in command else ""
-
-                cmdWidget = self.addCommand()
-                cmdWidget.lineEdit_title.setText(title)
-                cmdWidget.lineEdit_subtitle.setText(subtitle)
-                cmdWidget.lineEdit_addinfo.setText(addinfo)
-                cmdWidget.parseImageList(imageList)
-                cmdWidget.parseFeatureList(featureList)
+                cmdWidget = self.addCommand(command)
 
     def refreshPortrait(self):
         portrait = "%s/portrait.png" % gamepath.getCharacterPath(characterdata.name)
@@ -147,10 +136,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         portrait = "%s/battleportrait.png" % gamepath.getCharacterPath(characterdata.name)
         self.lbl_battlePortrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else "images/default_portrait.png"))
 
-    def addCommand(self):
-        cmdWidget = commandwidget.AttackCommandWidget(self)
+    def addCommand(self, commandInJson):
+        cmdWidget = commandwidget.AttackCommandWidget(self, commandInJson)
         cmdWidget.moveUp.connect(self.moveCommandUp)
         cmdWidget.moveDown.connect(self.moveCommandDown)
+        cmdWidget.deleted.connect(self.onCommandDeleted)
 
         self.cmdlist_scrollContents.layout().addWidget(cmdWidget)
         return cmdWidget
@@ -218,7 +208,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def onAddCommand(self):
-        self.addCommand()
+        newCommand = characterdata.defaultCommand()
+        characterdata.jsonFile["commandList"].append(newCommand)
+        self.addCommand(newCommand)
 
     @QtCore.pyqtSlot(QtWidgets.QWidget)
     def moveCommandUp(self, cmdWidget):
@@ -227,6 +219,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if ind != 0:
             layout.removeWidget(cmdWidget)
             layout.insertWidget(ind-1, cmdWidget)
+            command = characterdata.jsonFile["commandList"].pop(ind)
+            characterdata.jsonFile["commandList"].insert(ind-1, command)
 
     @QtCore.pyqtSlot(QtWidgets.QWidget)
     def moveCommandDown(self, cmdWidget):
@@ -235,6 +229,15 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if ind != layout.count()-1:
             layout.removeWidget(cmdWidget)
             layout.insertWidget(ind+1, cmdWidget)
+            command = characterdata.jsonFile["commandList"].pop(ind)
+            characterdata.jsonFile["commandList"].insert(ind+1, command)
+
+    @QtCore.pyqtSlot(QtWidgets.QWidget)
+    def onCommandDeleted(self, cmdWidget):
+        layout = self.cmdlist_scrollContents.layout()
+        ind = layout.indexOf(cmdWidget)
+        layout.removeWidget(cmdWidget)
+        del characterdata.jsonFile["commandList"][ind]
 
     @QtCore.pyqtSlot()
     def onActionNew(self):
