@@ -21,12 +21,12 @@ class AttackCommandWidget(QtWidgets.QWidget):
     moveUp = QtCore.pyqtSignal(QtWidgets.QWidget)
     moveDown = QtCore.pyqtSignal(QtWidgets.QWidget)
     deleted = QtCore.pyqtSignal(QtWidgets.QWidget)
+    commandJson = None
 
     def __init__(self, parent, commandJson):
         super().__init__(parent)
         uic.loadUi("ui/commandwidget.ui", self)
 
-        self.commandJson = commandJson
         if "title" not in commandJson: commandJson["title"] = ""
         if "subtitle" not in commandJson: commandJson["subtitle"] = ""
         if "additionalInfo" not in commandJson: commandJson["additionalInfo"] = ""
@@ -61,6 +61,8 @@ class AttackCommandWidget(QtWidgets.QWidget):
         self.btn_addButton.setMenu(menu1)
         self.btn_addFeature.setMenu(menu2)
 
+        self.commandJson = commandJson
+
     def createCommandButton(self, parent, image):
         btn = QtWidgets.QPushButton(parent)
         btn.setIcon(QtGui.QIcon("images/%s.png" % image))
@@ -80,12 +82,12 @@ class AttackCommandWidget(QtWidgets.QWidget):
     def addAttackButton(self, name):
         layout = self.scrollWidget_buttons.layout()
         layout.insertWidget(layout.count()-1, self.createCommandButton(self.scrollWidget_buttons, name))
-        self.commandJson["imageList"].append(name)
+        if self.commandJson: self.commandJson["imageList"].append(name)
     
     def addFeatureButton(self, name):
         layout = self.scrollWidget_features.layout()
         layout.insertWidget(layout.count()-1, self.createCommandButton(self.scrollWidget_features, name))
-        self.commandJson["featureList"].append(name)
+        if self.commandJson: self.commandJson["featureList"].append(name)
 
     def parseImageList(self, _list):
         theList = copy.deepcopy(_list)
