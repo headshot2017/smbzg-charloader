@@ -341,6 +341,8 @@ public class CharLoaderComponent : MonoBehaviour
                 CharacterSkinDataList.Add(characterSkinDataStore);
             }
 
+            FormsListManager.CharacterFormsDictionary[Data.Character] = new List<string>() { cc.internalName };
+
             Melon<CharLoader.Core>.Logger.Msg($"Loaded custom character \"{cc.rootCharacter.name}\"");
             Debug.Log($"Loaded custom character \"{cc.rootCharacter.name}\"");
         }

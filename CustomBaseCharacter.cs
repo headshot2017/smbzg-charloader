@@ -444,27 +444,27 @@ public class CustomBaseCharacter : BaseCharacter
 
     protected override void OnMovementRush_Dodge()
     {
-        SMBZGlobals.PlaySound(SoundEffect_MR_Dodge);
+        SoundCache.ins.PlaySound(SoundEffect_MR_Dodge);
     }
 
     public override void OnMovementRush_DodgeSuccess()
     {
-        SMBZGlobals.PlaySound(SoundEffect_MR_DodgeSuccess);
+        SoundCache.ins.PlaySound(SoundEffect_MR_DodgeSuccess);
     }
 
     protected override void OnMovementRush_Engage()
     {
-        SMBZGlobals.PlaySound(SoundEffect_MR_Engage);
+        SoundCache.ins.PlaySound(SoundEffect_MR_Engage);
     }
 
     protected override void OnMovementRush_Whiff()
     {
-        SMBZGlobals.PlaySound(SoundEffect_MR_Whiff);
+        SoundCache.ins.PlaySound(SoundEffect_MR_Whiff);
     }
 
     protected override void OnMovementRush_Strike()
     {
-        SMBZGlobals.PlaySound(SoundEffect_MR_Strike);
+        SoundCache.ins.PlaySound(SoundEffect_MR_Strike);
     }
 
     public override void PerformAction_Dodge(Vector2? directionOverride = null)
@@ -487,6 +487,17 @@ public class CustomBaseCharacter : BaseCharacter
 
         Comp_CustomAnimator.m_CurrentProperties.Bursting = false;
         Comp_CustomAnimator.m_CurrentProperties.DontChangeSprite = true;
+    }
+
+    public override IEnumerator OnBurst_Victory(CharacterControl target, BurstDataStore.VictoryStrikeENUM victoryStrikeType = BurstDataStore.VictoryStrikeENUM.General)
+    {
+        Comp_CustomAnimator.m_CurrentProperties.Bursting = false;
+        Comp_CustomAnimator.m_CurrentProperties.DontChangeSprite = true;
+
+        SetPlayerState(PlayerStateENUM.Cinematic_NoInput);
+
+        base.OnBurst_Victory(target, victoryStrikeType);
+        yield return null;
     }
 
     public override void PrepareAnAttack(AttackBundle AttackToPrepare, float MinimumPrepTime = 0)
@@ -520,6 +531,6 @@ public class CustomBaseCharacter : BaseCharacter
     {
         base.OnDeath();
         if (cc != null && cc.sounds.ContainsKey("death"))
-            SMBZGlobals.PlaySound(cc.sounds["death"]);
+            SoundCache.ins.PlaySound(cc.sounds["death"]);
     }
 }

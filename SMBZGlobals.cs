@@ -8,10 +8,10 @@ using static SMBZG.BattleCameraManager;
 
 public static class SMBZGlobals
 {
+    [Obsolete("SMBZGlobals.PlaySound() is obsolete. Use SoundCache.ins.PlaySound() instead.")]
     public static AudioSource PlaySound(AudioClip clip, float volume = 1f, bool DestroyAfterPlay = true, float? DestroyAfterTimeOverride = null, float pitch = 1f, bool pauseWithGame = false)
     {
-        MethodInfo PlaySoundMethod = typeof(SoundCache).GetMethod("PlaySound", BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(AudioClip), typeof(float), typeof(bool), typeof(float?), typeof(float), typeof(bool) }, null);
-        return (AudioSource)PlaySoundMethod.Invoke(SoundCache.ins, new object[] { clip, volume, DestroyAfterPlay, DestroyAfterTimeOverride, pitch, pauseWithGame });
+        return SoundCache.ins.PlaySound(clip, volume, DestroyAfterPlay, DestroyAfterTimeOverride, pitch, pauseWithGame);
     }
 
     public static bool IsThereTwoOrLessPlayersAreAlive()

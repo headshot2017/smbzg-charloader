@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HarmonyLib;
 
-[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.3.1", "Headshotnoby/headshot2017", null)]
+[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.4", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
 
 namespace CharLoader
@@ -74,8 +74,15 @@ namespace CharLoader
             LoggerInstance.Msg("Initialized.");
         }
 
+        void LogHandler(string message, string stacktrace, LogType type)
+        {
+            LoggerInstance.Msg($"{message}\n{stacktrace}");
+        }
+
         public override void OnLateInitializeMelon()
         {
+            Application.logMessageReceived += LogHandler;
+
             // modify koopa bros to use a custom class
             // that way, custom characters can do shenanigans such as changing the leader,
             // making the bros follow a different character
@@ -134,22 +141,24 @@ namespace CharLoader
         void SetupCharSelectArcade()
         {
             // Add character portraits
-            Transform PortraitTable = GameObject.Find("CharacterSelect").transform.Find("CharacterSelectPortraitTable");
+            Transform PortraitTableRoot = CharacterSelectScript.ins.Section_CharacterSelect.transform.Find("CharacterSelectPortraitTable");
+            Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
+            /*
+            GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
+            PortraitNewRow.transform.RemoveAllChildren();
+            PortraitNewRow.name = "CustomRow";
+            PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, -65);
+            */
 
             foreach (CustomCharacter cc in customCharacters)
             {
-                GameObject PortraitGameObj = GameObject.Instantiate(PortraitTable.GetChild(0).gameObject, PortraitTable);
+                GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitRow.transform);
                 CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
                 Image PortraitImg = PortraitGameObj.GetComponent<Image>();
                 PortraitGameObj.name = $"Character_{cc.internalName}";
                 Portrait.Data = cc.characterData;
-                Portrait.DataDash = null;
-                Portrait.DataJump = null;
-                Portrait.DataTaunt = null;
-                Portrait.DataPursue = null;
-                Portrait.DataZAttack = null;
                 PortraitImg.sprite = cc.portrait;
-                CharacterSelectAcradeScript.ins.CharacterPortraitList.Add(Portrait);
+                CharacterSelectScript.ins.CharacterPortraitList.Add(Portrait);
             }
 
             // Setup additional UIs
@@ -179,20 +188,22 @@ namespace CharLoader
         void SetupCharSelectVersus()
         {
             // Add character portraits
-            Transform PortraitTable = CharacterSelectScript.ins.Section_CharacterSelect.transform.Find("CharacterSelectPortraitTable");
+            Transform PortraitTableRoot = CharacterSelectScript.ins.Section_CharacterSelect.transform.Find("CharacterSelectPortraitTable");
+            Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
+            /*
+            GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
+            PortraitNewRow.transform.RemoveAllChildren();
+            PortraitNewRow.name = "CustomRow";
+            PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, -65);
+            */
 
             foreach (CustomCharacter cc in customCharacters)
             {
-                GameObject PortraitGameObj = GameObject.Instantiate(PortraitTable.GetChild(0).gameObject, PortraitTable);
+                GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitRow.transform);
                 CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
                 Image PortraitImg = PortraitGameObj.GetComponent<Image>();
                 PortraitGameObj.name = $"Character_{cc.internalName}";
                 Portrait.Data = cc.characterData;
-                Portrait.DataDash = null;
-                Portrait.DataJump = null;
-                Portrait.DataTaunt = null;
-                Portrait.DataPursue = null;
-                Portrait.DataZAttack = null;
                 PortraitImg.sprite = cc.portrait;
                 CharacterSelectScript.ins.CharacterPortraitList.Add(Portrait);
             }
@@ -448,6 +459,24 @@ namespace CharLoader
                 return true;
             }
         }
+
+        /*
+        [HarmonyPatch(typeof(FormsListManager), "Character_GetFormsLists", new Type[] { typeof(BattleCache.CharacterEnum) })]
+        private static class FormsListPatch
+        {
+            private static bool Prefix(ref string __result, BattleCache.CharacterEnum character)
+            {
+                foreach (CustomCharacter cc in customCharacters)
+                {
+                    if (cc.characterData.Character != character) continue;
+                    __result = cc.internalName+"Forms";
+                    return false;
+                }
+
+                return true;
+            }
+        }
+        */
 
         [HarmonyPatch(typeof(BattleCache), "GetCharacterByInternalCharacterName", new Type[] { typeof(string) })]
         private static class InternalStringNamePatch
