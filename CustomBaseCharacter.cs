@@ -3,6 +3,7 @@ using SMBZG;
 using System.Reflection;
 using System.Collections;
 using UnityEngine;
+using MelonLoader;
 
 public class CustomBaseCharacter : BaseCharacter
 {
@@ -497,7 +498,7 @@ public class CustomBaseCharacter : BaseCharacter
         SetPlayerState(PlayerStateENUM.Cinematic_NoInput);
 
         base.OnBurst_Victory(target, victoryStrikeType);
-        yield return null;
+        return null;
     }
 
     public override void PrepareAnAttack(AttackBundle AttackToPrepare, float MinimumPrepTime = 0)
