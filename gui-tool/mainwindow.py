@@ -35,6 +35,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_ingame.valueChanged.connect(self.onYOffsetIngameChanged)
         self.view_primaryColor.changed.connect(self.onPrimaryColorChanged)
         self.view_secondaryColor.changed.connect(self.onSecondaryColorChanged)
+        self.slider_hue.valueChanged.connect(self.onHueChanged)
+        self.slider_saturation.valueChanged.connect(self.onSaturationChanged)
+        self.slider_contrast.valueChanged.connect(self.onContrastChanged)
         self.btn_openFolder.clicked.connect(self.onOpenFolder)
 
         self.btn_addCmd.clicked.connect(self.onAddCommand)
@@ -61,6 +64,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_ingame.setValue(characterdata.jsonFile["general"]["offset"]["ingame"][1])
         self.view_primaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["primary"]))
         self.view_secondaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["secondary"]))
+        self.slider_hue.setValue(int(characterdata.jsonFile["general"]["colors"]["alternateColors"][0]*100))
+        self.slider_saturation.setValue(int(characterdata.jsonFile["general"]["colors"]["alternateColors"][1]*100))
+        self.slider_contrast.setValue(int(characterdata.jsonFile["general"]["colors"]["alternateColors"][2]*100))
 
         self.tab_anims.reset()
         self.tab_effects.reset()
@@ -109,12 +115,18 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                     self.spinbox_offsetY_ingame.setValue(offset["ingame"][1])
             if "colors" in general:
                 colors = general["colors"]
-                if "primary" in colors:
-                    primary = colors["primary"]
-                    self.view_primaryColor.setColor(QtGui.QColor(primary[0], primary[1], primary[2]))
-                if "secondary" in colors:
-                    secondary = colors["secondary"]
-                    self.view_secondaryColor.setColor(QtGui.QColor(secondary[0], secondary[1], secondary[2]))
+                if "primary" not in colors: colors["primary"] = [255, 255, 255]
+                if "secondary" not in colors: colors["secondary"] = [0, 0, 0]
+                if "alternateColors" not in colors: colors["alternateColors"] = [0.57, 1, 1]
+                primary = colors["primary"]
+                secondary = colors["secondary"]
+                alternateColors = colors["alternateColors"]
+
+                self.view_primaryColor.setColor(QtGui.QColor(primary[0], primary[1], primary[2]))
+                self.view_secondaryColor.setColor(QtGui.QColor(secondary[0], secondary[1], secondary[2]))
+                self.slider_hue.setValue(int(alternateColors[0]*100))
+                self.slider_saturation.setValue(int(alternateColors[1]*100))
+                self.slider_contrast.setValue(int(alternateColors[2]*100))
 
         if "anims" in jsonFile:
             self.tab_anims.reloadTree()
@@ -201,6 +213,24 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(QtGui.QColor)
     def onSecondaryColorChanged(self, color):
         characterdata.jsonFile["general"]["colors"]["secondary"] = color.getRgb()[:3]
+
+    @QtCore.pyqtSlot(int)
+    def onHueChanged(self, value):
+        realValue = value / 100.
+        self.lbl_hue.setText("Hue: %.2f" % realValue)
+        characterdata.jsonFile["general"]["colors"]["alternateColors"][0] = realValue
+
+    @QtCore.pyqtSlot(int)
+    def onSaturationChanged(self, value):
+        realValue = value / 100.
+        self.lbl_saturation.setText("Saturation: %.2f" % realValue)
+        characterdata.jsonFile["general"]["colors"]["alternateColors"][1] = realValue
+
+    @QtCore.pyqtSlot(int)
+    def onContrastChanged(self, value):
+        realValue = value / 100.
+        self.lbl_contrast.setText("Contrast: %.2f" % realValue)
+        characterdata.jsonFile["general"]["colors"]["alternateColors"][2] = realValue
 
     @QtCore.pyqtSlot()
     def onOpenFolder(self):

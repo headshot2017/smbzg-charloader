@@ -141,6 +141,13 @@ public class CharLoaderComponent : MonoBehaviour
                         colors["secondary"][1] / 255f,
                         colors["secondary"][2] / 255f
                     );
+
+                if (colors.Keys.Contains("alternateColors"))
+                {
+                    Data.DittoHue = colors["alternateColors"][0];
+                    Data.DittoSaturation = colors["alternateColors"][1];
+                    Data.DittoContrast = colors["alternateColors"][2];
+                }
             }
 
             cc.characterData = Data;
