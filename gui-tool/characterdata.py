@@ -49,13 +49,14 @@ def defaultCharacterData():
                 "ingame": 0.4
             },
             "offset": {
-                "charSelect": [ 0, 0 ],
-                "results": [ 0, 0 ],
+                "charSelect": [ 64, 64 ],
+                "results": [ 320, 64 ],
                 "ingame": [ 0, 0 ]
             },
             "colors": {
                 "primary": [ 255, 255, 255 ],
-                "secondary": [ 0, 0, 0 ]
+                "secondary": [ 0, 0, 0 ],
+                "alternateColors": [ 0.57, 1, 1 ]
             }
         },
 
