@@ -149,16 +149,16 @@ class AttackCommandWidget(QtWidgets.QWidget):
             if i == 0 and btnInd != 0: # left
                 layout.removeWidget(btn)
                 layout.insertWidget(btnInd-1, btn)
-                image = self.commandJson.pop(btnInd)
-                self.commandJson.insert(btnInd-1, image)
+                image = theList.pop(btnInd)
+                theList.insert(btnInd-1, image)
             if i == 1 and btnInd != layout.count()-2: # right
                 layout.removeWidget(btn)
                 layout.insertWidget(btnInd+1, btn)
-                image = self.commandJson.pop(btnInd)
-                self.commandJson.insert(btnInd+1, image)
+                image = theList.pop(btnInd)
+                theList.insert(btnInd+1, image)
             if i == 2: # delete
                 btn.deleteLater()
-                del self.commandJson[btnInd]
+                del theList[btnInd]
             return
 
     @QtCore.pyqtSlot(QtWidgets.QAction)
