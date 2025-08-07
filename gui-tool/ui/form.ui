@@ -43,7 +43,7 @@
            <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="text">
-           <string>Welcome to the SMBZ-G CharLoader tool
+           <string>Welcome to the SMBZ-G CharLoader Editor
 
 Create a new character or open an existing character from the File menu to get started.</string>
           </property>
@@ -748,7 +748,7 @@ Create a new character or open an existing character from the File menu to get s
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>980</width>
+             <width>98</width>
              <height>18</height>
             </rect>
            </property>
