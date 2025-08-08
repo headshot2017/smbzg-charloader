@@ -24,6 +24,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.lbl_portrait.clicked.connect(self.onPortraitClicked)
         self.lbl_battlePortrait.clicked.connect(self.onPortraitClicked)
         self.lineEdit_displayName.textChanged.connect(self.onDisplayNameChanged)
+        self.combobox_platform.currentIndexChanged.connect(self.onPlatformChanged)
+        self.checkbox_unbalanced.stateChanged.connect(self.onUnbalancedChanged)
         self.spinbox_scale_charselect.valueChanged.connect(self.onScaleCharSelectChanged)
         self.spinbox_scale_results.valueChanged.connect(self.onScaleResultsChanged)
         self.spinbox_scale_ingame.valueChanged.connect(self.onScaleIngameChanged)
@@ -53,6 +55,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.refreshPortrait()
         self.refreshBattlePortrait()
         self.lineEdit_displayName.clear()
+        self.combobox_platform.setCurrentIndex(0)
+        self.checkbox_unbalanced.setChecked(False)
         self.spinbox_scale_charselect.setValue(characterdata.jsonFile["general"]["scale"]["charSelect"])
         self.spinbox_scale_results.setValue(characterdata.jsonFile["general"]["scale"]["results"])
         self.spinbox_scale_ingame.setValue(characterdata.jsonFile["general"]["scale"]["ingame"])
@@ -94,6 +98,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             general = jsonFile["general"]
             if "displayName" in general:
                 self.lineEdit_displayName.setText(general["displayName"])
+            if "unbalanced" in general:
+                self.checkbox_unbalanced.setChecked(general["unbalanced"])
+            if "platform" in general:
+                self.checkbox_unbalanced.setCurrentIndex(general["platform"])
             if "scale" in general:
                 scale = general["scale"]
                 if "charSelect" in scale:
@@ -166,6 +174,14 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(str)
     def onDisplayNameChanged(self, text):
         characterdata.jsonFile["general"]["displayName"] = text
+
+    @QtCore.pyqtSlot(int)
+    def onPlatformChanged(self, value):
+        characterdata.jsonFile["general"]["platform"] = value
+
+    @QtCore.pyqtSlot(int)
+    def onUnbalancedChanged(self, value):
+        characterdata.jsonFile["general"]["unbalanced"] = value > 0
 
     @QtCore.pyqtSlot(float)
     def onScaleCharSelectChanged(self, value):

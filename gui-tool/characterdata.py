@@ -43,6 +43,8 @@ def defaultCharacterData():
     return {
         "general": {
             "displayName": "",
+            "unbalanced": False,
+            "platform": 0,
             "scale": {
                 "charSelect": 1,
                 "results": 1,
