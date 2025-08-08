@@ -101,7 +101,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             if "unbalanced" in general:
                 self.checkbox_unbalanced.setChecked(general["unbalanced"])
             if "platform" in general:
-                self.checkbox_unbalanced.setCurrentIndex(general["platform"])
+                self.combobox_platform.setCurrentIndex(general["platform"])
             if "scale" in general:
                 scale = general["scale"]
                 if "charSelect" in scale:
