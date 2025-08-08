@@ -76,12 +76,33 @@ namespace CharLoader
 
         void LogHandler(string message, string stacktrace, LogType type)
         {
+            if (type != LogType.Exception && type != LogType.Error)
+                return;
             LoggerInstance.Msg($"{message}\n{stacktrace}");
         }
 
         public override void OnLateInitializeMelon()
         {
             Application.logMessageReceived += LogHandler;
+
+            // change all characters' CharacterData_SO instances to CustomCharacterData_SO
+            // this allows adding extra information to them that can be used by custom characters
+            foreach (FieldInfo field in typeof(BattleCache).GetFields())
+            {
+                if (!field.Name.StartsWith("CharacterData_")) continue;
+
+                CharacterData_SO oldData = (CharacterData_SO)field.GetValue(BattleCache.ins);
+                if (oldData == null) continue;
+                CustomCharacterData_SO newData = ScriptableObject.CreateInstance<CustomCharacterData_SO>();
+                newData.name = oldData.name;
+                newData.hideFlags = oldData.hideFlags;
+
+                // copy all the fields from old one to new one
+                foreach (FieldInfo dataField in typeof(CharacterData_SO).GetFields())
+                    dataField.SetValue(newData, dataField.GetValue(oldData));
+
+                field.SetValue(BattleCache.ins, newData);
+            }
 
             // modify koopa bros to use a custom class
             // that way, custom characters can do shenanigans such as changing the leader,

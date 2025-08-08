@@ -117,7 +117,7 @@ public class CharLoaderComponent : MonoBehaviour
                 }
             }
 
-            CharacterData_SO Data = ScriptableObject.CreateInstance<CharacterData_SO>();
+            CustomCharacterData_SO Data = ScriptableObject.CreateInstance<CustomCharacterData_SO>();
             Data.Prefab_SpecialCharacterSettingsUI = BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI;
             Data.Character = (BattleCache.CharacterEnum)(100 + CharLoader.Core.customCharacters.Count);
             Data.name = $"[CharacterData] {cc.internalName}";
@@ -148,6 +148,15 @@ public class CharLoaderComponent : MonoBehaviour
                     Data.DittoSaturation = colors["alternateColors"][1];
                     Data.DittoContrast = colors["alternateColors"][2];
                 }
+            }
+
+            if (generalObj.Keys.Contains("unbalanced"))
+                Data.IsUnbalanced = generalObj["unbalanced"];
+
+            if (generalObj.Keys.Contains("platform"))
+            {
+                int platform = generalObj["platform"];
+                Data.Platform = (BattleCache.PlatformEnum)platform;
             }
 
             cc.characterData = Data;
