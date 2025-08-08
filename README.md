@@ -60,6 +60,8 @@ If you wish, you can take the code for this custom character mod as reference: [
 * It's recommended to use the CharLoader Editor program for animating your characters instead of editing character.json by hand
 * In your character's C# code, character control classes must inherit CustomBaseCharacter instead of BaseCharacter
 * You can use CustomEffectSprite to spawn custom particles
+* All of the base game's characters now use a "CustomCharacterData_SO" class instead of the default CharacterData_SO. This new class allows you to add extra information in an "ExtraData" dictionary field, which can be used by custom characters.
+  * Example on accessing them: `((CustomCharacterData_SO)BattleCache.ins.CharacterData_Mario).ExtraData["Something"] = true;`
 
 ## Third-party libraries
 
