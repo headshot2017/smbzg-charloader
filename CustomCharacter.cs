@@ -65,7 +65,7 @@ public class CustomCharacter
     public Vector2 resultsOffset;
 
     public CharacterCompanion rootCharacter;
-    public CharacterData_SO characterData;
+    public CustomCharacterData_SO characterData;
     public CommandListModel commandList;
     public Sprite portrait;
     public Sprite battlePortrait;
