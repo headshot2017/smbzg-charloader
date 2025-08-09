@@ -162,7 +162,9 @@ namespace CharLoader
         void SetupCharSelectArcade()
         {
             // Add character portraits
-            Transform PortraitTableRoot = CharacterSelectScript.ins.Section_CharacterSelect.transform.Find("CharacterSelectPortraitTable");
+            Transform CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect");
+
+            Transform PortraitTableRoot = CharacterSelectRoot.Find("CharacterSelectPortraitTable");
             Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
             /*
             GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
@@ -179,13 +181,13 @@ namespace CharLoader
                 PortraitGameObj.name = $"Character_{cc.internalName}";
                 Portrait.Data = cc.characterData;
                 PortraitImg.sprite = cc.portrait;
-                CharacterSelectScript.ins.CharacterPortraitList.Add(Portrait);
+                CharacterSelectAcradeScript.ins.CharacterPortraitList.Add(Portrait);
             }
 
             // Setup additional UIs
 
             // Part 1: GameObjects
-            Transform root = GameObject.Find("Canvas").transform.Find("CharacterSelect").Find("VBox_Settings");
+            Transform root = CharacterSelectRoot.Find("VBox_Settings");
 
             GameObject BattleCustomCharsObj = GameObject.Instantiate(root.Find("BattleRandomSkins").gameObject, root);
             GameObject BattleCustomCharsLabelObj = BattleCustomCharsObj.transform.GetChild(0).gameObject;
@@ -201,6 +203,7 @@ namespace CharLoader
             Toggle BattleCustomCharsToggle = BattleCustomCharsToggleObj.GetComponent<Toggle>();
 
             BattleCustomCharsLabel.text = "Custom Characters in Line-up";
+            BattleCustomCharsLabel.fontSize = 20;
             BattleCustomCharsToggle.onValueChanged.RemoveAllListeners();
             BattleCustomCharsToggle.isOn = ArcadeModeLineup.Value;
             BattleCustomCharsToggle.onValueChanged.AddListener(OnCustomCharsToggle);
