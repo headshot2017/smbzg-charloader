@@ -396,7 +396,7 @@ public class CharLoaderComponent : MonoBehaviour
                 h = texture.height;
             }
 
-            action.frame = Sprite.Create(texture, new Rect(x, -y + (h * (texture.height / h - 1)), w, h), new Vector2(.5f, .5f), 20);
+            action.frame = Sprite.Create(texture, new Rect(x, texture.height - y - h, w, h), new Vector2(.5f, .5f), 20);
         }
 
         if (actionVar.Keys.Contains("setAnim"))
