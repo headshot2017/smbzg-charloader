@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HarmonyLib;
 
-[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.5", "Headshotnoby/headshot2017", null)]
+[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.5.1", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
 
 namespace CharLoader
@@ -122,6 +122,8 @@ namespace CharLoader
 
                 }
             }
+            typeof(BaseCharacter).GetField("CharacterData", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(custom,
+                typeof(BaseCharacter).GetField("CharacterData", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(original));
 
             KoopaBroControl originalBro = original.KoopaBro_Prefab.GetComponent<KoopaBroControl>();
             CustomKoopaBroControl customBro = original.KoopaBro_Prefab.AddComponent<CustomKoopaBroControl>();
@@ -136,6 +138,8 @@ namespace CharLoader
 
                 }
             }
+            typeof(BaseCharacter).GetField("CharacterData", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(customBro,
+                typeof(BaseCharacter).GetField("CharacterData", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(originalBro));
 
             GameObject.Destroy(originalBro);
             GameObject.Destroy(original);
