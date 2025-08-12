@@ -24,6 +24,11 @@ public static class SMBZGlobals
         return (BaseCharacter.PlayerStateENUM)character.GetType().GetField("PlayerState", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
     }
 
+    public static void SetPlayerState(BaseCharacter character, BaseCharacter.PlayerStateENUM state)
+    {
+        character.GetType().GetField("PlayerState", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, state);
+    }
+
     public static CharacterControl GetCharacterControl(BaseCharacter character)
     {
         return (CharacterControl)character.GetType().GetField("MyCharacterControl", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);

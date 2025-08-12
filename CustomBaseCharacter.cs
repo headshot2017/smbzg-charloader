@@ -88,6 +88,18 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    public bool IsIntangible
+    {
+        get
+        {
+            return (bool)typeof(BaseCharacter).GetField("IsIntangible", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("IsIntangible", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
     public bool IsFacingRight
     {
         get
@@ -97,6 +109,30 @@ public class CustomBaseCharacter : BaseCharacter
         set
         {
             typeof(BaseCharacter).GetField("IsFacingRight", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public float? DragOverride
+    {
+        get
+        {
+            return (float?)typeof(BaseCharacter).GetField("DragOverride", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("DragOverride", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public bool PreventDrag
+    {
+        get
+        {
+            return (bool)typeof(BaseCharacter).GetField("PreventDrag", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("PreventDrag", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
         }
     }
 
