@@ -119,7 +119,7 @@ public class CharLoaderComponent : MonoBehaviour
 
             CustomCharacterData_SO Data = ScriptableObject.CreateInstance<CustomCharacterData_SO>();
             Data.Prefab_SpecialCharacterSettingsUI = BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI;
-            Data.Character = (BattleCache.CharacterEnum)(100 + CharLoader.Core.customCharacters.Count);
+            Data.Character = (BattleCache.CharacterEnum)(1000 + CharLoader.Core.customCharacters.Count);
             Data.name = $"[CharacterData] {cc.internalName}";
             Data.DittoHue = BattleCache.ins.CharacterData_Mario.DittoHue;
             Data.DittoSaturation = BattleCache.ins.CharacterData_Mario.DittoSaturation;
