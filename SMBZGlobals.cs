@@ -19,6 +19,76 @@ public static class SMBZGlobals
         return (character.GetType().IsSubclassOf(typeof(CustomBaseCharacter)) || character.GetType() == typeof(CustomBaseCharacter));
     }
 
+    public static BaseCharacter.PlayerStateENUM GetPlayerState(BaseCharacter character)
+    {
+        return (BaseCharacter.PlayerStateENUM)character.GetType().GetField("PlayerState", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static CharacterControl GetCharacterControl(BaseCharacter character)
+    {
+        return (CharacterControl)character.GetType().GetField("MyCharacterControl", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static bool GetIsNPC(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetField("IsNPC", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static bool GetIsCPU(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetProperty("IsCPUControlled", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static bool GetHitStun(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetProperty("HitStun", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static void SetHitStun(BaseCharacter character, bool value)
+    {
+        character.GetType().GetProperty("HitStun", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
+    }
+
+    public static float? GetDragOverride(BaseCharacter character)
+    {
+        return (float?)character.GetType().GetField("DragOverride", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static void SetDragOverride(BaseCharacter character, float? value)
+    {
+        character.GetType().GetField("DragOverride", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
+    }
+
+    public static bool GetIsRushing(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetField("IsRushing", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static bool GetIsBursting(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetField("IsBursting", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static bool GetIsIntangible(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetField("IsIntangible", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static void SetIsIntangible(BaseCharacter character, bool value)
+    {
+        character.GetType().GetField("IsIntangible", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
+    }
+
+    public static bool GetIsFacingRight(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetField("IsFacingRight", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static void SetIsFacingRight(BaseCharacter character, bool value)
+    {
+        character.GetType().GetField("IsFacingRight", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
+    }
+
     public static bool IsThereTwoOrLessPlayersAreAlive()
     {
         return ActiveCharacterControlList.Count((CharacterControl c) => c.ParticipantDataReference.Health.GetCurrent() > 0f) <= 2;
