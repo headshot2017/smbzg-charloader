@@ -37,6 +37,7 @@ public class CustomEffectSprite : MonoBehaviour
     {
         AnchorObject = obj;
         AnchorOffset = offset;
+        Update();
     }
 
     private void Update()
