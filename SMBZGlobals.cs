@@ -14,6 +14,11 @@ public static class SMBZGlobals
         return SoundCache.ins.PlaySound(clip, volume, DestroyAfterPlay, DestroyAfterTimeOverride, pitch, pauseWithGame);
     }
 
+    public static bool IsCustomCharacter(BaseCharacter character)
+    {
+        return (character.GetType().IsSubclassOf(typeof(CustomBaseCharacter)) || character.GetType() == typeof(CustomBaseCharacter));
+    }
+
     public static bool IsThereTwoOrLessPlayersAreAlive()
     {
         return ActiveCharacterControlList.Count((CharacterControl c) => c.ParticipantDataReference.Health.GetCurrent() > 0f) <= 2;

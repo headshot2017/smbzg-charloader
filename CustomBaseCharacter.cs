@@ -201,7 +201,7 @@ public class CustomBaseCharacter : BaseCharacter
     {
         private static bool Prefix(BaseCharacter __instance, ref BattleParticipantDataModel __result)
         {
-            if (!__instance.GetType().IsSubclassOf(typeof(CustomBaseCharacter)))
+            if (!SMBZGlobals.IsCustomCharacter(__instance))
                 return true;
 
             CustomBaseCharacter i = (CustomBaseCharacter)__instance;
@@ -361,7 +361,7 @@ public class CustomBaseCharacter : BaseCharacter
     {
         private static bool Prefix(BaseCharacter __instance)
         {
-            if (!__instance.GetType().IsSubclassOf(typeof(CustomBaseCharacter)) && __instance.GetType() != typeof(CustomBaseCharacter))
+            if (!SMBZGlobals.IsCustomCharacter(__instance))
                 return true;
 
             CustomBaseCharacter c = (CustomBaseCharacter)__instance;
