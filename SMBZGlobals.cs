@@ -34,6 +34,16 @@ public static class SMBZGlobals
         return (CharacterControl)character.GetType().GetField("MyCharacterControl", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
     }
 
+    public static AI_Bundle GetAI(CharacterControl control)
+    {
+        return (AI_Bundle)typeof(CharacterControl).GetField("AI", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(control);
+    }
+
+    public static Rigidbody2D GetRigidbody2D(BaseCharacter character)
+    {
+        return (Rigidbody2D)character.GetType().GetField("Comp_Rigidbody2D", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(character);
+    }
+
     public static bool GetIsNPC(BaseCharacter character)
     {
         return (bool)character.GetType().GetField("IsNPC", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
@@ -52,6 +62,16 @@ public static class SMBZGlobals
     public static void SetHitStun(BaseCharacter character, float value)
     {
         character.GetType().GetProperty("HitStun", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
+    }
+
+    public static float GetBlockStun(BaseCharacter character)
+    {
+        return (float)character.GetType().GetField("BlockStun", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static void SetBlockStun(BaseCharacter character, float value)
+    {
+        character.GetType().GetField("BlockStun", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
     }
 
     public static float? GetDragOverride(BaseCharacter character)

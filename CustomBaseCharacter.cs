@@ -56,6 +56,8 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    public AI_Bundle AI => (AI_Bundle)typeof(CharacterControl).GetField("AI", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(MyCharacterControl);
+
     public float HitStun
     {
         get
@@ -181,6 +183,70 @@ public class CustomBaseCharacter : BaseCharacter
         set
         {
             typeof(BaseCharacter).GetField("IsComboLinkAvailable", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public float EnergyMax
+    {
+        get
+        {
+            return (float)typeof(BaseCharacter).GetField("EnergyMax", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("EnergyMax", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public float EnergyStart
+    {
+        get
+        {
+            return (float)typeof(BaseCharacter).GetField("EnergyStart", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("EnergyStart", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public float PreventBurstTimer
+    {
+        get
+        {
+            return (float)typeof(BaseCharacter).GetField("PreventBurstTimer", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("PreventBurstTimer", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public float IgnoreClashTimer
+    {
+        get
+        {
+            return (float)typeof(BaseCharacter).GetField("IgnoreClashTimer", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("IgnoreClashTimer", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public bool PreventBursting => PreventBurstTimer > 0f;
+
+    public bool IgnoreClashes => IgnoreClashTimer > 0f;
+
+    public bool IsFrozen
+    {
+        get
+        {
+            return (bool)typeof(BaseCharacter).GetField("IsFrozen", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("IsFrozen", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
         }
     }
 
