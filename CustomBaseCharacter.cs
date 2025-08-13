@@ -290,8 +290,8 @@ public class CustomBaseCharacter : BaseCharacter
         Pursue_Speed = 25f;
         Pursue_StartupDelay = 0.1f;
 
-        SetField("EnergyMax", 200f);
-        SetField("EnergyStart", 100f);
+        EnergyMax = 200f;
+        EnergyStart = 100f;
         IsFacingRight = base.tag == "Team1";
 
         IsMovementRushing = false;
@@ -350,7 +350,7 @@ public class CustomBaseCharacter : BaseCharacter
 
     public virtual BattleParticipantDataModel GetMyParticipantDataReference()
     {
-        return ((CharacterControl)GetField("MyCharacterControl")).ParticipantDataReference;
+        return MyCharacterControl.ParticipantDataReference;
     }
 
     public HitBoxDamageParameters GetHitboxDamageProperties(HitBox which=null)
@@ -430,7 +430,6 @@ public class CustomBaseCharacter : BaseCharacter
             return;
         }
 
-        bool IsFrozen = (bool)GetField("IsFrozen");
         if (!IsFrozen && GetPlayerState() == PlayerStateENUM.Hurt && HitStun <= 0f)
         {
             SetPlayerState(PlayerStateENUM.Idle);
@@ -592,7 +591,7 @@ public class CustomBaseCharacter : BaseCharacter
     public IEnumerator LateCustomAnimatorDisable()
     {
         yield return new WaitForEndOfFrame();
-        if ((bool)GetField("IsFrozen"))
+        if (IsFrozen)
         {
             Comp_CustomAnimator.enabled = false;
         }
@@ -678,11 +677,10 @@ public class CustomBaseCharacter : BaseCharacter
             AttackToPrepare.OnAnimationEnd = delegate
             {
                 CurrentAttackData = null;
-                PursueBundle PursueData = (PursueBundle)GetField("PursueData");
                 SetPlayerState((!IsNPC && PursueData != null) ? PlayerStateENUM.Pursuing : PlayerStateENUM.Idle);
                 if (IsNPC) return;
-                SetField("ComboSwingCounter", 0);
-                SetField("IsComboLinkAvailable", false);
+                ComboSwingCounter = 0;
+                IsComboLinkAvailable = false;
             };
         }
         if (AttackToPrepare.OnInterrupt == null)
@@ -690,8 +688,8 @@ public class CustomBaseCharacter : BaseCharacter
             AttackToPrepare.OnInterrupt = delegate
             {
                 if (IsNPC) return;
-                SetField("ComboSwingCounter", 0);
-                SetField("IsComboLinkAvailable", false);
+                ComboSwingCounter = 0;
+                IsComboLinkAvailable = false;
             };
         }
         Comp_CustomAnimator.Play(AttackToPrepare.AnimationNameHash, AttackToPrepare);
