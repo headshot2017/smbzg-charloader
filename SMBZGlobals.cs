@@ -44,12 +44,12 @@ public static class SMBZGlobals
         return (bool)character.GetType().GetProperty("IsCPUControlled", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
     }
 
-    public static bool GetHitStun(BaseCharacter character)
+    public static float GetHitStun(BaseCharacter character)
     {
-        return (bool)character.GetType().GetProperty("HitStun", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+        return (float)character.GetType().GetProperty("HitStun", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
     }
 
-    public static void SetHitStun(BaseCharacter character, bool value)
+    public static void SetHitStun(BaseCharacter character, float value)
     {
         character.GetType().GetProperty("HitStun", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
     }
@@ -92,6 +92,16 @@ public static class SMBZGlobals
     public static void SetIsFacingRight(BaseCharacter character, bool value)
     {
         character.GetType().GetField("IsFacingRight", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
+    }
+
+    public static bool GetPreventDrag(BaseCharacter character)
+    {
+        return (bool)character.GetType().GetField("PreventDrag", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+    }
+
+    public static void SetPreventDrag(BaseCharacter character, bool value)
+    {
+        character.GetType().GetField("PreventDrag", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(character, value);
     }
 
     public static bool IsThereTwoOrLessPlayersAreAlive()

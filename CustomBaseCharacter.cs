@@ -100,6 +100,30 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    public bool IsBursting
+    {
+        get
+        {
+            return (bool)typeof(BaseCharacter).GetField("IsBursting", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("IsBursting", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public bool IsRushing
+    {
+        get
+        {
+            return (bool)typeof(BaseCharacter).GetField("IsRushing", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("IsRushing", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
     public bool IsFacingRight
     {
         get
