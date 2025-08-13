@@ -210,6 +210,18 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    public float ArmorHealth
+    {
+        get
+        {
+            return (float)typeof(BaseCharacter).GetField("ArmorHealth", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("ArmorHealth", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
     public float PreventBurstTimer
     {
         get
@@ -683,6 +695,57 @@ public class CustomBaseCharacter : BaseCharacter
             };
         }
         Comp_CustomAnimator.Play(AttackToPrepare.AnimationNameHash, AttackToPrepare);
+    }
+
+    public override void Hurt(TakeDamageRequest request)
+    {
+        float ArmorHealthBefore = ArmorHealth;
+        float HPBefore = MyCharacterControl.ParticipantDataReference.Health.GetCurrent();
+
+        base.Hurt(request);
+
+        bool flag = false;
+        if (ArmorHealthBefore > 0f && !request.isUnblockable)
+        {
+            if (ArmorHealth > 0f)
+                flag = true;
+        }
+
+        if (flag)
+        {
+
+        }
+        else if (IsGuarding && !request.isBackAttack && !request.isUnblockable)
+        {
+            if (request.chipDamage != 0f)
+            {
+                if (!(!request.isChipDamageFatal && HPBefore <= request.chipDamage))
+                {
+                    if (MyCharacterControl.ParticipantDataReference.Health.GetCurrent() <= 0f)
+                    {
+                        Comp_CustomAnimator.Play(ASN_Hit);
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (SMBZGlobals.BattleState == BattleController.BattleStateENUM.Normal)
+            {
+                if (IsOnGround && request.launch.y <= -3f)
+                {
+                    Comp_CustomAnimator.Play(ASN_Grounded);
+                }
+                else
+                {
+                    Comp_CustomAnimator.Play(ASN_Hit, true);
+                }
+            }
+            else if (SMBZGlobals.BattleState == BattleController.BattleStateENUM.MovementRush_Grounded || SMBZGlobals.BattleState == BattleController.BattleStateENUM.MovementRush_Aerial)
+            {
+                Comp_CustomAnimator.Play(ASN_Hit);
+            }
+        }
     }
 
     public override void OnDeath()
