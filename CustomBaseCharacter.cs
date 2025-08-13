@@ -160,6 +160,30 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    public int ComboSwingCounter
+    {
+        get
+        {
+            return (int)typeof(BaseCharacter).GetField("ComboSwingCounter", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("ComboSwingCounter", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
+    public bool IsComboLinkAvailable
+    {
+        get
+        {
+            return (bool)typeof(BaseCharacter).GetField("IsComboLinkAvailable", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            typeof(BaseCharacter).GetField("IsComboLinkAvailable", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
     protected override void Awake()
     {
         Comp_Animator = GetComponent<Animator>();
