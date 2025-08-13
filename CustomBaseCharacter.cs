@@ -250,6 +250,13 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    public void SetupFromOldComponent(CustomCharacter c, CustomBaseCharacter old)
+    {
+        cc = c;
+        Comp_Hurtbox = old.Comp_Hurtbox;
+        CharacterData = cc.characterData;
+    }
+
     protected override void Awake()
     {
         Comp_Animator = GetComponent<Animator>();
