@@ -83,7 +83,6 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.spinbox_scaleY.setValue(effect["scale"][1] if "scale" in effect else 1)
 
         self.checkbox_interpolate.stateChanged.connect(self.onSetInterpolate)
-        self.combobox_textures.currentTextChanged.connect(self.onChangeTexture)
         self.btn_openFolder.clicked.connect(self.onOpenEffectsFolder)
         self.btn_refresh.clicked.connect(self.onRefreshClicked)
         self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
@@ -92,6 +91,7 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.spinbox_scaleY.valueChanged.connect(self.onChangeScaleY)
 
         self.refreshList()
+        self.combobox_textures.currentTextChanged.connect(self.onChangeTexture)
 
     def refreshList(self):
         self.combobox_textures.clear()
