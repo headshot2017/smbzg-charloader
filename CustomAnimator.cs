@@ -8,6 +8,7 @@ public class CustomAnimator : MonoBehaviour
     public CustomAnimation m_CurrentAnimation = null;
     AttackBundle m_CurrentAttack;
     HitBox m_Hitbox;
+    ProjectileHitBox m_HitboxProj;
     Dictionary<AudioClip, AudioSource> m_PlayingSounds = new Dictionary<AudioClip, AudioSource>();
 
     UnityEngine.UI.Image m_CompImage;
@@ -146,11 +147,20 @@ public class CustomAnimator : MonoBehaviour
         if (currAction.frame != null)
             SetSprite(currAction.frame);
 
-        if (m_Hitbox != null && currAction.hitbox != null)
+        if (currAction.hitbox != null)
         {
-            m_Hitbox.IsActive = currAction.hitbox.on;
-            m_Hitbox.transform.localPosition = currAction.hitbox.pos;
-            m_Hitbox.transform.localScale = currAction.hitbox.scale;
+            if (m_Hitbox != null)
+            {
+                m_Hitbox.IsActive = currAction.hitbox.on;
+                m_Hitbox.transform.localPosition = currAction.hitbox.pos;
+                m_Hitbox.transform.localScale = currAction.hitbox.scale;
+            }
+            if (m_HitboxProj != null)
+            {
+                m_HitboxProj.IsActive = currAction.hitbox.on;
+                m_HitboxProj.transform.localPosition = currAction.hitbox.pos;
+                m_HitboxProj.transform.localScale = currAction.hitbox.scale;
+            }
         }
 
         if (m_CurrentAttack != null)
@@ -190,12 +200,23 @@ public class CustomAnimator : MonoBehaviour
         return false;
     }
 
-    public void SetAnimList(Dictionary<int, CustomAnimation> animations, GameObject obj, Vector2 globalOffset, float globalScale=1, HitBox hitbox=null)
+    public void SetAnimList(Dictionary<int, CustomAnimation> animations, GameObject obj, Vector2 globalOffset)
+    {
+        SetAnimList(animations, obj, globalOffset, 1, hitbox: null);
+    }
+
+    public void SetAnimList(Dictionary<int, CustomAnimation> animations, GameObject obj, Vector2 globalOffset, float globalScale = 1)
+    {
+        SetAnimList(animations, obj, globalOffset, globalScale, hitbox: null);
+    }
+
+    public void SetAnimList(Dictionary<int, CustomAnimation> animations, GameObject obj, Vector2 globalOffset, float globalScale = 1, HitBox hitbox = null)
     {
         m_Animations = animations;
         m_GlobalOffset = globalOffset;
         m_GlobalScale = globalScale;
         m_Hitbox = hitbox;
+        m_HitboxProj = null;
         m_CompImage = obj.GetComponent<UnityEngine.UI.Image>();
         m_CompSpriteRenderer = obj.GetComponent<SpriteRenderer>();
         if (!m_CompImage && !m_CompSpriteRenderer)
@@ -203,6 +224,32 @@ public class CustomAnimator : MonoBehaviour
             throw new Exception($"This GameObject ({obj.name}) doesn't have an UI.Image or SpriteRenderer component to set the sprite into");
         }
         if (m_CompImage) m_CompImage.preserveAspect = true;
+    }
+
+    public void SetAnimList(Dictionary<int, CustomAnimation> animations, GameObject obj, Vector2 globalOffset, float globalScale = 1, ProjectileHitBox hitboxProj = null)
+    {
+        m_Animations = animations;
+        m_GlobalOffset = globalOffset;
+        m_GlobalScale = globalScale;
+        m_Hitbox = null;
+        m_HitboxProj = hitboxProj;
+        m_CompImage = obj.GetComponent<UnityEngine.UI.Image>();
+        m_CompSpriteRenderer = obj.GetComponent<SpriteRenderer>();
+        if (!m_CompImage && !m_CompSpriteRenderer)
+        {
+            throw new Exception($"This GameObject ({obj.name}) doesn't have an UI.Image or SpriteRenderer component to set the sprite into");
+        }
+        if (m_CompImage) m_CompImage.preserveAspect = true;
+    }
+
+    public void SetSingleAnim(CustomAnimation animation, GameObject obj, Vector2 globalOffset)
+    {
+        SetSingleAnim(animation, obj, globalOffset, 1, hitbox: null);
+    }
+
+    public void SetSingleAnim(CustomAnimation animation, GameObject obj, Vector2 globalOffset, float globalScale = 1)
+    {
+        SetSingleAnim(animation, obj, globalOffset, globalScale, hitbox: null);
     }
 
     public void SetSingleAnim(CustomAnimation animation, GameObject obj, Vector2 globalOffset, float globalScale = 1, HitBox hitbox = null)
@@ -213,6 +260,7 @@ public class CustomAnimator : MonoBehaviour
         m_GlobalOffset = globalOffset;
         m_GlobalScale = globalScale;
         m_Hitbox = hitbox;
+        m_HitboxProj = null;
         m_CompImage = obj.GetComponent<UnityEngine.UI.Image>();
         m_CompSpriteRenderer = obj.GetComponent<SpriteRenderer>();
         if (!m_CompImage && !m_CompSpriteRenderer)
@@ -230,6 +278,35 @@ public class CustomAnimator : MonoBehaviour
         m_Ended = false;
         m_CurrentAttack = null;
         if (m_Hitbox != null) m_Hitbox.IsActive = false;
+        OnFrameChange();
+    }
+
+    public void SetSingleAnim(CustomAnimation animation, GameObject obj, Vector2 globalOffset, float globalScale = 1, ProjectileHitBox hitboxProj = null)
+    {
+        m_Animations = null;
+        m_CurrentAnimation = animation;
+
+        m_GlobalOffset = globalOffset;
+        m_GlobalScale = globalScale;
+        m_Hitbox = null;
+        m_HitboxProj = hitboxProj;
+        m_CompImage = obj.GetComponent<UnityEngine.UI.Image>();
+        m_CompSpriteRenderer = obj.GetComponent<SpriteRenderer>();
+        if (!m_CompImage && !m_CompSpriteRenderer)
+        {
+            throw new Exception($"This GameObject ({obj.name}) doesn't have an UI.Image or SpriteRenderer component to set the sprite into");
+        }
+        if (m_CompImage) m_CompImage.preserveAspect = true;
+
+        ClearSounds();
+
+        m_Time = 0;
+        m_Frame = 0;
+        m_Loops = 0;
+        m_Playing = true;
+        m_Ended = false;
+        m_CurrentAttack = null;
+        if (m_HitboxProj != null) m_HitboxProj.IsActive = false;
         OnFrameChange();
     }
 
@@ -327,6 +404,7 @@ public class CustomAnimator : MonoBehaviour
         m_Ended = false;
         m_CurrentAttack = null;
         if (m_Hitbox != null) m_Hitbox.IsActive = false;
+        if (m_HitboxProj != null) m_HitboxProj.IsActive = false;
         OnFrameChange();
         return true;
     }
@@ -441,10 +519,18 @@ public class CustomAnimator : MonoBehaviour
         else
             nextAction = m_CurrentAnimation.actions[m_Frame + 1];
 
-        if (m_Hitbox != null && currAction.hitbox != null && nextAction.hitbox != null)
+        if (currAction.hitbox != null && nextAction.hitbox != null)
         {
-            m_Hitbox.transform.localPosition = Vector3.Lerp(currAction.hitbox.pos, nextAction.hitbox.pos, lerp);
-            m_Hitbox.transform.localScale = Vector3.Lerp(currAction.hitbox.scale, nextAction.hitbox.scale, lerp);
+            if (m_Hitbox != null)
+            {
+                m_Hitbox.transform.localPosition = Vector3.Lerp(currAction.hitbox.pos, nextAction.hitbox.pos, lerp);
+                m_Hitbox.transform.localScale = Vector3.Lerp(currAction.hitbox.scale, nextAction.hitbox.scale, lerp);
+            }
+            if (m_HitboxProj != null)
+            {
+                m_HitboxProj.transform.localPosition = Vector3.Lerp(currAction.hitbox.pos, nextAction.hitbox.pos, lerp);
+                m_HitboxProj.transform.localScale = Vector3.Lerp(currAction.hitbox.scale, nextAction.hitbox.scale, lerp);
+            }
         }
 
         Color colorLerp = Color.Lerp(currAction.color, nextAction.color, lerp);
