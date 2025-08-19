@@ -281,14 +281,20 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             actionDuplicate.setData(item)
 
         elif item.itemLevel == 1:
+            actionMoveTop = menu.addAction("Move to top")
             actionMoveUp = menu.addAction("Move up")
             actionMoveDown = menu.addAction("Move down")
+            actionMoveBottom = menu.addAction("Move to bottom")
             actionDuplicate = menu.addAction("Duplicate")
+            actionMoveTop.triggered.connect(self.onMenuActionMoveTop)
             actionMoveUp.triggered.connect(self.onMenuActionMoveUp)
             actionMoveDown.triggered.connect(self.onMenuActionMoveDown)
+            actionMoveBottom.triggered.connect(self.onMenuActionMoveBottom)
             actionDuplicate.triggered.connect(self.onMenuActionDuplicateFrame)
+            actionMoveTop.setData(item)
             actionMoveUp.setData(item)
             actionMoveDown.setData(item)
+            actionMoveBottom.setData(item)
             actionDuplicate.setData(item)
 
         actionDelete = menu.addAction("Delete")
@@ -340,6 +346,19 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         self.reloadTree()
 
     @QtCore.pyqtSlot()
+    def onMenuActionMoveTop(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        if frameInd == 0: return
+
+        anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
+        characterdata.jsonFile["anims"][animName]["frames"].insert(0, anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
     def onMenuActionMoveUp(self):
         item = self.sender().data()
         animTree = item.parent()
@@ -362,6 +381,19 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
 
         anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
         characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd+1, anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveBottom(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        if frameInd >= len(characterdata.jsonFile["anims"][animName]["frames"])-1: return
+
+        anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
+        characterdata.jsonFile["anims"][animName]["frames"].append(anim)
 
         self.reloadTree()
 
@@ -624,14 +656,20 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
             actionDuplicate.setData(item)
 
         elif item.itemLevel == 1:
+            actionMoveTop = menu.addAction("Move to top")
             actionMoveUp = menu.addAction("Move up")
             actionMoveDown = menu.addAction("Move down")
+            actionMoveBottom = menu.addAction("Move to bottom")
             actionDuplicate = menu.addAction("Duplicate")
+            actionMoveTop.triggered.connect(self.onMenuActionMoveTop)
             actionMoveUp.triggered.connect(self.onMenuActionMoveUp)
             actionMoveDown.triggered.connect(self.onMenuActionMoveDown)
+            actionMoveBottom.triggered.connect(self.onMenuActionMoveBottom)
             actionDuplicate.triggered.connect(self.onMenuActionDuplicateFrame)
+            actionMoveTop.setData(item)
             actionMoveUp.setData(item)
             actionMoveDown.setData(item)
+            actionMoveBottom.setData(item)
             actionDuplicate.setData(item)
 
         actionDelete = menu.addAction("Delete")
@@ -683,6 +721,19 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         self.reloadTree()
 
     @QtCore.pyqtSlot()
+    def onMenuActionMoveTop(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        fxName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        if frameInd == 0: return
+
+        anim = characterdata.jsonFile["effects"][fxName]["frames"].pop(frameInd)
+        characterdata.jsonFile["effects"][fxName]["frames"].insert(0, anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
     def onMenuActionMoveUp(self):
         item = self.sender().data()
         animTree = item.parent()
@@ -705,6 +756,19 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
 
         anim = characterdata.jsonFile["effects"][fxName]["frames"].pop(frameInd)
         characterdata.jsonFile["effects"][fxName]["frames"].insert(frameInd+1, anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveBottom(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        fxName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        if frameInd >= len(characterdata.jsonFile["effects"][fxName]["frames"])-1: return
+
+        anim = characterdata.jsonFile["effects"][fxName]["frames"].pop(frameInd)
+        characterdata.jsonFile["effects"][fxName]["frames"].append(anim)
 
         self.reloadTree()
 
@@ -1073,14 +1137,20 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             actionDuplicate.setData(item)
 
         elif item.itemLevel == 2:
+            actionMoveTop = menu.addAction("Move to top")
             actionMoveUp = menu.addAction("Move up")
             actionMoveDown = menu.addAction("Move down")
+            actionMoveBottom = menu.addAction("Move to bottom")
             actionDuplicate = menu.addAction("Duplicate")
+            actionMoveTop.triggered.connect(self.onMenuActionMoveTop)
             actionMoveUp.triggered.connect(self.onMenuActionMoveUp)
             actionMoveDown.triggered.connect(self.onMenuActionMoveDown)
+            actionMoveBottom.triggered.connect(self.onMenuActionMoveBottom)
             actionDuplicate.triggered.connect(self.onMenuActionDuplicateFrame)
+            actionMoveTop.setData(item)
             actionMoveUp.setData(item)
             actionMoveDown.setData(item)
+            actionMoveBottom.setData(item)
             actionDuplicate.setData(item)
 
         actionDelete = menu.addAction("Delete")
@@ -1143,6 +1213,22 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         self.reloadTree()
 
     @QtCore.pyqtSlot()
+    def onMenuActionMoveTop(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        companionTree = animTree.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        companionName = companionTree.text(0)
+        companion = characterdata.companionJson[companionName]
+        if frameInd == 0: return
+
+        anim = companion["anims"][animName]["frames"].pop(frameInd)
+        companion["anims"][animName]["frames"].insert(0, anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
     def onMenuActionMoveUp(self):
         item = self.sender().data()
         animTree = item.parent()
@@ -1153,8 +1239,8 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         companion = characterdata.companionJson[companionName]
         if frameInd == 0: return
 
-        anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
-        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd-1, anim)
+        anim = companion["anims"][animName]["frames"].pop(frameInd)
+        companion["anims"][animName]["frames"].insert(frameInd-1, anim)
 
         self.reloadTree()
 
@@ -1169,8 +1255,24 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         companion = characterdata.companionJson[companionName]
         if frameInd >= len(characterdata.jsonFile["anims"][animName]["frames"])-1: return
 
-        anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
-        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd+1, anim)
+        anim = companion["anims"][animName]["frames"].pop(frameInd)
+        companion["anims"][animName]["frames"].insert(frameInd+1, anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveBottom(self):
+        item = self.sender().data()
+        animTree = item.parent()
+        companionTree = animTree.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(item)
+        companionName = companionTree.text(0)
+        companion = characterdata.companionJson[companionName]
+        if frameInd >= len(characterdata.jsonFile["anims"][animName]["frames"])-1: return
+
+        anim = companion["anims"][animName]["frames"].pop(frameInd)
+        companion["anims"][animName]["frames"].append(anim)
 
         self.reloadTree()
 
