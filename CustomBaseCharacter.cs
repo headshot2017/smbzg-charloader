@@ -379,6 +379,23 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    [HarmonyPatch(typeof(BaseCharacter), "SetAlternativeColors", new Type[] { typeof(bool) } )]
+    private static class AltColorsPatch
+    {
+        private static void Postfix(BaseCharacter __instance, bool useAlternateColors)
+        {
+            if (!SMBZGlobals.IsCustomCharacter(__instance)) return;
+
+            CustomBaseCharacter i = (CustomBaseCharacter)__instance;
+            i.SetCustomAlternativeColors(useAlternateColors);
+        }
+    }
+
+    public virtual void SetCustomAlternativeColors(bool useAlternateColors)
+    {
+
+    }
+
     protected override void Start()
     {
         base.HitBox_0 = base.transform.Find("HitBox_0").GetComponent<HitBox>();
