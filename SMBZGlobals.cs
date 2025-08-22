@@ -139,6 +139,27 @@ public static class SMBZGlobals
         return ActiveCharacterControlList.Count > 2;
     }
 
+    public static void SpeedLines_Play()
+    {
+        foreach (ParticleSystem particle in BackgroundManager.Particle_TransitionSpeedLines.particles)
+        {
+            particle.Play(withChildren: true);
+        }
+    }
+
+    public static void SpeedLines_Stop()
+    {
+        foreach (ParticleSystem particle in BackgroundManager.Particle_TransitionSpeedLines.particles)
+        {
+            particle.Stop(withChildren: true, ParticleSystemStopBehavior.StopEmitting);
+        }
+    }
+
+    public static void SpeedLines_SetRotation(float z)
+    {
+        BackgroundManager.Particle_TransitionSpeedLines.transform.rotation = Quaternion.Euler(0f, 0f, z);
+    }
+
     public static ClashAndBurstManager ClashAndBurstManager =>
         (ClashAndBurstManager)typeof(BattleController).GetField("ClashAndBurstManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
 
