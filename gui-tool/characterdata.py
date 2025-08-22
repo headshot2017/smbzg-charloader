@@ -91,6 +91,12 @@ def deleteCompanion(companionName):
     if os.path.exists(companionPath): shutil.rmtree(companionPath)
     if companionName in companionJson: del companionJson[companionName]
 
+def reloadEffects():
+    global effects
+
+    path = gamepath.getCharacterPath(name)
+    effects = os.listdir("%s/effects" % path) if os.path.exists("%s/effects" % path) else []
+
 def reset(defaultName=""):
     global name, jsonFile, sounds, effects, companionJson
     name = defaultName
@@ -114,7 +120,7 @@ def load(charName):
         for f in os.listdir("%s/sounds" % path):
             sounds[os.path.splitext(f)[0]] = mixer.Sound("%s/sounds/%s" % (path, f))
 
-    effects = os.listdir("%s/effects" % path) if os.path.exists("%s/effects" % path) else []
+    reloadEffects()
 
     if os.path.exists("%s/companions" % path):
         for f in os.listdir("%s/companions" % path):

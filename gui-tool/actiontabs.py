@@ -93,7 +93,10 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.refreshList()
         self.combobox_textures.currentTextChanged.connect(self.onChangeTexture)
 
-    def refreshList(self):
+    def refreshList(self, dirFolder=False):
+        if dirFolder:
+            characterdata.reloadEffects()
+
         self.combobox_textures.clear()
         for _fx in characterdata.effects:
             fx = os.path.splitext(_fx)[0]
@@ -119,7 +122,7 @@ class ActionTab_GeneralEffect(BaseActionTab):
 
     @QtCore.pyqtSlot()
     def onRefreshClicked(self):
-        self.refreshList()
+        self.refreshList(True)
 
     @QtCore.pyqtSlot(float)
     def onChangeOffsetX(self, value):
