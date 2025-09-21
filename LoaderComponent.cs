@@ -183,8 +183,11 @@ public class CharLoaderComponent : MonoBehaviour
             {
                 ProxyObject animObject = pair.Value as ProxyObject;
                 CustomAnimation customAnim = new CustomAnimation();
+
+                string name = pair.Key;
+
                 customAnim.actions = new List<AnimAction>();
-                customAnim.hash = Animator.StringToHash(pair.Key);
+                customAnim.hash = Animator.StringToHash(name);
                 customAnim.loops = animObject.Keys.Contains("loops") ? animObject["loops"] : -1;
                 customAnim.interpolate = animObject.Keys.Contains("interpolate") ? animObject["interpolate"] : true;
                 if (animObject.Keys.Contains("scale")) customAnim.scale = new Vector2(animObject["scale"][0], animObject["scale"][1]);
@@ -223,6 +226,25 @@ public class CharLoaderComponent : MonoBehaviour
 
                 cc.rootCharacter.animations[customAnim.hash] = customAnim;
                 cc.rootCharacter.animations[alternateHash] = customAnim;
+            }
+
+            // v1.6: New "PreJump" animation
+            if (!cc.rootCharacter.animations.ContainsKey(CustomAnimator.ASN_PreJump) &&
+                cc.rootCharacter.animations.ContainsKey(CustomAnimator.ASN_Land) &&
+                cc.rootCharacter.animations[CustomAnimator.ASN_Land].actions.Count > 0)
+            {
+                CustomAnimation customAnim = new CustomAnimation();
+                CustomAnimation baseAnim = cc.rootCharacter.animations[CustomAnimator.ASN_Land];
+
+                customAnim.actions = new List<AnimAction>();
+                customAnim.hash = CustomAnimator.ASN_PreJump;
+                customAnim.loops = -1;
+                customAnim.interpolate = true;
+                customAnim.scale = baseAnim.scale;
+                customAnim.offset = baseAnim.offset;
+                customAnim.actions.Add(baseAnim.actions[0]);
+
+                cc.rootCharacter.animations[CustomAnimator.ASN_PreJump] = customAnim;
             }
 
             Variant effectsRoot = json["effects"];
@@ -287,8 +309,11 @@ public class CharLoaderComponent : MonoBehaviour
                     {
                         ProxyObject animObject = pair.Value as ProxyObject;
                         CustomAnimation customAnim = new CustomAnimation();
+
+                        string name = pair.Key;
+
                         customAnim.actions = new List<AnimAction>();
-                        customAnim.hash = Animator.StringToHash(pair.Key);
+                        customAnim.hash = Animator.StringToHash(name);
                         customAnim.loops = animObject.Keys.Contains("loops") ? animObject["loops"] : -1;
                         customAnim.interpolate = animObject.Keys.Contains("interpolate") ? animObject["interpolate"] : true;
                         if (animObject.Keys.Contains("scale")) customAnim.scale = new Vector2(animObject["scale"][0], animObject["scale"][1]);
@@ -323,6 +348,25 @@ public class CharLoaderComponent : MonoBehaviour
                     }
 
                     cc.companions[companion.name] = companion;
+
+                    // v1.6: New "PreJump" animation
+                    if (!cc.companions[companion.name].animations.ContainsKey(CustomAnimator.ASN_PreJump) &&
+                        cc.companions[companion.name].animations.ContainsKey(CustomAnimator.ASN_Land) &&
+                        cc.companions[companion.name].animations[CustomAnimator.ASN_Land].actions.Count > 0)
+                    {
+                        CustomAnimation customAnim = new CustomAnimation();
+                        CustomAnimation baseAnim = cc.companions[companion.name].animations[CustomAnimator.ASN_Land];
+
+                        customAnim.actions = new List<AnimAction>();
+                        customAnim.hash = CustomAnimator.ASN_PreJump;
+                        customAnim.loops = -1;
+                        customAnim.interpolate = true;
+                        customAnim.scale = baseAnim.scale;
+                        customAnim.offset = baseAnim.offset;
+                        customAnim.actions.Add(baseAnim.actions[0]);
+
+                        cc.companions[companion.name].animations[CustomAnimator.ASN_PreJump] = customAnim;
+                    }
                 }
             }
 

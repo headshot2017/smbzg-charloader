@@ -286,7 +286,7 @@ public class CustomBaseCharacter : BaseCharacter
         GroundedAcceleration = 30f;
         GroundedDrag = 3f;
         HopPower = 10.5f;
-        JumpChargeMax = 0f;
+        JumpChargeMax = 0.1f;
         Pursue_Speed = 25f;
         Pursue_StartupDelay = 0.1f;
 
@@ -466,6 +466,7 @@ public class CustomBaseCharacter : BaseCharacter
         Comp_CustomAnimator.m_CurrentProperties.Bursting = Comp_Animator.GetBool("Bursting");
         Comp_CustomAnimator.m_CurrentProperties.InputingLeft = Comp_Animator.GetBool("InputingLeft");
         Comp_CustomAnimator.m_CurrentProperties.InputingRight = Comp_Animator.GetBool("InputingRight");
+        Comp_CustomAnimator.m_CurrentProperties.PreparingJump = GetPlayerState() == PlayerStateENUM.PreparingToJump;
         Comp_CustomAnimator.m_CurrentProperties.DontChangeSprite =
             !Comp_CustomAnimator.m_CurrentProperties.Bursting && (
                 GetPlayerState() == PlayerStateENUM.Attacking ||

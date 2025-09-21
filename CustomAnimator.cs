@@ -39,6 +39,7 @@ public class CustomAnimator : MonoBehaviour
         public bool DontChangeSprite;
         public bool InputingLeft;
         public bool InputingRight;
+        public bool PreparingJump;
     }
     public Properties m_CurrentProperties;
     Properties m_LastProperties;
@@ -63,6 +64,7 @@ public class CustomAnimator : MonoBehaviour
     public static readonly int ASN_Tumble = Animator.StringToHash("Tumble");
     public static readonly int ASN_Grounded = Animator.StringToHash("Grounded");
     public static readonly int ASN_GetUp = Animator.StringToHash("GetUp");
+    public static readonly int ASN_PreJump = Animator.StringToHash("PreJump");
 
     public void Awake()
     {
@@ -481,6 +483,12 @@ public class CustomAnimator : MonoBehaviour
         if (p.Bursting)
         {
             Play(ASN_Bursting);
+            return;
+        }
+
+        if (p.PreparingJump)
+        {
+            Play(ASN_PreJump);
             return;
         }
 
