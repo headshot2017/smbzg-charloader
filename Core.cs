@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HarmonyLib;
 
-[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.5.1", "Headshotnoby/headshot2017", null)]
+[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.6", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
 
 namespace CharLoader
@@ -163,30 +163,33 @@ namespace CharLoader
             CharLoaderComponent dl = obj.AddComponent<CharLoaderComponent>();
         }
 
-        void SetupCharSelectArcade()
+        void SetupPortraits(Transform PortraitTableRoot, CharacterSelectScript_Base charSelect)
         {
             // Add character portraits
-            Transform CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect");
 
-            Transform PortraitTableRoot = CharacterSelectRoot.Find("CharacterSelectPortraitTable");
             Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
-            /*
             GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
             PortraitNewRow.transform.RemoveAllChildren();
             PortraitNewRow.name = "CustomRow";
             PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, -65);
-            */
 
             foreach (CustomCharacter cc in customCharacters)
             {
-                GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitRow.transform);
+                GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitNewRow.transform);
                 CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
                 Image PortraitImg = PortraitGameObj.GetComponent<Image>();
                 PortraitGameObj.name = $"Character_{cc.internalName}";
                 Portrait.Data = cc.characterData;
                 PortraitImg.sprite = cc.portrait;
-                CharacterSelectAcradeScript.ins.CharacterPortraitList.Add(Portrait);
+                charSelect.CharacterPortraitList.Add(Portrait);
             }
+        }
+
+        void SetupCharSelectArcade()
+        {
+            Transform CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect");
+            Transform PortraitTableRoot = CharacterSelectRoot.Find("CharacterSelectPortraitTable");
+            SetupPortraits(PortraitTableRoot, CharacterSelectAcradeScript.ins);
 
             // Setup additional UIs
 
@@ -215,26 +218,8 @@ namespace CharLoader
 
         void SetupCharSelectVersus()
         {
-            // Add character portraits
             Transform PortraitTableRoot = CharacterSelectScript.ins.Section_CharacterSelect.transform.Find("CharacterSelectPortraitTable");
-            Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
-            /*
-            GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
-            PortraitNewRow.transform.RemoveAllChildren();
-            PortraitNewRow.name = "CustomRow";
-            PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, -65);
-            */
-
-            foreach (CustomCharacter cc in customCharacters)
-            {
-                GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitRow.transform);
-                CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
-                Image PortraitImg = PortraitGameObj.GetComponent<Image>();
-                PortraitGameObj.name = $"Character_{cc.internalName}";
-                Portrait.Data = cc.characterData;
-                PortraitImg.sprite = cc.portrait;
-                CharacterSelectScript.ins.CharacterPortraitList.Add(Portrait);
-            }
+            SetupPortraits(PortraitTableRoot, CharacterSelectScript.ins);
         }
 
         void OnCustomCharsToggle(bool on)
@@ -600,6 +585,263 @@ namespace CharLoader
                 }
 
                 return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(UI_Participant), "HandleInput")]
+        private static class HandleInputPatch
+        {
+            private static bool Prefix(UI_Participant __instance)
+            {
+                int? UI_OwnershipPlayerIndex = (int?)typeof(UI_Participant).GetProperty("UI_OwnershipPlayerIndex", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                if (UI_OwnershipPlayerIndex == null)
+                    return false;
+
+                var playerInput = GlobalInputManager.ins.GetPlayerInputByIndex(UI_OwnershipPlayerIndex);
+                if (playerInput == null)
+                {
+                    LogHelper.LogError($"Failed to find player index {UI_OwnershipPlayerIndex.Value}");
+                    return false;
+                }
+
+                var pInput = playerInput.InputActionAsset.CharacterSelect;
+                var selectedElement = playerInput.EventSystem.currentSelectedGameObject;
+                if (selectedElement == __instance.Input_Health.gameObject)
+                {
+                    // sliders already increment/decrement by 1, so keep that in mind.
+                    int increment = 9;
+                    if (pInput.Submit.IsPressed())
+                    {
+                        increment -= 9;
+                    }
+                    if (increment != 0)
+                    {
+                        if (pInput.Right.WasPressedThisFrame())
+                        {
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                            __instance.Input_Health.value += increment;
+                        }
+                        else if (pInput.Left.WasPressedThisFrame())
+                        {
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                            __instance.Input_Health.value -= increment;
+                        }
+                    }
+                }
+                if (selectedElement == __instance.Input_Delay.gameObject)
+                {
+                    // sliders already increment/decrement by 1, so keep that in mind.
+                    int increment = 9;
+                    if (pInput.Submit.IsPressed())
+                    {
+                        increment += 9;
+                    }
+                    if (increment != 0)
+                    {
+                        if (pInput.Right.WasPressedThisFrame())
+                        {
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                            __instance.Input_Delay.value += increment;
+                        }
+                        else if (pInput.Left.WasPressedThisFrame())
+                        {
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                            __instance.Input_Delay.value -= increment;
+                        }
+                    }
+                }
+                if (selectedElement == __instance.Image_Team.gameObject)
+                {
+                    string TeamTag = (string)typeof(UI_Participant).GetField("TeamTag", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                    var index = BattleCache.teamTags.IndexOf(TeamTag);
+                    bool doChangeTeam = false;
+                    if (pInput.Right.WasPressedThisFrame())
+                    {
+                        index++;
+                        doChangeTeam = true;
+                        SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                    }
+                    else if (pInput.Left.WasPressedThisFrame())
+                    {
+                        index--;
+                        doChangeTeam = true;
+                        SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                    }
+                    if (doChangeTeam)
+                    {
+                        if (index < 1)
+                            index = BattleCache.teamTags.Count - 1;
+                        if (index > BattleCache.teamTags.Count - 1)
+                            index = 1;
+                        __instance.UpdateTeamTag(BattleCache.teamTags[index]);
+                    }
+                }
+
+                var handler = (CharacterSelectPlayerInputHandler_Base)typeof(UI_Participant).GetMethod("GetHandler", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
+
+                // When participant doesn't have a character selected...
+                if (selectedElement == __instance.Input_SelectedCharacter.gameObject)
+                {
+                    CharacterData_SO SelectedCharacter = (CharacterData_SO)typeof(UI_Participant).GetField("SelectedCharacter", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                    CharacterSelectScript_Base CSScript = (CharacterSelectScript_Base)typeof(UI_Participant).GetField("CSScript", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+                    FieldInfo CharacterSelectionCurrentIndex = handler.GetType().GetField("CharacterSelectionCurrentIndex", BindingFlags.NonPublic | BindingFlags.Instance);
+                    FieldInfo StandaloneTransformation_IsEnabled = typeof(UI_Participant).GetField("StandaloneTransformation_IsEnabled", BindingFlags.NonPublic | BindingFlags.Instance);
+                    FieldInfo FollowPlayerEventSystem = typeof(UI_PlayerCursor).GetField("FollowPlayerEventSystem", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo HoverCharacterPortrait = typeof(UI_Participant).GetMethod("HoverCharacterPortrait", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(CharacterPortrait) }, null);
+                    MethodInfo SelectCharacter = typeof(UI_Participant).GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(CharacterData_SO) }, null);
+                    MethodInfo BeginCharacterSelection = typeof(UI_Participant).GetMethod("BeginCharacterSelection", BindingFlags.NonPublic | BindingFlags.Instance);
+                    MethodInfo MoveToPosition = typeof(UI_PlayerCursor).GetMethod("MoveToPosition", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(RectTransform) }, null);
+                    MethodInfo SetState_HoveringLastActionButton = handler.GetType().GetMethod("SetState_HoveringLastActionButton", BindingFlags.NonPublic | BindingFlags.Instance);
+                    UI_Participant ParticipantUI_CurrentlySelected = (UI_Participant)handler.GetType().GetField("ParticipantUI_CurrentlySelected", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(handler);
+                    bool IsCPU = (bool)typeof(UI_Participant).GetProperty("IsCPU", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
+
+                    if (SelectedCharacter == null)
+                    {
+                        var cList = CSScript.CharacterPortraitList;
+
+                        Transform CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect");
+                        if (!CharacterSelectRoot)
+                            CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelectPage");
+                        Transform PortraitTableRoot = CharacterSelectRoot.Find("CharacterSelectPortraitTable");
+
+                        int rowCount = PortraitTableRoot.childCount;
+                        List<int> columnsInRows = new List<int>();
+                        List<int> rowStartIndex = new List<int>();
+                        for (int i = 0; i < rowCount; i++)
+                        {
+                            rowStartIndex.Add(columnsInRows.Sum(x => x));
+                            columnsInRows.Add(PortraitTableRoot.GetChild(i).childCount);
+                        }
+                        int currentRow = -1;
+                        for (int i=rowCount-1; i>=0; i--)
+                        {
+                            if ((int)CharacterSelectionCurrentIndex.GetValue(handler) >= rowStartIndex[i])
+                            {
+                                currentRow = i;
+                                break;
+                            }
+                        }
+
+                        // Listen to left/right inputs to switch between the options.
+                        if (pInput.Right.WasPressedThisFrame())
+                        {
+                            CharacterSelectionCurrentIndex.SetValue(handler, (int)CharacterSelectionCurrentIndex.GetValue(handler) + 1);
+                            if (cList.Count <= (int)CharacterSelectionCurrentIndex.GetValue(handler))
+                                CharacterSelectionCurrentIndex.SetValue(handler, 0);
+                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
+                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                        }
+                        else if (pInput.Left.WasPressedThisFrame())
+                        {
+                            CharacterSelectionCurrentIndex.SetValue(handler, (int)CharacterSelectionCurrentIndex.GetValue(handler) - 1);
+                            if ((int)CharacterSelectionCurrentIndex.GetValue(handler) < 0)
+                                CharacterSelectionCurrentIndex.SetValue(handler, cList.Count - 1);
+                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
+                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                        }
+                        if (pInput.Down.WasPressedThisFrame())
+                        {
+                            int nextRow = currentRow + 1;
+                            if (nextRow >= rowCount) nextRow = 0;
+                            bool evenDifferences = (columnsInRows[currentRow] % 2) != (columnsInRows[nextRow] % 2);
+                            int awayFromCenter = -(rowStartIndex[currentRow] + columnsInRows[currentRow]/2 - (int)CharacterSelectionCurrentIndex.GetValue(handler));
+                            if (evenDifferences)
+                            {
+                                if (columnsInRows[currentRow] % 2 == 0)
+                                    awayFromCenter++;
+                                else
+                                    awayFromCenter--;
+                            }
+
+                            int nextIndex = Mathf.Clamp(
+                                rowStartIndex[nextRow] + columnsInRows[nextRow]/2 + awayFromCenter,
+                                rowStartIndex[nextRow],
+                                rowStartIndex[nextRow] + columnsInRows[nextRow] - 1
+                            );
+                            CharacterSelectionCurrentIndex.SetValue(handler, nextIndex);
+
+                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
+                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                        }
+                        else if (pInput.Up.WasPressedThisFrame())
+                        {
+                            int nextRow = currentRow - 1;
+                            if (nextRow < 0) nextRow = rowCount-1;
+                            bool evenDifferences = (columnsInRows[currentRow] % 2) != (columnsInRows[nextRow] % 2);
+                            int awayFromCenter = -(rowStartIndex[currentRow] + columnsInRows[currentRow] / 2 - (int)CharacterSelectionCurrentIndex.GetValue(handler));
+                            if (evenDifferences)
+                            {
+                                if (columnsInRows[currentRow] % 2 == 0)
+                                    awayFromCenter++;
+                                else
+                                    awayFromCenter--;
+                            }
+
+                            int nextIndex = Mathf.Clamp(
+                                rowStartIndex[nextRow] + columnsInRows[nextRow] / 2 + awayFromCenter,
+                                rowStartIndex[nextRow],
+                                rowStartIndex[nextRow] + columnsInRows[nextRow] - 1
+                            );
+                            CharacterSelectionCurrentIndex.SetValue(handler, nextIndex);
+
+                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
+                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                        }
+
+                        // Listen to Submit input to select the character.
+                        if (pInput.Submit.WasPressedThisFrame())
+                        {
+                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
+                            if (portrait.IsRandom)
+                            {
+                                StandaloneTransformation_IsEnabled.SetValue(__instance, false);
+                                SelectCharacter.Invoke(__instance, new object[] { CSScript.GetRandomCharacter().Data });
+                                __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
+                            }
+                            else if (portrait.Data != null)
+                            {
+                                StandaloneTransformation_IsEnabled.SetValue(__instance, false);
+                                SelectCharacter.Invoke(__instance, new object[] { portrait.Data });
+                                __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
+                            }
+                            else
+                            {
+                                LogHelper.LogError("Submitted but no valid option available...");
+                            }
+                            FollowPlayerEventSystem.SetValue(handler.UI_PlayerCursor, true);
+                            MoveToPosition.Invoke(handler.UI_PlayerCursor, new object[] { __instance.rectTransform });
+                            playerInput.EventSystem.playerRoot = __instance.gameObject;
+                            if (IsCPU)
+                                playerInput.EventSystem.SetSelectedGameObject(__instance.Button_Okay.gameObject);
+                            else
+                                playerInput.EventSystem.SetSelectedGameObject(__instance.Dropdown_Profile.gameObject);
+                        }
+                        // Listen to Cancel input to deactivate the UI again.
+                        else if (pInput.Cancel.WasPressedThisFrame())
+                        {
+                            CSScript.RemoveParticipantUI(ParticipantUI_CurrentlySelected);
+                            SetState_HoveringLastActionButton.Invoke(handler, null);
+                            __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                        }
+                    }
+                    else
+                    {
+                        // Listen to deselect character.
+                        if (pInput.Submit.WasPressedThisFrame())
+                        {
+                            BeginCharacterSelection.Invoke(__instance, null);
+                            __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
+                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
+                        }
+                    }
+                }
+
+                return false;
             }
         }
 
