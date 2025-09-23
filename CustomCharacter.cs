@@ -13,12 +13,22 @@ public class SoundAction
     public bool loop;
 }
 
+public class PuppetAction
+{
+    public bool on;
+    public int layer;
+    public Vector2 offset;
+    public Vector2 scale = Vector2.one;
+    public float angle;
+};
+
 public class AnimAction
 {
     public Sprite frame = null;
     public string setAnim = null;
     public SoundAction sound = null;
     public HitboxAction hitbox = null;
+    public List<PuppetAction> puppets = null;
     public Vector2 scale = Vector2.one;
     public Vector2 offset;
     public Color color = Color.white;
@@ -53,6 +63,9 @@ public class CharacterCompanion
     public Dictionary<int, CustomAnimation> animations;
 
     public GameObject prefab;
+
+    // v1.6
+    public List<Sprite> puppets;
 }
 
 public class CustomCharacter

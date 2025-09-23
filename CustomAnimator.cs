@@ -178,6 +178,32 @@ public class CustomAnimator : MonoBehaviour
             }
         }
 
+        // v1.6: Puppet animation
+        if (currAction.puppets != null && m_CompSpriteRenderer != null)
+        {
+            Transform SpriteContainer = m_CompSpriteRenderer.gameObject.transform;
+            for (int i = 0; i < currAction.puppets.Count; i++)
+            {
+                if (i >= SpriteContainer.childCount)
+                {
+                    Melon<CharLoader.Core>.Logger.Msg($"i >= SpriteContainer.childCount ({i} >= {SpriteContainer.childCount}). This is NOT supposed to happen");
+                    break;
+                }
+
+                PuppetAction puppetAction = currAction.puppets[i];
+                GameObject puppetChild = SpriteContainer.GetChild(i).gameObject;
+                SpriteRenderer puppetSprite = puppetChild.GetComponent<SpriteRenderer>();
+
+                puppetChild.SetActive(puppetAction.on);
+                if (!puppetAction.on) continue;
+
+                puppetSprite.sortingOrder = m_CompSpriteRenderer.sortingOrder + puppetAction.layer;
+                puppetChild.transform.localPosition = puppetAction.offset;
+                puppetChild.transform.localScale = new Vector3(puppetAction.scale.x, puppetAction.scale.y, 1);
+                puppetChild.transform.localEulerAngles = new Vector3(0, 0, -puppetAction.angle);
+            }
+        }
+
         if (currAction.sound != null)
         {
             AudioClip sound = currAction.sound.sounds[UnityEngine.Random.Range(0, currAction.sound.sounds.Count)];
@@ -538,6 +564,39 @@ public class CustomAnimator : MonoBehaviour
             {
                 m_HitboxProj.transform.localPosition = Vector3.Lerp(currAction.hitbox.pos, nextAction.hitbox.pos, lerp);
                 m_HitboxProj.transform.localScale = Vector3.Lerp(currAction.hitbox.scale, nextAction.hitbox.scale, lerp);
+            }
+        }
+
+        // v1.6: Puppet animation
+        if (currAction.puppets != null && nextAction.puppets != null && m_CompSpriteRenderer != null)
+        {
+            Transform SpriteContainer = m_CompSpriteRenderer.gameObject.transform;
+            for (int i = 0; i < currAction.puppets.Count; i++)
+            {
+                if (i >= SpriteContainer.childCount)
+                {
+                    Melon<CharLoader.Core>.Logger.Msg($"i >= SpriteContainer.childCount ({i} >= {SpriteContainer.childCount}). This is NOT supposed to happen");
+                    break;
+                }
+
+                GameObject puppetChild = SpriteContainer.GetChild(i).gameObject;
+                if (!puppetChild.activeSelf) continue;
+
+                SpriteRenderer puppetSprite = puppetChild.GetComponent<SpriteRenderer>();
+
+                PuppetAction currPuppetAction = currAction.puppets[i];
+                PuppetAction nextPuppetAction = nextAction.puppets[i];
+
+                puppetChild.transform.localPosition = new Vector2(
+                    Mathf.Lerp(currPuppetAction.offset.x, nextPuppetAction.offset.x, lerp),
+                    Mathf.Lerp(currPuppetAction.offset.y, nextPuppetAction.offset.y, lerp)
+                );
+                puppetChild.transform.localScale = new Vector3(
+                    Mathf.Lerp(currPuppetAction.scale.x, nextPuppetAction.scale.x, lerp),
+                    Mathf.Lerp(currPuppetAction.scale.y, nextPuppetAction.scale.y, lerp),
+                    1
+                );
+                puppetChild.transform.localEulerAngles = new Vector3(0, 0, -Mathf.Lerp(currPuppetAction.angle, nextPuppetAction.angle, lerp));
             }
         }
 

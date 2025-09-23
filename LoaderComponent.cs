@@ -4,6 +4,8 @@ using UnityEngine.Networking;
 using MelonLoader;
 using TinyJSON;
 using System.Reflection;
+using System;
+using static System.Collections.Specialized.BitVector32;
 
 public class CharLoaderComponent : MonoBehaviour
 {
@@ -27,7 +29,7 @@ public class CharLoaderComponent : MonoBehaviour
             string path = _charName.Replace('\\', '/');
             string charName = Path.GetFileName(path);
 
-            Variant json = JSON.Load(File.ReadAllText($"{path}/character.json"));
+            ProxyObject json = JSON.Load(File.ReadAllText($"{path}/character.json")) as ProxyObject;
             CustomCharacter cc = new CustomCharacter();
 
             CurrCharacterLoading = charName;
@@ -177,6 +179,9 @@ public class CharLoaderComponent : MonoBehaviour
 
             cc.getUpTimer = 0;
 
+            // v1.6: Puppet animation
+            SetupPuppets(cc.rootCharacter, json);
+
             Variant animsRoot = json["anims"];
             cc.rootCharacter.animations = new Dictionary<int, CustomAnimation>();
             foreach (var pair in animsRoot as ProxyObject)
@@ -197,7 +202,7 @@ public class CharLoaderComponent : MonoBehaviour
                 Variant animList = animObject["frames"];
                 foreach (ProxyObject actionVar in animList as ProxyArray)
                 {
-                    AnimAction action = ParseAction(actionVar, cc.rootCharacter.sheet, cc.sounds);
+                    AnimAction action = ParseAction(actionVar, cc.rootCharacter.sheet, cc.sounds, cc.rootCharacter.puppets);
 
                     if (isGetUp)
                         cc.getUpTimer += action.delay;
@@ -268,7 +273,7 @@ public class CharLoaderComponent : MonoBehaviour
                 Variant animList = effectObject["frames"];
                 foreach (ProxyObject actionVar in animList as ProxyArray)
                 {
-                    AnimAction action = ParseAction(actionVar, customEffect.texture, cc.sounds);
+                    AnimAction action = ParseAction(actionVar, customEffect.texture, cc.sounds, null);
 
                     customAnim.actions.Add(action);
                 }
@@ -286,7 +291,7 @@ public class CharLoaderComponent : MonoBehaviour
                     string companionPath = _companionName.Replace('\\', '/');
                     string companionName = Path.GetFileName(companionPath);
 
-                    Variant companionJson = JSON.Load(File.ReadAllText($"{companionPath}/companion.json"));
+                    ProxyObject companionJson = JSON.Load(File.ReadAllText($"{companionPath}/companion.json")) as ProxyObject;
 
                     CharacterCompanion companion = new CharacterCompanion();
                     companion.name = companionName;
@@ -302,6 +307,9 @@ public class CharLoaderComponent : MonoBehaviour
                     companion.prefab.name = companionName;
                     companion.prefab.SetActive(false);
                     GameObject.DontDestroyOnLoad(companion.prefab);
+
+                    // v1.6: Puppet animation
+                    SetupPuppets(companion, companionJson);
 
                     companion.animations = new Dictionary<int, CustomAnimation>();
                     Variant cAnimsRoot = companionJson["anims"];
@@ -322,7 +330,7 @@ public class CharLoaderComponent : MonoBehaviour
                         Variant animList = animObject["frames"];
                         foreach (ProxyObject actionVar in animList as ProxyArray)
                         {
-                            AnimAction action = ParseAction(actionVar, companion.sheet, cc.sounds);
+                            AnimAction action = ParseAction(actionVar, companion.sheet, cc.sounds, companion.puppets);
 
                             bool hitboxOff = (
                                 action.hitbox != null &&
@@ -419,9 +427,21 @@ public class CharLoaderComponent : MonoBehaviour
         }
     }
 
-    AnimAction ParseAction(ProxyObject actionVar, Texture2D texture, Dictionary<string, AudioClip> soundKeys)
+    AnimAction ParseAction(ProxyObject actionVar, Texture2D texture, Dictionary<string, AudioClip> soundKeys, List<Sprite> puppets)
     {
         AnimAction action = new AnimAction();
+
+        // v1.6: Puppet animation
+        if (puppets != null)
+        {
+            action.puppets = new List<PuppetAction>();
+            for (int i = 0; i < puppets.Count; i++)
+            {
+                PuppetAction puppet = new PuppetAction();
+                puppet.on = false;
+                action.puppets.Add(puppet);
+            }
+        }
 
         if (actionVar.Keys.Contains("frame"))
         {
@@ -493,6 +513,28 @@ public class CharLoaderComponent : MonoBehaviour
                 action.hitbox.scale = new Vector2(hitboxObj["scale"][0], hitboxObj["scale"][1]);
         }
 
+        // v1.6: Puppet animation
+        if (actionVar.Keys.Contains("puppets"))
+        {
+            foreach (var pair in actionVar["puppets"] as ProxyObject)
+            {
+                int i;
+                if (int.TryParse(pair.Key, out i))
+                {
+                    ProxyObject puppetObj = pair.Value as ProxyObject;
+
+                    action.puppets[i].on = puppetObj["on"];
+                    action.puppets[i].layer = puppetObj["layer"];
+                    if (puppetObj.Keys.Contains("angle"))
+                        action.puppets[i].angle = puppetObj["angle"];
+                    if (puppetObj.Keys.Contains("offset"))
+                        action.puppets[i].offset = new Vector2(puppetObj["offset"][0], puppetObj["offset"][1]);
+                    if (puppetObj.Keys.Contains("scale"))
+                        action.puppets[i].scale = new Vector2(puppetObj["scale"][0], puppetObj["scale"][1]);
+                }
+            }
+        }
+
         action.callCustomQueue = actionVar.Keys.Contains("callCustomQueue");
 
         action.delay = (actionVar.Keys.Contains("delay")) ? (float)actionVar["delay"] : 0;
@@ -523,5 +565,46 @@ public class CharLoaderComponent : MonoBehaviour
         }
 
         return images;
+    }
+
+    // v1.6: Puppet animation
+    void SetupPuppets(CharacterCompanion companion, ProxyObject jsonRoot)
+    {
+        companion.puppets = new List<Sprite>();
+
+        GameObject SpriteContainer = companion.prefab.transform.Find("SpriteRenderer").gameObject;
+        SpriteContainer.transform.RemoveAllChildren();
+
+        if (!jsonRoot.Keys.Contains("puppets"))
+            return;
+
+        foreach (var pair in jsonRoot["puppets"] as ProxyObject)
+        {
+            ProxyArray puppetFrameArr = pair.Value as ProxyArray;
+
+            string name = pair.Key;
+
+            int x = puppetFrameArr[0];
+            int y = puppetFrameArr[1];
+            int w = puppetFrameArr[2];
+            int h = puppetFrameArr[3];
+            if (w < 0) w = companion.sheet.width;
+            if (h < 0) h = companion.sheet.height;
+
+            if (h == 0)
+            {
+                // don't divide by zero, warn the user too
+                Melon<CharLoader.Core>.Logger.Msg($"WARNING: puppet '{name}' in {CurrCharacterLoading} has height zero! ({x}, {y}, {w}, {h})");
+                h = companion.sheet.height;
+            }
+
+            GameObject PuppetGameObj = GameObject.Instantiate(SpriteContainer, SpriteContainer.transform);
+            PuppetGameObj.name = $"puppet_{name}";
+
+            SpriteRenderer comp = PuppetGameObj.GetComponent<SpriteRenderer>();
+            comp.sprite = Sprite.Create(companion.sheet, new Rect(x, companion.sheet.height - y - h, w, h), new Vector2(.5f, .5f), 20);
+
+            companion.puppets.Add(comp.sprite);
+        }
     }
 }
