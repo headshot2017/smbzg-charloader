@@ -164,11 +164,13 @@ class ActionTab_Companion(BaseActionTab):
         self.spinbox_offsetX.setValue(self.companion.get("general", {}).get("offset", [0, 0])[0])
         self.spinbox_offsetY.setValue(self.companion.get("general", {}).get("offset", [0, 0])[1])
         self.spinbox_scale.setValue(self.companion.get("general", {}).get("scale", 0.4))
+        self.combobox_sheetFilter.setCurrentIndex(self.companion.get("general", {}).get("sheetFilter", 0))
 
         self.btn_openFolder.clicked.connect(self.onOpenCompanionFolder)
         self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
         self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
         self.spinbox_scale.valueChanged.connect(self.onChangeScale)
+        self.combobox_sheetFilter.currentIndexChanged.connect(self.onSheetFilterChanged)
 
     @QtCore.pyqtSlot()
     def onOpenCompanionFolder(self):
@@ -193,6 +195,12 @@ class ActionTab_Companion(BaseActionTab):
     def onChangeScale(self, value):
         if "general" not in self.companion: self.companion["general"] = {}
         self.companion["general"]["scale"] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onSheetFilterChanged(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        self.companion["general"]["sheetFilter"] = value
         self.valueChanged.emit()
 
 

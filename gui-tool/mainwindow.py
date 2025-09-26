@@ -25,6 +25,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.lbl_battlePortrait.clicked.connect(self.onPortraitClicked)
         self.lineEdit_displayName.textChanged.connect(self.onDisplayNameChanged)
         self.combobox_platform.currentIndexChanged.connect(self.onPlatformChanged)
+        self.combobox_sheetFilter.currentIndexChanged.connect(self.onSheetFilterChanged)
+        self.combobox_battlePortraitFilter.currentIndexChanged.connect(self.onBattlePortraitFilterChanged)
         self.checkbox_unbalanced.stateChanged.connect(self.onUnbalancedChanged)
         self.spinbox_scale_charselect.valueChanged.connect(self.onScaleCharSelectChanged)
         self.spinbox_scale_results.valueChanged.connect(self.onScaleResultsChanged)
@@ -56,6 +58,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.refreshBattlePortrait()
         self.lineEdit_displayName.clear()
         self.combobox_platform.setCurrentIndex(0)
+        self.combobox_sheetFilter.setCurrentIndex(0)
+        self.combobox_battlePortraitFilter.setCurrentIndex(0)
         self.checkbox_unbalanced.setChecked(False)
         self.spinbox_scale_charselect.setValue(characterdata.jsonFile["general"]["scale"]["charSelect"])
         self.spinbox_scale_results.setValue(characterdata.jsonFile["general"]["scale"]["results"])
@@ -107,6 +111,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                 self.checkbox_unbalanced.setChecked(general["unbalanced"])
             if "platform" in general:
                 self.combobox_platform.setCurrentIndex(general["platform"])
+            if "sheetFilter" in general:
+                self.combobox_sheetFilter.setCurrentIndex(general["sheetFilter"])
+            if "battlePortraitFilter" in general:
+                self.combobox_battlePortraitFilter.setCurrentIndex(general["battlePortraitFilter"])
             if "scale" in general:
                 scale = general["scale"]
                 if "charSelect" in scale:
@@ -191,6 +199,14 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(int)
     def onPlatformChanged(self, value):
         characterdata.jsonFile["general"]["platform"] = value
+
+    @QtCore.pyqtSlot(int)
+    def onSheetFilterChanged(self, value):
+        characterdata.jsonFile["general"]["sheetFilter"] = value
+
+    @QtCore.pyqtSlot(int)
+    def onBattlePortraitFilterChanged(self, value):
+        characterdata.jsonFile["general"]["battlePortraitFilter"] = value
 
     @QtCore.pyqtSlot(int)
     def onUnbalancedChanged(self, value):

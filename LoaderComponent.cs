@@ -32,27 +32,36 @@ public class CharLoaderComponent : MonoBehaviour
             ProxyObject json = JSON.Load(File.ReadAllText($"{path}/character.json")) as ProxyObject;
             CustomCharacter cc = new CustomCharacter();
 
+            ProxyObject general = json["general"] as ProxyObject;
+
             CurrCharacterLoading = charName;
             cc.internalName = charName;
-            cc.charSelectScale = json["general"]["scale"]["charSelect"];
-            cc.resultsScale = json["general"]["scale"]["results"];
-            cc.charSelectOffset = new Vector2(json["general"]["offset"]["charSelect"][0], json["general"]["offset"]["charSelect"][1]);
-            cc.resultsOffset = new Vector2(json["general"]["offset"]["results"][0], json["general"]["offset"]["results"][1]);
+            cc.charSelectScale = general["scale"]["charSelect"];
+            cc.resultsScale = general["scale"]["results"];
+            cc.charSelectOffset = new Vector2(general["offset"]["charSelect"][0], general["offset"]["charSelect"][1]);
+            cc.resultsOffset = new Vector2(general["offset"]["results"][0], general["offset"]["results"][1]);
 
             cc.rootCharacter = new CharacterCompanion();
-            cc.rootCharacter.name = json["general"]["displayName"];
-            cc.rootCharacter.scale = json["general"]["scale"]["ingame"];
-            cc.rootCharacter.offset = new Vector2(json["general"]["offset"]["ingame"][0], json["general"]["offset"]["ingame"][1]);
+            cc.rootCharacter.name = general["displayName"];
+            cc.rootCharacter.scale = general["scale"]["ingame"];
+            cc.rootCharacter.offset = new Vector2(general["offset"]["ingame"][0], general["offset"]["ingame"][1]);
+
+            FilterMode[] filterModes = new FilterMode[]
+            {
+                FilterMode.Point,
+                FilterMode.Bilinear,
+                FilterMode.Trilinear,
+            };
 
             yield return TextureDownload($"{path}/sheet.png");
-            texture.filterMode = FilterMode.Point;
+            texture.filterMode = (general.Keys.Contains("sheetFilter")) ? filterModes[general["sheetFilter"]] : FilterMode.Point;
             cc.rootCharacter.sheet = texture;
 
             yield return TextureDownload($"{path}/portrait.png");
             cc.portrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, 0), 50);
 
             yield return TextureDownload($"{path}/battleportrait.png");
-            texture.filterMode = FilterMode.Point;
+            texture.filterMode = (general.Keys.Contains("battlePortraitFilter")) ? filterModes[general["battlePortraitFilter"]] : FilterMode.Point;
             cc.battlePortrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
 
             cc.sounds = new Dictionary<string, AudioClip>();
@@ -127,10 +136,9 @@ public class CharLoaderComponent : MonoBehaviour
             Data.DittoSaturation = BattleCache.ins.CharacterData_Mario.DittoSaturation;
             Data.DittoContrast = BattleCache.ins.CharacterData_Mario.DittoContrast;
 
-            ProxyObject generalObj = json["general"] as ProxyObject;
-            if (generalObj.Keys.Contains("colors"))
+            if (general.Keys.Contains("colors"))
             {
-                ProxyObject colors = generalObj["colors"] as ProxyObject;
+                ProxyObject colors = general["colors"] as ProxyObject;
                 if (colors.Keys.Contains("primary"))
                     Data.PrimaryColor = new Color(
                         colors["primary"][0] / 255f,
@@ -152,12 +160,12 @@ public class CharLoaderComponent : MonoBehaviour
                 }
             }
 
-            if (generalObj.Keys.Contains("unbalanced"))
-                Data.IsUnbalanced = generalObj["unbalanced"];
+            if (general.Keys.Contains("unbalanced"))
+                Data.IsUnbalanced = general["unbalanced"];
 
-            if (generalObj.Keys.Contains("platform"))
+            if (general.Keys.Contains("platform"))
             {
-                int platform = generalObj["platform"];
+                int platform = general["platform"];
                 Data.Platform = (BattleCache.PlatformEnum)platform;
             }
 
@@ -252,6 +260,23 @@ public class CharLoaderComponent : MonoBehaviour
                 cc.rootCharacter.animations[CustomAnimator.ASN_PreJump] = customAnim;
             }
 
+            // v1.6: New "IdleCharSelect" animation
+            if (!cc.rootCharacter.animations.ContainsKey(Animator.StringToHash("IdleCharSelect")) ||
+                cc.rootCharacter.animations[Animator.StringToHash("IdleCharSelect")].actions.Count == 0)
+            {
+                CustomAnimation customAnim = new CustomAnimation();
+                CustomAnimation baseAnim = cc.rootCharacter.animations[CustomAnimator.ASN_Idle];
+
+                customAnim.hash = Animator.StringToHash("IdleCharSelect");
+                customAnim.loops = -1;
+                customAnim.interpolate = true;
+                customAnim.scale = baseAnim.scale;
+                customAnim.offset = baseAnim.offset;
+                customAnim.actions = baseAnim.actions;
+
+                cc.rootCharacter.animations[Animator.StringToHash("IdleCharSelect")] = customAnim;
+            }
+
             Variant effectsRoot = json["effects"];
             cc.effects = new Dictionary<string, CustomEffectEntry>();
             foreach (var pair in effectsRoot as ProxyObject)
@@ -292,15 +317,16 @@ public class CharLoaderComponent : MonoBehaviour
                     string companionName = Path.GetFileName(companionPath);
 
                     ProxyObject companionJson = JSON.Load(File.ReadAllText($"{companionPath}/companion.json")) as ProxyObject;
+                    ProxyObject companionGeneral = companionJson["general"] as ProxyObject;
 
                     CharacterCompanion companion = new CharacterCompanion();
                     companion.name = companionName;
 
-                    companion.scale = companionJson["general"]["scale"];
-                    companion.offset = new Vector2(companionJson["general"]["offset"][0], companionJson["general"]["offset"][1]);
+                    companion.scale = companionGeneral["scale"];
+                    companion.offset = new Vector2(companionGeneral["offset"][0], companionGeneral["offset"][1]);
 
                     yield return TextureDownload($"{companionPath}/sheet.png");
-                    texture.filterMode = FilterMode.Point;
+                    texture.filterMode = (companionGeneral.Keys.Contains("sheetFilter")) ? filterModes[companionGeneral["sheetFilter"]] : FilterMode.Point;
                     companion.sheet = texture;
 
                     companion.prefab = GameObject.Instantiate(CharPrefab);
@@ -574,6 +600,7 @@ public class CharLoaderComponent : MonoBehaviour
 
         GameObject SpriteContainer = companion.prefab.transform.Find("SpriteRenderer").gameObject;
         GameObject SpriteChildPrefab = GameObject.Instantiate(SpriteContainer);
+        SpriteChildPrefab.SetActive(false);
         SpriteContainer.transform.RemoveAllChildren();
 
         if (!jsonRoot.Keys.Contains("puppets"))
@@ -601,6 +628,7 @@ public class CharLoaderComponent : MonoBehaviour
 
             GameObject PuppetGameObj = GameObject.Instantiate(SpriteChildPrefab, SpriteContainer.transform);
             PuppetGameObj.name = $"puppet_{name}";
+            PuppetGameObj.SetActive(true);
 
             SpriteRenderer comp = PuppetGameObj.GetComponent<SpriteRenderer>();
             comp.sprite = Sprite.Create(companion.sheet, new Rect(x, companion.sheet.height - y - h, w, h), new Vector2(.5f, .5f), 20);

@@ -205,7 +205,7 @@ Create a new character or open an existing character from the File menu to get s
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_3">
-              <item>
+              <item alignment="Qt::AlignHCenter">
                <widget class="QLabel" name="label_9">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -220,18 +220,6 @@ Create a new character or open an existing character from the File menu to get s
               </item>
               <item>
                <widget class="QComboBox" name="combobox_platform">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>192</width>
-                  <height>0</height>
-                 </size>
-                </property>
                 <item>
                  <property name="text">
                   <string>Super Mario World</string>
@@ -255,6 +243,78 @@ Create a new character or open an existing character from the File menu to get s
                 <item>
                  <property name="text">
                   <string>Underground Maze</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <item alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="label_10">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>sheet.png texture filter</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="combobox_sheetFilter">
+                <item>
+                 <property name="text">
+                  <string>Point</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Bilinear</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Trilinear</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_8">
+              <item alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="label_11">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>battleportrait.png texture filter</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="combobox_battlePortraitFilter">
+                <item>
+                 <property name="text">
+                  <string>Point</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Bilinear</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Trilinear</string>
                  </property>
                 </item>
                </widget>

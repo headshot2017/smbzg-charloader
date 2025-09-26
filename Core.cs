@@ -549,6 +549,14 @@ namespace CharLoader
                     if (!c) c = imageObj.AddComponent<CustomAnimator>();
                     c.IgnoreColorAction = true;
                     c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.GetChild(0).gameObject, cc.charSelectOffset, cc.charSelectScale);
+                    c.Play(Animator.StringToHash("IdleCharSelect"), true);
+
+                    __instance.SelectedCharacterDisplay.gameObject.GetComponentInChildren<Image>().color = new Color(1f, 1f, 1f, 0.5f);
+                    __instance.Label_SelectedCharacter.color = new Color(1f, 1f, 1f, 0.5f);
+                    __instance.Label_SelectedCharacter.text = BattleCache.Character_GetDisplayName(characterData.Character);
+                    __instance.CharacterPlatform.Play(characterData.Platform.ToString());
+
+                    return false;
                 }
 
                 return true;
