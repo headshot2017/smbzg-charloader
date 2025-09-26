@@ -162,7 +162,7 @@ class ActionTab_Companion(BaseActionTab):
         self.companion = characterdata.companionJson[companionName]
 
         self.spinbox_offsetX.setValue(self.companion.get("general", {}).get("offset", [0, 0])[0])
-        self.spinbox_offsetX.setValue(self.companion.get("general", {}).get("offset", [0, 0])[1])
+        self.spinbox_offsetY.setValue(self.companion.get("general", {}).get("offset", [0, 0])[1])
         self.spinbox_scale.setValue(self.companion.get("general", {}).get("scale", 0.4))
 
         self.btn_openFolder.clicked.connect(self.onOpenCompanionFolder)
