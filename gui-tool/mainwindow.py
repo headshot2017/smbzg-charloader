@@ -94,6 +94,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.refreshPortrait()
         self.refreshBattlePortrait()
 
+        # v1.6: Puppet animation
+        if "puppets" not in jsonFile:
+            jsonFile["puppets"] = {}
+        self.tab_anims.reloadPuppetsTree()
+
         if "general" in jsonFile:
             general = jsonFile["general"]
             if "displayName" in general:
@@ -136,10 +141,6 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                 self.slider_saturation.setValue(int(alternateColors[1]*100))
                 self.slider_contrast.setValue(int(alternateColors[2]*100))
 
-        # v1.6: Puppet animation
-        if "puppets" not in jsonFile:
-            jsonFile["puppets"] = {}
-        self.tab_anims.reloadPuppetsTree()
 
         if "anims" in jsonFile:
             self.tab_anims.reloadTree()
