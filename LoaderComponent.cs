@@ -573,6 +573,7 @@ public class CharLoaderComponent : MonoBehaviour
         companion.puppets = new List<Sprite>();
 
         GameObject SpriteContainer = companion.prefab.transform.Find("SpriteRenderer").gameObject;
+        GameObject SpriteChildPrefab = GameObject.Instantiate(SpriteContainer);
         SpriteContainer.transform.RemoveAllChildren();
 
         if (!jsonRoot.Keys.Contains("puppets"))
@@ -598,7 +599,7 @@ public class CharLoaderComponent : MonoBehaviour
                 h = companion.sheet.height;
             }
 
-            GameObject PuppetGameObj = GameObject.Instantiate(SpriteContainer, SpriteContainer.transform);
+            GameObject PuppetGameObj = GameObject.Instantiate(SpriteChildPrefab, SpriteContainer.transform);
             PuppetGameObj.name = $"puppet_{name}";
 
             SpriteRenderer comp = PuppetGameObj.GetComponent<SpriteRenderer>();
@@ -606,5 +607,7 @@ public class CharLoaderComponent : MonoBehaviour
 
             companion.puppets.Add(comp.sprite);
         }
+
+        GameObject.Destroy(SpriteChildPrefab);
     }
 }
