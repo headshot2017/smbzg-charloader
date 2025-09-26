@@ -81,6 +81,7 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.effect = effect
 
         self.checkbox_interpolate.setChecked(effect["interpolate"] if "interpolate" in effect else True)
+        self.combobox_filter.setCurrentIndex(effect["filter"] if "filter" in effect else 1)
         self.spinbox_offsetX.setValue(effect["offset"][0] if "offset" in effect else 0)
         self.spinbox_offsetY.setValue(effect["offset"][1] if "offset" in effect else 0)
         self.spinbox_scaleX.setValue(effect["scale"][0] if "scale" in effect else 1)
@@ -96,6 +97,7 @@ class ActionTab_GeneralEffect(BaseActionTab):
 
         self.refreshList()
         self.combobox_textures.currentTextChanged.connect(self.onChangeTexture)
+        self.combobox_filter.currentIndexChanged.connect(self.onChangeFilter)
 
     def refreshList(self, dirFolder=False):
         if dirFolder:
@@ -117,6 +119,11 @@ class ActionTab_GeneralEffect(BaseActionTab):
     @QtCore.pyqtSlot(str)
     def onChangeTexture(self, value):
         self.effect["texture"] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onChangeFilter(self, value):
+        self.effect["filter"] = value
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot()

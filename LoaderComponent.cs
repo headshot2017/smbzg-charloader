@@ -285,6 +285,7 @@ public class CharLoaderComponent : MonoBehaviour
 
                 CustomEffectEntry customEffect = new CustomEffectEntry();
                 yield return TextureDownload($"{path}/effects/{effectObject["texture"]}.png");
+                texture.filterMode = effectObject.Keys.Contains("filter") ? filterModes[effectObject["filter"]] : FilterMode.Bilinear;
                 customEffect.texture = texture;
 
                 CustomAnimation customAnim = new CustomAnimation();
