@@ -15,6 +15,9 @@ class BaseAnimatorWidget(QtWidgets.QWidget):
 
         self.btn_stop.clicked.connect(self.onStop)
         self.btn_play.clicked.connect(self.onPlay)
+        self.btn_zoomIn.clicked.connect(self.onZoomIn)
+        self.btn_zoomOut.clicked.connect(self.onZoomOut)
+        self.btn_zoomReset.clicked.connect(self.onZoomReset)
 
         if os.path.exists("backgrounds"):
             for f in os.listdir("backgrounds"): self.comboBox_background.addItem(f)
@@ -51,6 +54,18 @@ class BaseAnimatorWidget(QtWidgets.QWidget):
         self.animatorView.animator.stop()
         self.animatorView.animator.setFrame(0)
         self.animatorView.animator.start()
+
+    @QtCore.pyqtSlot()
+    def onZoomIn(self):
+        self.animatorView.scale(1.25, 1.25)
+
+    @QtCore.pyqtSlot()
+    def onZoomOut(self):
+        self.animatorView.scale(0.8, 0.8)
+
+    @QtCore.pyqtSlot()
+    def onZoomReset(self):
+        self.animatorView.resetTransform()
 
 
 class CharacterAnimatorWidget(BaseAnimatorWidget):
