@@ -764,10 +764,10 @@ Create a new character or open an existing character from the File menu to get s
       </widget>
       <widget class="CharacterAnimatorWidget" name="tab_anims">
        <attribute name="title">
-        <string>Animations</string>
+        <string>Character</string>
        </attribute>
        <attribute name="toolTip">
-        <string>Edit animations for your base character</string>
+        <string>Edit animations and puppets for your base character</string>
        </attribute>
       </widget>
       <widget class="EffectAnimatorWidget" name="tab_effects">

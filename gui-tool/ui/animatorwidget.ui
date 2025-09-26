@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>862</width>
-    <height>664</height>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,128 +15,182 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="tab_anims">
+      <attribute name="title">
+       <string>Animations</string>
+      </attribute>
+      <attribute name="toolTip">
+       <string>Create the animations for this character or companion here</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
-        <widget class="QTreeWidget" name="animationsTree">
-         <property name="contextMenuPolicy">
-          <enum>Qt::CustomContextMenu</enum>
-         </property>
-         <property name="columnCount">
-          <number>1</number>
-         </property>
-         <column>
-          <property name="text">
-           <string>Animations</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-       <item>
-        <widget class="QTabWidget" name="actionTabs">
-         <property name="currentIndex">
-          <number>0</number>
-         </property>
-         <widget class="QWidget" name="tab">
-          <attribute name="title">
-           <string>Page</string>
-          </attribute>
-         </widget>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QVBoxLayout" name="verticalLayout_10">
-       <item>
-        <widget class="AnimatorGraphicsView" name="animatorView"/>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item alignment="Qt::AlignLeft">
-          <widget class="QPushButton" name="btn_reloadSprite">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QTreeWidget" name="animationsTree">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
            </property>
-           <property name="minimumSize">
-            <size>
-             <width>106</width>
-             <height>0</height>
-            </size>
+           <property name="columnCount">
+            <number>1</number>
            </property>
-           <property name="text">
-            <string>Reload sheet.png</string>
-           </property>
-          </widget>
-         </item>
-         <item alignment="Qt::AlignRight">
-          <widget class="QPushButton" name="btn_stop">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>75</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Stop</string>
-           </property>
-          </widget>
-         </item>
-         <item alignment="Qt::AlignLeft">
-          <widget class="QPushButton" name="btn_play">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>75</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Play</string>
-           </property>
-          </widget>
-         </item>
-         <item alignment="Qt::AlignRight">
-          <widget class="QComboBox" name="comboBox_background">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>106</width>
-             <height>0</height>
-            </size>
-           </property>
-           <item>
+           <column>
             <property name="text">
-             <string>No background</string>
+             <string>Animations</string>
             </property>
-           </item>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTabWidget" name="actionTabs">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab">
+            <attribute name="title">
+             <string>Page</string>
+            </attribute>
+           </widget>
           </widget>
          </item>
         </layout>
        </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_10">
+         <item>
+          <widget class="AnimatorGraphicsView" name="animatorView"/>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item alignment="Qt::AlignLeft">
+            <widget class="QPushButton" name="btn_reloadSprite">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>106</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Reload sheet.png</string>
+             </property>
+            </widget>
+           </item>
+           <item alignment="Qt::AlignRight">
+            <widget class="QPushButton" name="btn_stop">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>75</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Stop</string>
+             </property>
+            </widget>
+           </item>
+           <item alignment="Qt::AlignLeft">
+            <widget class="QPushButton" name="btn_play">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>75</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Play</string>
+             </property>
+            </widget>
+           </item>
+           <item alignment="Qt::AlignRight">
+            <widget class="QComboBox" name="comboBox_background">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>106</width>
+               <height>0</height>
+              </size>
+             </property>
+             <item>
+              <property name="text">
+               <string>No background</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
       </layout>
-     </item>
-    </layout>
+     </widget>
+     <widget class="QWidget" name="tab_puppets">
+      <attribute name="title">
+       <string>Puppets</string>
+      </attribute>
+      <attribute name="toolTip">
+       <string>Define the &quot;puppets&quot; for use in your character's animations here. These puppets can be separate parts, such as arms or head, for example</string>
+      </attribute>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QTreeWidget" name="puppetsTree">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <column>
+            <property name="text">
+             <string>Puppets</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTabWidget" name="puppetsTabs">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab_2">
+            <attribute name="title">
+             <string>Tab 1</string>
+            </attribute>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="AnimatorGraphicsView" name="puppetView"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
    </item>
   </layout>
  </widget>

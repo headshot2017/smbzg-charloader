@@ -136,17 +136,29 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                 self.slider_saturation.setValue(int(alternateColors[1]*100))
                 self.slider_contrast.setValue(int(alternateColors[2]*100))
 
+        # v1.6: Puppet animation
+        if "puppets" not in jsonFile:
+            jsonFile["puppets"] = {}
+        self.tab_anims.reloadPuppetsTree()
+
         if "anims" in jsonFile:
             self.tab_anims.reloadTree()
         if "effects" in jsonFile:
             self.tab_effects.reloadTree()
         if characterdata.companionJson:
+            for companionName in characterdata.companionJson:
+                companion = characterdata.companionJson[companionName]
+                if "puppets" not in companion:
+                    companion["puppets"] = {}
+            self.tab_companions.reloadPuppetsTree()
             self.tab_companions.reloadTree()
 
         if "commandList" in jsonFile:
             commandList = jsonFile["commandList"]
             for command in commandList:
                 cmdWidget = self.addCommand(command)
+
+        self.tab_anims.onRefresh()
 
     def refreshPortrait(self):
         portrait = "%s/portrait.png" % gamepath.getCharacterPath(characterdata.name)
@@ -331,6 +343,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             "* Add a sprite sheet for your character with the file name 'sheet.png'\n" +
             "* Add portrait images for your character: portrait.png and battleportrait.png\n" +
             "* OPTIONAL: Add custom sounds to the 'sounds' directory: .wav, .ogg and .mp3 files are accepted\n" +
+            "* OPTIONAL: Add custom music to the 'music' directory: .wav, .ogg and .mp3 files are accepted\n" +
             "* OPTIONAL: Add custom particle images to the 'effects' directory: .png only"
         )
 

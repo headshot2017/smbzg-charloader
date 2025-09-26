@@ -13,6 +13,10 @@ class BaseActionTab(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent)
 
+    def setupForCharacter(self, jsonRoot):
+        pass
+
+
 class ActionTab_General(BaseActionTab):
     def __init__(self, parent, anim):
         super().__init__(parent)
@@ -480,6 +484,133 @@ class ActionTab_CustomQueue(BaseActionTab):
         self.action = action
 
 
+class ActionTab_Puppets(BaseActionTab):
+    def __init__(self, parent, actionInfo, action):
+        super().__init__(parent)
+        uic.loadUi("ui/actiontab_puppets.ui", self)
+
+        self.actionInfo = actionInfo
+        self.action = action
+        self.puppetsDict = {}
+
+        self.currentPuppetInd = -1
+
+        self.list_puppets.itemClicked.connect(self.onItemClick)
+        self.btn_add.clicked.connect(self.onAdd)
+        self.btn_remove.clicked.connect(self.onRemove)
+        self.checkbox_visible.stateChanged.connect(self.onSetVisible)
+        self.spinbox_layer.valueChanged.connect(self.onChangeLayer)
+        self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
+        self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
+        self.spinbox_scaleX.valueChanged.connect(self.onChangeScaleX)
+        self.spinbox_scaleY.valueChanged.connect(self.onChangeScaleY)
+        self.spinbox_angle.valueChanged.connect(self.onChangeAngle)
+
+    def setupForCharacter(self, jsonRoot):
+        self.puppetsDict = jsonRoot["puppets"]
+        self.reloadList()
+
+    def reloadList(self):
+        self.list_puppets.clear()
+        self.currentPuppetInd = -1
+
+        for k in self.puppetsDict:
+            i = self.getIndexOfPuppet(k)
+            if str(i) in self.actionInfo:
+                self.list_puppets.addItem(k)
+
+    def setupTab(self):
+        if self.currentPuppetInd < 0: return
+        actionInfo = self.actionInfo[str(self.currentPuppetInd)]
+
+        self.checkbox_visible.setChecked(actionInfo["on"])
+        self.spinbox_layer.setValue(actionInfo["layer"] if "layer" in actionInfo else 0)
+        self.spinbox_offsetX.setValue(actionInfo["offset"][0] if "offset" in actionInfo else 0)
+        self.spinbox_offsetY.setValue(actionInfo["offset"][1] if "offset" in actionInfo else 0)
+        self.spinbox_scaleX.setValue(actionInfo["scale"][0] if "scale" in actionInfo else 0)
+        self.spinbox_scaleY.setValue(actionInfo["scale"][1] if "scale" in actionInfo else 0)
+        self.spinbox_angle.setValue(actionInfo["angle"] if "angle" in actionInfo else 0)
+
+    def getIndexOfPuppet(self, name):
+        i = 0
+        for k in self.puppetsDict:
+            if k == name:
+                return i
+                break
+            i += 1
+        return -1
+
+    @QtCore.pyqtSlot(QtWidgets.QListWidgetItem)
+    def onItemClick(self, item):
+        self.currentPuppetInd = self.getIndexOfPuppet(item.text())
+        self.setupTab()
+
+    @QtCore.pyqtSlot(bool)
+    def onAdd(self, checked):
+        actionDialog = ActionDialog_Puppet(self, self.puppetsDict)
+        if actionDialog.exec():
+            puppetInd = actionDialog.comboBox.currentIndex()
+            if str(puppetInd) in self.actionInfo: return
+
+            self.actionInfo[str(puppetInd)] = characterdata.defaultPuppetAction()
+            self.valueChanged.emit()
+            self.reloadList()
+
+    @QtCore.pyqtSlot(bool)
+    def onRemove(self, checked):
+        item = self.list_puppets.currentItem()
+        if not item: return
+
+        ind = self.getIndexOfPuppet(item.text())
+        if ind < 0: return
+
+        del self.actionInfo[str(ind)]
+        self.valueChanged.emit()
+        self.reloadList()
+
+    @QtCore.pyqtSlot(int)
+    def onSetVisible(self, value):
+        if self.currentPuppetInd < 0: return
+        self.actionInfo[str(self.currentPuppetInd)]["on"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onChangeLayer(self, value):
+        if self.currentPuppetInd < 0: return
+        self.actionInfo[str(self.currentPuppetInd)]["layer"] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeOffsetX(self, value):
+        if self.currentPuppetInd < 0: return
+        self.actionInfo[str(self.currentPuppetInd)]["offset"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeOffsetY(self, value):
+        if self.currentPuppetInd < 0: return
+        self.actionInfo[str(self.currentPuppetInd)]["offset"][1] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeScaleX(self, value):
+        if self.currentPuppetInd < 0: return
+        self.actionInfo[str(self.currentPuppetInd)]["scale"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeScaleY(self, value):
+        if self.currentPuppetInd < 0: return
+        self.actionInfo[str(self.currentPuppetInd)]["scale"][1] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeAngle(self, value):
+        if self.currentPuppetInd < 0: return
+        self.actionInfo[str(self.currentPuppetInd)]["angle"] = value
+        self.valueChanged.emit()
+
+
 class ActionDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
@@ -505,6 +636,53 @@ class ActionDialog_Sound(QtWidgets.QDialog):
         characterdata.sounds[i].play()
 
 
+class ActionDialog_Puppet(QtWidgets.QDialog):
+    def __init__(self, parent, puppetsDict):
+        super().__init__(parent)
+        uic.loadUi("ui/actiondialog_puppet.ui", self)
+
+        for puppet in puppetsDict:
+            self.comboBox.addItem(puppet)
+
+
+class PuppetTab(BaseActionTab):
+    def __init__(self, parent, actionInfo):
+        super().__init__(parent)
+        uic.loadUi("ui/puppettab.ui", self)
+
+        self.actionInfo = actionInfo
+
+        self.spinbox_x.setValue(actionInfo[0])
+        self.spinbox_y.setValue(actionInfo[1])
+        self.spinbox_w.setValue(actionInfo[2])
+        self.spinbox_h.setValue(actionInfo[3])
+
+        self.spinbox_x.valueChanged.connect(self.onChangeX)
+        self.spinbox_y.valueChanged.connect(self.onChangeY)
+        self.spinbox_w.valueChanged.connect(self.onChangeW)
+        self.spinbox_h.valueChanged.connect(self.onChangeH)
+
+    @QtCore.pyqtSlot(int)
+    def onChangeX(self, value):
+        self.actionInfo[0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onChangeY(self, value):
+        self.actionInfo[1] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onChangeW(self, value):
+        self.actionInfo[2] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onChangeH(self, value):
+        self.actionInfo[3] = value
+        self.valueChanged.emit()
+
+
 actionTabsDict = {
 	"frame": ActionTab_Frame,
 	"delay": ActionTab_Delay,
@@ -516,4 +694,5 @@ actionTabsDict = {
     "color": ActionTab_Color,
     "hitbox": ActionTab_Hitbox,
     "callCustomQueue": ActionTab_CustomQueue,
+    "puppets": ActionTab_Puppets,
 }

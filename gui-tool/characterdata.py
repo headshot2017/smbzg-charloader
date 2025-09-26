@@ -25,10 +25,20 @@ __defaultaction = {
     "color": [255, 255, 255, 255],
     "hitbox": {"on": False, "pos": [0, 0], "scale": [1, 1]},
     "callCustomQueue": True,
+    "puppets": {}
 }
 
 def defaultAction(name):
     return copy.deepcopy(__defaultaction[name]) if name in __defaultaction else None
+
+def defaultPuppetAction(on=True):
+    return {
+        "on": on,
+        "layer": 0,
+        "offset": [0, 0],
+        "scale": [1, 1],
+        "angle": 0
+    }
 
 def defaultCommand():
     return {
@@ -38,6 +48,47 @@ def defaultCommand():
         "imageList": [],
         "featureList": []
     }
+
+def defaultAnimationEntries():
+    return [
+        "OnSelect",
+        "Victory",
+        "Defeat",
+        "Idle",
+        "IdleCharSelect",
+        "IdleB",
+        "Guard",
+        "Block",
+        "Slide",
+        "Hit",
+        "Hurt",
+        "Hurt_AirUpwards",
+        "Hurt_AirDownwards",
+        "Tumble",
+        "Grounded",
+        "GetUp",
+        "PreJump",
+        "Jump",
+        "Fall",
+        "Land",
+        "Walk",
+        "Run",
+        "Sprint",
+        "Bursting",
+        "BurstVictoryStrike",
+        "BurstVictoryStrike_MR",
+        "MR_Air_Idle",
+        "MR_Air_MoveDownward",
+        "MR_Air_MoveUpward",
+        "MR_Air_MoveForward",
+        "MR_Ground_Idle",
+        "MR_Ground_Land",
+        "MR_Ground_MoveForward",
+        "MR_Strike_Approach",
+        "MR_Strike_Attack",
+        "MR_Strike_Finale",
+        "MR_Dodge"
+    ]
 
 def defaultCharacterData():
     return {
@@ -62,6 +113,8 @@ def defaultCharacterData():
             }
         },
 
+        "puppets": {},
+
         "effects": {},
 
         "commandList": [],
@@ -75,6 +128,8 @@ def defaultCompanion():
             "scale": 0.4,
             "offset": [0, 0]
         },
+
+        "puppets": {},
 
         "anims": {}
     }

@@ -32,8 +32,10 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         self.hitboxItem = QtWidgets.QGraphicsRectItem(0, 0, 0, 0)
         self.graphicsView.scene().addItem(self.pixmapItem)
         self.graphicsView.scene().addItem(self.hitboxItem)
-        self.hitboxItem.setPos(self.graphicsView.sceneRect().width()/2, self.graphicsView.sceneRect().height()/2)
 
+        self.pixmapItem.setZValue(0)
+
+        self.hitboxItem.setPos(self.graphicsView.sceneRect().width()/2, self.graphicsView.sceneRect().height()/2)
         self.hitboxItem.setBrush(QtGui.QColor(255, 0, 0, 128))
         self.hitboxItem.setPen(QtGui.QColor(255, 0, 0, 255))
 
@@ -47,13 +49,32 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         self.animDuration = 0
         self.currentLoopChanged.connect(self.onLoop)
 
+        self.puppets = []
+
+    def updatePuppetList(self, puppetsDict):
+        for puppet in self.puppets:
+            self.graphicsView.scene().removeItem(puppet)
+        self.puppets = []
+
+        if not self.fullPixmap or self.fullPixmap.isNull(): return
+
+        for name in puppetsDict:
+            puppet = QtWidgets.QGraphicsPixmapItem(self.pixmapItem)
+            x, y, w, h = puppetsDict[name]
+            if w < 0: w = self.fullPixmap.width()
+            if h < 0: h = self.fullPixmap.height()
+            puppet.setPixmap(self.fullPixmap.copy(x, y, w, h))
+            puppet.setOffset(-w/2, -h/2)
+            puppet.setFlag(QtWidgets.QGraphicsItem.ItemNegativeZStacksBehindParent)
+            self.puppets.append(puppet)
+
     def clearSounds(self):
         for snd in self.playingSounds:
             characterdata.sounds[snd].stop()
         self.playingSounds.clear()
 
     def setSprite(self, x, y, w, h):
-        if not self.fullPixmap: return
+        if not self.fullPixmap or self.fullPixmap.isNull(): return
         if w < 0: w = self.fullPixmap.width()
         if h < 0: h = self.fullPixmap.height()
         self.pixmapItem.setPixmap(self.fullPixmap.copy(x, y, w, h))
@@ -147,6 +168,48 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         else:
             self.pixmapItem.setOpacity(1)
 
+        # CharLoader v1.6: Puppet animation
+        if "puppets" in frame:
+            changed = []
+            for puppetStr in frame["puppets"]:
+                if not puppetStr.isdigit(): continue
+                puppetInd = int(puppetStr)
+                if puppetInd < 0 or puppetInd >= len(self.puppets): continue
+
+                puppetAction = frame["puppets"][puppetStr]
+                puppet = self.puppets[puppetInd]
+                changed.append(puppet)
+
+                puppetOffset = convertPosToUnity(puppetAction["offset"] if "offset" in puppetAction else [0, 0])
+                puppetOffset[0] *= 0.4
+                puppetOffset[1] *= 0.4
+
+                puppet.resetTransform()
+                puppet.setPos(0, 0)
+                puppet.setOpacity(1 if puppetAction["on"] else 0.5)
+                puppet.setZValue(puppetAction["layer"] if "layer" in puppetAction else 0)
+                puppet.setRotation(puppetAction["angle"] if "angle" in puppetAction else 0)
+                puppet.moveBy(*puppetOffset)
+                puppet.setTransform(puppet.transform().scale(
+                    puppetAction["scale"][0] if "scale" in puppetAction else 1,
+                    puppetAction["scale"][1] if "scale" in puppetAction else 1
+                ))
+
+            for puppet in self.puppets:
+                if puppet in changed: continue
+                puppet.resetTransform()
+                puppet.setPos(0, 0)
+                puppet.setOpacity(0.5)
+                puppet.setZValue(-1000)
+                puppet.setRotation(0)
+        else:
+            for puppet in self.puppets:
+                puppet.resetTransform()
+                puppet.setPos(0, 0)
+                puppet.setOpacity(0.5)
+                puppet.setZValue(-1000)
+                puppet.setRotation(0)
+
         spriteFrame = frame
         spriteFrameInd = self.frame
         while "frame" not in spriteFrame and spriteFrameInd > 0:
@@ -234,6 +297,59 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
             self.hitboxItem.setRect(posLerp[0], posLerp[1], scaleLerp[0], scaleLerp[1])
             self.hitboxItem.setBrush(QtGui.QColor(255, 0, 0, 0 if not on else 128))
+
+        # v1.6: Puppet animation
+        if "puppets" in currAction:
+            for puppetStr in currAction["puppets"]:
+                if not puppetStr.isdigit(): continue
+                puppetInd = int(puppetStr)
+                if puppetInd < 0 or puppetInd >= len(self.puppets): continue
+
+                puppet = self.puppets[puppetInd]
+                currPuppetAction = currAction["puppets"][puppetStr]
+                nextPuppetAction = characterdata.defaultPuppetAction(False)
+                if "puppets" in nextAction and puppetStr in nextAction["puppets"]:
+                    nextPuppetAction = nextAction["puppets"][puppetStr]
+
+                angleLerp = lerp(
+                    currPuppetAction["angle"] if "angle" in currPuppetAction else 0,
+                    nextPuppetAction["angle"] if "angle" in nextPuppetAction else 0,
+                    x
+                )
+
+                scaleLerp = [
+                    lerp(
+                        currPuppetAction["scale"][0] if "scale" in currPuppetAction else 1,
+                        nextPuppetAction["scale"][0] if "scale" in nextPuppetAction else 1,
+                        x
+                    ),
+                    lerp(
+                        currPuppetAction["scale"][1] if "scale" in currPuppetAction else 1,
+                        nextPuppetAction["scale"][1] if "scale" in nextPuppetAction else 1,
+                        x
+                    )
+                ]
+
+                offsetLerp = convertPosToUnity([
+                    lerp(
+                        currPuppetAction["offset"][0] if "offset" in currPuppetAction else 0,
+                        nextPuppetAction["offset"][0] if "offset" in nextPuppetAction else 0,
+                        x
+                    ),
+                    lerp(
+                        currPuppetAction["offset"][1] if "offset" in currPuppetAction else 0,
+                        nextPuppetAction["offset"][1] if "offset" in nextPuppetAction else 0,
+                        x
+                    )
+                ])
+                offsetLerp[0] *= 0.4
+                offsetLerp[1] *= 0.4
+
+                puppet.resetTransform()
+                puppet.setPos(0, 0)
+                puppet.setRotation(angleLerp)
+                puppet.moveBy(*offsetLerp)
+                puppet.setTransform(puppet.transform().scale(*scaleLerp))
 
 
         colorLerp = [

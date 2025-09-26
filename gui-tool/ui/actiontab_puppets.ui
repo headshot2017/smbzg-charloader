@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Puppets in this frame</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QListWidget" name="list_puppets">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The animation will play one of the sound effects added to this list randomly.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item alignment="Qt::AlignBottom">
+        <widget class="QPushButton" name="btn_add">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Add</string>
+         </property>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignTop">
+        <widget class="QPushButton" name="btn_remove">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Remove</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkbox_visible">
+     <property name="text">
+      <string>Visible</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Layer order</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spinbox_layer">
+       <property name="minimum">
+        <number>-1000</number>
+       </property>
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Offset X / Y</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QDoubleSpinBox" name="spinbox_offsetX">
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>-10000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="spinbox_offsetY">
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>-10000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Scale X / Y</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QDoubleSpinBox" name="spinbox_scaleX">
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>-10000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="spinbox_scaleY">
+         <property name="decimals">
+          <number>3</number>
+         </property>
+         <property name="minimum">
+          <double>-10000.000000000000000</double>
+         </property>
+         <property name="maximum">
+          <double>10000.000000000000000</double>
+         </property>
+         <property name="singleStep">
+          <double>0.100000000000000</double>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Rotation angle</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDoubleSpinBox" name="spinbox_angle">
+       <property name="suffix">
+        <string>°</string>
+       </property>
+       <property name="decimals">
+        <number>3</number>
+       </property>
+       <property name="minimum">
+        <double>-10000.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>10000.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.100000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

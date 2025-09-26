@@ -9,9 +9,9 @@ import actiontabs
 
 
 class BaseAnimatorWidget(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, file):
         super().__init__()
-        uic.loadUi("ui/animatorwidget.ui", self)
+        uic.loadUi(file, self)
 
         self.btn_stop.clicked.connect(self.onStop)
         self.btn_play.clicked.connect(self.onPlay)
@@ -55,11 +55,16 @@ class BaseAnimatorWidget(QtWidgets.QWidget):
 
 class CharacterAnimatorWidget(BaseAnimatorWidget):
     def __init__(self):
-        super().__init__()
+        super().__init__("ui/animatorwidget.ui")
 
         self.animationsTree.currentItemChanged.connect(self.onAnimationTreeChange)
         self.animationsTree.itemDoubleClicked.connect(self.onAnimationTreeDoubleClick)
         self.animationsTree.customContextMenuRequested.connect(self.onAnimationTreeContextMenu)
+
+        self.puppetsTree.currentItemChanged.connect(self.onPuppetTreeChange)
+        self.puppetsTree.itemDoubleClicked.connect(self.onPuppetTreeDoubleClick)
+        self.puppetsTree.customContextMenuRequested.connect(self.onPuppetTreeContextMenu)
+
         self.btn_reloadSprite.clicked.connect(self.onRefresh)
 
     def reset(self):
@@ -93,10 +98,25 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             if action in actiontabs.actionTabsDict:
                 widget = actiontabs.actionTabsDict[action](self.actionTabs, actions[action], actions)
                 widget.valueChanged.connect(self.onActionTabValueChange)
+                widget.setupForCharacter(characterdata.jsonFile)
                 self.actionTabs.addTab(widget, action)
 
         self.animatorView.animator.setAnimation(characterdata.jsonFile["anims"][animName])
         self.animatorView.animator.setFrame(frameInd)
+
+    def populatePuppetTab(self, puppetName):
+        if not characterdata.jsonFile or puppetName not in characterdata.jsonFile["puppets"]:
+            return
+
+        puppet = characterdata.jsonFile["puppets"][puppetName]
+
+        self.puppetsTabs.clear()
+
+        general = actiontabs.PuppetTab(self.puppetsTabs, puppet)
+        general.valueChanged.connect(self.onActionTabValueChangePuppet)
+        self.puppetsTabs.addTab(general, puppetName)
+
+        self.puppetView.animator.setAnimation( {"frames": [{"frame": puppet}]} )
 
     def addAnimation(self, animName):
         animTree = QtWidgets.QTreeWidgetItem([animName])
@@ -141,46 +161,16 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName] = characterdata.defaultAction(actionName)
         return thisFrameTree
 
-    def addNecessaryAnimations(self):
-        allAnimations = [
-            "OnSelect",
-            "Victory",
-            "Defeat",
-            "Idle",
-            "IdleB",
-            "Guard",
-            "Block",
-            "Slide",
-            "Hit",
-            "Hurt",
-            "Hurt_AirUpwards",
-            "Hurt_AirDownwards",
-            "Tumble",
-            "Grounded",
-            "GetUp",
-            "Jump",
-            "Fall",
-            "Land",
-            "Walk",
-            "Run",
-            "Sprint",
-            "Bursting",
-            "BurstVictoryStrike",
-            "BurstVictoryStrike_MR",
-            "MR_Air_Idle",
-            "MR_Air_MoveDownward",
-            "MR_Air_MoveUpward",
-            "MR_Air_MoveForward",
-            "MR_Ground_Idle",
-            "MR_Ground_Land",
-            "MR_Ground_MoveForward",
-            "MR_Strike_Approach",
-            "MR_Strike_Attack",
-            "MR_Strike_Finale",
-            "MR_Dodge"
-        ]
+    def addPuppet(self, puppetName):
+        puppetTree = QtWidgets.QTreeWidgetItem([puppetName])
+        puppetTree.itemLevel = 0
+        self.puppetsTree.insertTopLevelItem(self.puppetsTree.topLevelItemCount()-1, puppetTree)
 
-        for animName in allAnimations:
+        characterdata.jsonFile["puppets"][puppetName] = [0, 0, 0, 0]
+        return puppetTree
+
+    def addNecessaryAnimations(self):
+        for animName in characterdata.defaultAnimationEntries():
             animTree = self.addAnimation(animName)
 
     def reloadTree(self):
@@ -211,6 +201,22 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             addFrame.itemLevel = -2
             self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, animTree)
 
+    def reloadPuppetsTree(self):
+        self.puppetsTree.clear()
+
+        addPuppet = QtWidgets.QTreeWidgetItem(self.puppetsTree, ["Add puppet..."])
+        addPuppet.itemLevel = -1
+
+        for puppetName in characterdata.jsonFile["puppets"]:
+            puppetTree = QtWidgets.QTreeWidgetItem([puppetName])
+            puppetTree.itemLevel = 0
+            self.puppetsTree.insertTopLevelItem(self.puppetsTree.topLevelItemCount()-1, puppetTree)
+
+
+    @QtCore.pyqtSlot()
+    def onActionTabValueChangePuppet(self):
+        self.puppetView.animator.refresh()
+        self.animatorView.animator.updatePuppetList(characterdata.jsonFile["puppets"])
 
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, QtWidgets.QTreeWidgetItem)
     def onAnimationTreeChange(self, current, previous):
@@ -302,6 +308,46 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         actionDelete.setData(item)
 
         menu.exec(self.animationsTree.mapToGlobal(point))
+
+    @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, QtWidgets.QTreeWidgetItem)
+    def onPuppetTreeChange(self, current, previous):
+        if not current or current.itemLevel < 0: return
+
+        if current.itemLevel == 0:
+            self.populatePuppetTab(current.text(0))
+
+    @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, int)
+    def onPuppetTreeDoubleClick(self, item, column):
+        if not item or item.itemLevel > 0: return
+
+        if item.itemLevel == -1:
+            puppetName, ok = QtWidgets.QInputDialog.getText(self, "Add puppet", "Enter a name for the new puppet")
+            if ok:
+                if puppetName in characterdata.jsonFile["puppets"]:
+                    QtWidgets.QMessageBox.warning(self, "Error", "Puppet '%s' already exists" % puppetName)
+                    return
+
+                self.addPuppet(puppetName)
+
+    @QtCore.pyqtSlot(QtCore.QPoint)
+    def onPuppetTreeContextMenu(self, point):
+        item = self.puppetsTree.itemAt(point)
+        if item.itemLevel < 0: return
+
+        menu = QtWidgets.QMenu()
+        if item.itemLevel == 0:
+            actionRename = menu.addAction("Rename")
+            actionDuplicate = menu.addAction("Duplicate")
+            actionRename.triggered.connect(self.onMenuActionRenamePuppet)
+            actionDuplicate.triggered.connect(self.onMenuActionDuplicatePuppet)
+            actionRename.setData(item)
+            actionDuplicate.setData(item)
+
+        actionDelete = menu.addAction("Delete")
+        actionDelete.triggered.connect(self.onMenuActionDeletePuppet)
+        actionDelete.setData(item)
+
+        menu.exec(self.puppetsTree.mapToGlobal(point))
 
     @QtCore.pyqtSlot()
     def onMenuActionRename(self):
@@ -439,16 +485,71 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         self.reloadTree()
 
     @QtCore.pyqtSlot()
+    def onMenuActionRenamePuppet(self):
+        item = self.sender().data()
+        oldName = item.text(0)
+        newName, ok = QtWidgets.QInputDialog.getText(self, "Rename puppet", "Rename the puppet '%s' to..." % oldName)
+        if not ok or not newName: return
+
+        newPuppetsDict = {}
+        for puppet in characterdata.jsonFile["puppets"]:
+            newPuppetsDict[newName if puppet == oldName else puppet] = characterdata.jsonFile["puppets"][puppet]
+
+        characterdata.jsonFile["puppets"] = newPuppetsDict
+        self.reloadPuppetsTree()
+        self.animatorView.animator.updatePuppetList(characterdata.jsonFile["puppets"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionDuplicatePuppet(self):
+        item = self.sender().data()
+        oldName = item.text(0)
+        newName, ok = QtWidgets.QInputDialog.getText(self, "Duplicate puppet", "Enter a name for the duplicated puppet")
+        if not ok or not newName: return
+
+        newPuppetsDict = {}
+        for puppet in characterdata.jsonFile["puppets"]:
+            newPuppetsDict[puppet] = characterdata.jsonFile["puppets"][puppet]
+            if puppet == oldName:
+                newPuppetsDict[newName] = copy.deepcopy(characterdata.jsonFile["puppets"][puppet])
+
+        characterdata.jsonFile["puppets"] = newPuppetsDict
+        self.reloadPuppetsTree()
+        self.animatorView.animator.updatePuppetList(characterdata.jsonFile["puppets"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionDeletePuppet(self):
+        message = ""
+        item = self.sender().data()
+
+        if item.itemLevel == 0:
+            message = "You are about to delete the puppet '%s'.\nAre you sure?" % item.text(0)
+
+        result = QtWidgets.QMessageBox.warning(self, "Warning", message,
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+
+        if result != QtWidgets.QMessageBox.Yes: return
+
+        if item.itemLevel == 0:
+            del characterdata.jsonFile["puppets"][item.text(0)]
+
+        self.reloadPuppetsTree()
+        self.animatorView.animator.updatePuppetList(characterdata.jsonFile["puppets"])
+
+    @QtCore.pyqtSlot()
     def onRefresh(self):
         path = gamepath.getCharacterPath(characterdata.name)
-        self.animatorView.reloadSprite("%s/sheet.png" % path)
-        self.animatorView.animator.globalOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
-        self.animatorView.animator.globalScale = characterdata.jsonFile["general"]["scale"]["ingame"]
+
+        for view in [self.animatorView, self.puppetView]:
+            view.animator.globalOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
+            view.animator.globalScale = characterdata.jsonFile["general"]["scale"]["ingame"]
+            view.reloadSprite("%s/sheet.png" % path)
+        self.animatorView.animator.updatePuppetList(characterdata.jsonFile["puppets"])
 
 
 class EffectAnimatorWidget(BaseAnimatorWidget):
     def __init__(self):
-        super().__init__()
+        super().__init__("ui/animatoreffectwidget.ui")
 
         self.animationsTree.setHeaderLabel("Effects")
         self.btn_reloadSprite.setText("Reload sprite")
@@ -820,12 +921,17 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
 
 class CompanionAnimatorWidget(BaseAnimatorWidget):
     def __init__(self):
-        super().__init__()
+        super().__init__("ui/animatorwidget.ui")
 
         self.animationsTree.setHeaderLabel("Companions")
         self.animationsTree.currentItemChanged.connect(self.onAnimationTreeChange)
         self.animationsTree.itemDoubleClicked.connect(self.onAnimationTreeDoubleClick)
         self.animationsTree.customContextMenuRequested.connect(self.onAnimationTreeContextMenu)
+
+        self.puppetsTree.currentItemChanged.connect(self.onPuppetTreeChange)
+        self.puppetsTree.itemDoubleClicked.connect(self.onPuppetTreeDoubleClick)
+        self.puppetsTree.customContextMenuRequested.connect(self.onPuppetTreeContextMenu)
+
         self.btn_reloadSprite.clicked.connect(self.onRefresh)
 
     def reset(self):
@@ -834,13 +940,15 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         addCompanion = QtWidgets.QTreeWidgetItem(self.animationsTree, ["New companion..."])
         addCompanion.itemLevel = -1
 
-    def setCompanionSprite(self, companionName):
+    def setCompanionSprite(self, view, companionName):
         companion = characterdata.companionJson[companionName]
         path = gamepath.getCharacterPath(characterdata.name)
 
-        self.animatorView.reloadSprite("%s/companions/%s/sheet.png" % (path, companionName))
-        self.animatorView.animator.globalOffset = companion.get("general", {}).get("offset", [0, 0])
-        self.animatorView.animator.globalScale = companion.get("general", {}).get("scale", 1)
+        view.reloadSprite("%s/companions/%s/sheet.png" % (path, companionName))
+        view.animator.globalOffset = companion.get("general", {}).get("offset", [0, 0])
+        view.animator.globalScale = companion.get("general", {}).get("scale", 1)
+        if view == self.animatorView:
+            view.animator.updatePuppetList(companion["puppets"])
 
     def populateCompanionTab(self, companionName):
         if not characterdata.companionJson or companionName not in characterdata.companionJson:
@@ -852,7 +960,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         general.valueChanged.connect(self.onActionTabValueChange)
         self.actionTabs.addTab(general, companionName)
 
-        self.setCompanionSprite(companionName)
+        self.setCompanionSprite(self.animatorView, companionName)
 
     def populateGeneralTab(self, companionName, animName):
         if not characterdata.companionJson or companionName not in characterdata.companionJson:
@@ -870,7 +978,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         general.valueChanged.connect(self.onActionTabValueChange)
         self.actionTabs.addTab(general, animName)
 
-        self.setCompanionSprite(companionName)
+        self.setCompanionSprite(self.animatorView, companionName)
         self.animatorView.animator.setAnimation(anim)
 
     def populateAnimTabs(self, companionName, animName, frameInd):
@@ -888,11 +996,30 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             if action in actiontabs.actionTabsDict:
                 widget = actiontabs.actionTabsDict[action](self.actionTabs, actions[action], actions)
                 widget.valueChanged.connect(self.onActionTabValueChange)
+                widget.setupForCharacter(companion)
                 self.actionTabs.addTab(widget, action)
 
-        self.setCompanionSprite(companionName)
+        self.setCompanionSprite(self.animatorView, companionName)
         self.animatorView.animator.setAnimation(companion["anims"][animName])
         self.animatorView.animator.setFrame(frameInd)
+
+    def populatePuppetTab(self, companionName, puppetName):
+        if not characterdata.companionJson or companionName not in characterdata.companionJson:
+            return
+        companion = characterdata.companionJson[companionName]
+        if puppetName not in companion["puppets"]:
+            return
+
+        puppet = companion["puppets"][puppetName]
+
+        self.puppetsTabs.clear()
+
+        general = actiontabs.PuppetTab(self.puppetsTabs, puppet)
+        general.valueChanged.connect(self.onActionTabValueChangePuppet)
+        self.puppetsTabs.addTab(general, puppetName)
+
+        self.setCompanionSprite(self.puppetView, companionName)
+        self.puppetView.animator.setAnimation( {"frames": [{"frame": puppet}]} )
 
     def addCompanion(self, companionName):
         companionTree = QtWidgets.QTreeWidgetItem([companionName])
@@ -953,46 +1080,18 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         characterdata.companionJson[companionName]["anims"][animName]["frames"][frameInd][actionName] = characterdata.defaultAction(actionName)
         return thisFrameTree
 
-    def addNecessaryAnimations(self, companionTree):
-        allAnimations = [
-            "OnSelect",
-            "Victory",
-            "Defeat",
-            "Idle",
-            "IdleB",
-            "Guard",
-            "Block",
-            "Slide",
-            "Hit",
-            "Hurt",
-            "Hurt_AirUpwards",
-            "Hurt_AirDownwards",
-            "Tumble",
-            "Grounded",
-            "GetUp",
-            "Jump",
-            "Fall",
-            "Land",
-            "Walk",
-            "Run",
-            "Sprint",
-            "Bursting",
-            "BurstVictoryStrike",
-            "BurstVictoryStrike_MR",
-            "MR_Air_Idle",
-            "MR_Air_MoveDownward",
-            "MR_Air_MoveUpward",
-            "MR_Air_MoveForward",
-            "MR_Ground_Idle",
-            "MR_Ground_Land",
-            "MR_Ground_MoveForward",
-            "MR_Strike_Approach",
-            "MR_Strike_Attack",
-            "MR_Strike_Finale",
-            "MR_Dodge"
-        ]
+    def addPuppet(self, companionTree, puppetName):
+        companionName = companionTree.text(0)
+        puppetInd = companionTree.childCount()-1
+        puppetTree = QtWidgets.QTreeWidgetItem([puppetName])
+        puppetTree.itemLevel = 1
+        companionTree.insertChild(puppetInd, puppetTree)
 
-        for animName in allAnimations:
+        characterdata.companionJson[companionName]["puppets"][puppetName] = [0, 0, 0, 0]
+        return puppetTree
+
+    def addNecessaryAnimations(self, companionTree):
+        for animName in characterdata.defaultAnimationEntries():
             animTree = self.addAnimation(companionTree, animName)
 
     def reloadTree(self):
@@ -1031,6 +1130,29 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             addAnim.itemLevel = -2
             self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, companionTree)
 
+    def reloadPuppetsTree(self):
+        self.puppetsTree.clear()
+
+        for companionName in characterdata.companionJson:
+            companion = characterdata.companionJson[companionName]
+            companionTree = QtWidgets.QTreeWidgetItem([companionName])
+            companionTree.itemLevel = 0
+
+            for puppetName in companion["puppets"]:
+                puppetTree = QtWidgets.QTreeWidgetItem(companionTree, [puppetName])
+                puppetTree.itemLevel = 1
+
+            addPuppet = QtWidgets.QTreeWidgetItem(companionTree, ["Add puppet..."])
+            addPuppet.itemLevel = -2
+
+            self.puppetsTree.insertTopLevelItem(self.puppetsTree.topLevelItemCount(), companionTree)
+
+
+    @QtCore.pyqtSlot()
+    def onActionTabValueChangePuppet(self):
+        companionName = self.puppetsTree.currentItem().parent().text(0)
+        self.puppetView.animator.refresh()
+        self.animatorView.animator.updatePuppetList(characterdata.companionJson[companionName]["puppets"])
 
     @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, QtWidgets.QTreeWidgetItem)
     def onAnimationTreeChange(self, current, previous):
@@ -1158,6 +1280,52 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         actionDelete.setData(item)
 
         menu.exec(self.animationsTree.mapToGlobal(point))
+
+    @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, QtWidgets.QTreeWidgetItem)
+    def onPuppetTreeChange(self, current, previous):
+        if not current or current.itemLevel < 0: return
+
+        if current.itemLevel == 0:
+            self.puppetsTabs.clear()
+        elif current.itemLevel == 1:
+            companionTree = current.parent()
+            companionName = companionTree.text(0)
+            self.populatePuppetTab(companionName, current.text(0))
+
+    @QtCore.pyqtSlot(QtWidgets.QTreeWidgetItem, int)
+    def onPuppetTreeDoubleClick(self, item, column):
+        if not item or item.itemLevel > 0: return
+
+        if item.itemLevel == -2:
+            companionTree = item.parent()
+            companionName = companionTree.text(0)
+            puppetName, ok = QtWidgets.QInputDialog.getText(self, "Add puppet", "Enter a name for the new puppet")
+            if ok:
+                if puppetName in characterdata.companionJson[companionName]["puppets"]:
+                    QtWidgets.QMessageBox.warning(self, "Error", "Puppet '%s' already exists" % puppetName)
+                    return
+
+                self.addPuppet(companionTree, puppetName)
+
+    @QtCore.pyqtSlot(QtCore.QPoint)
+    def onPuppetTreeContextMenu(self, point):
+        item = self.puppetsTree.itemAt(point)
+        if item.itemLevel <= 0: return
+
+        menu = QtWidgets.QMenu()
+        if item.itemLevel == 1:
+            actionRename = menu.addAction("Rename")
+            actionDuplicate = menu.addAction("Duplicate")
+            actionRename.triggered.connect(self.onMenuActionRenamePuppet)
+            actionDuplicate.triggered.connect(self.onMenuActionDuplicatePuppet)
+            actionRename.setData(item)
+            actionDuplicate.setData(item)
+
+        actionDelete = menu.addAction("Delete")
+        actionDelete.triggered.connect(self.onMenuActionDeletePuppet)
+        actionDelete.setData(item)
+
+        menu.exec(self.puppetsTree.mapToGlobal(point))
 
     @QtCore.pyqtSlot()
     def onMenuActionRename(self):
@@ -1327,7 +1495,67 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             del characterdata.companionJson[companionName]["anims"][animName]["frames"][frameInd][item.text(0)]
 
         self.reloadTree()
+        self.reloadPuppetsTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionRenamePuppet(self):
+        item = self.sender().data()
+        companionTree = item.parent()
+        companionName = companionTree.text(0)
+        oldName = item.text(0)
+        newName, ok = QtWidgets.QInputDialog.getText(self, "Rename puppet", "Rename the puppet '%s' to..." % oldName)
+        if not ok or not newName: return
+
+        newPuppetsDict = {}
+        for puppet in characterdata.companionJson[companionName]["puppets"]:
+            newPuppetsDict[newName if puppet == oldName else puppet] = characterdata.companionJson[companionName]["puppets"][puppet]
+
+        characterdata.companionJson[companionName]["puppets"] = newPuppetsDict
+        self.reloadPuppetsTree()
+        self.animatorView.animator.updatePuppetList(characterdata.companionJson[companionName]["puppets"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionDuplicatePuppet(self):
+        item = self.sender().data()
+        companionTree = item.parent()
+        companionName = companionTree.text(0)
+        oldName = item.text(0)
+        newName, ok = QtWidgets.QInputDialog.getText(self, "Duplicate puppet", "Enter a name for the duplicated puppet")
+        if not ok or not newName: return
+
+        newPuppetsDict = {}
+        for puppet in characterdata.companionJson[companionName]["puppets"]:
+            newPuppetsDict[puppet] = characterdata.companionJson[companionName]["puppets"][puppet]
+            if puppet == oldName:
+                newPuppetsDict[newName] = copy.deepcopy(characterdata.companionJson[companionName]["puppets"][puppet])
+
+        characterdata.companionJson[companionName]["puppets"] = newPuppetsDict
+        self.reloadPuppetsTree()
+        self.animatorView.animator.updatePuppetList(characterdata.companionJson[companionName]["puppets"])
+
+    @QtCore.pyqtSlot()
+    def onMenuActionDeletePuppet(self):
+        message = ""
+        item = self.sender().data()
+        companionTree = item.parent()
+        companionName = companionTree.text(0)
+
+        if item.itemLevel == 1:
+            message = "You are about to delete the puppet '%s'.\nAre you sure?" % item.text(0)
+
+        result = QtWidgets.QMessageBox.warning(self, "Warning", message,
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+
+        if result != QtWidgets.QMessageBox.Yes: return
+
+        if item.itemLevel == 1:
+            del characterdata.companionJson[companionName]["puppets"][item.text(0)]
+
+        self.reloadPuppetsTree()
+        self.animatorView.animator.updatePuppetList(characterdata.companionJson[companionName]["puppets"])
 
     @QtCore.pyqtSlot()
     def onRefresh(self):
         self.animatorView.animator.refresh()
+        self.puppetView.animator.refresh()
