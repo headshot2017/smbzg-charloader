@@ -139,6 +139,12 @@ public class CustomAnimator : MonoBehaviour
 
     bool OnFrameChange()
     {
+        if (m_CurrentAnimation.actions.Count <= 0)
+        {
+            m_Ended = true;
+            return true;
+        }
+
         AnimAction currAction = m_CurrentAnimation.actions[m_Frame];
 
         if (m_CurrentProperties != null && m_CurrentProperties.HitStun <= 0)
