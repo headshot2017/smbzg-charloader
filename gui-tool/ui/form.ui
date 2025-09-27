@@ -381,7 +381,7 @@ Create a new character or open an existing character from the File menu to get s
                      <double>1000.000000000000000</double>
                     </property>
                     <property name="singleStep">
-                     <double>0.100000000000000</double>
+                     <double>0.010000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -397,7 +397,7 @@ Create a new character or open an existing character from the File menu to get s
                      <double>1000.000000000000000</double>
                     </property>
                     <property name="singleStep">
-                     <double>0.100000000000000</double>
+                     <double>0.010000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -422,7 +422,7 @@ Create a new character or open an existing character from the File menu to get s
                    <number>3</number>
                   </property>
                   <property name="singleStep">
-                   <double>0.100000000000000</double>
+                   <double>0.010000000000000</double>
                   </property>
                   <property name="value">
                    <double>1.000000000000000</double>
@@ -471,7 +471,7 @@ Create a new character or open an existing character from the File menu to get s
                      <double>1000.000000000000000</double>
                     </property>
                     <property name="singleStep">
-                     <double>0.100000000000000</double>
+                     <double>0.010000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -487,7 +487,7 @@ Create a new character or open an existing character from the File menu to get s
                      <double>1000.000000000000000</double>
                     </property>
                     <property name="singleStep">
-                     <double>0.100000000000000</double>
+                     <double>0.010000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -518,7 +518,7 @@ Create a new character or open an existing character from the File menu to get s
                    <number>3</number>
                   </property>
                   <property name="singleStep">
-                   <double>0.100000000000000</double>
+                   <double>0.010000000000000</double>
                   </property>
                   <property name="value">
                    <double>1.000000000000000</double>
@@ -567,7 +567,7 @@ Create a new character or open an existing character from the File menu to get s
                      <double>1000.000000000000000</double>
                     </property>
                     <property name="singleStep">
-                     <double>0.100000000000000</double>
+                     <double>0.010000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -583,7 +583,7 @@ Create a new character or open an existing character from the File menu to get s
                      <double>1000.000000000000000</double>
                     </property>
                     <property name="singleStep">
-                     <double>0.100000000000000</double>
+                     <double>0.010000000000000</double>
                     </property>
                    </widget>
                   </item>
@@ -614,7 +614,7 @@ Create a new character or open an existing character from the File menu to get s
                    <number>3</number>
                   </property>
                   <property name="singleStep">
-                   <double>0.100000000000000</double>
+                   <double>0.010000000000000</double>
                   </property>
                   <property name="value">
                    <double>1.000000000000000</double>
@@ -990,14 +990,14 @@ Create a new character or open an existing character from the File menu to get s
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PortraitLabel</class>
-   <extends>QLabel</extends>
-   <header>portraitlabel</header>
-  </customwidget>
-  <customwidget>
    <class>ColorGraphicsView</class>
    <extends>QGraphicsView</extends>
    <header>colorgraphicsview</header>
+  </customwidget>
+  <customwidget>
+   <class>PortraitLabel</class>
+   <extends>QLabel</extends>
+   <header>portraitlabel</header>
   </customwidget>
   <customwidget>
    <class>CharacterAnimatorWidget</class>
