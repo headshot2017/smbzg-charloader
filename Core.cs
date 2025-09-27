@@ -63,6 +63,10 @@ namespace CharLoader
         public static MelonPreferences_Category Preferences_General;
         public static MelonPreferences_Entry<bool> ArcadeModeLineup;
 
+        public string LastErrorMsg;
+        public float BoxColorTimer;
+        public float BoxShowTimer;
+
 
         public override void OnInitializeMelon()
         {
@@ -72,13 +76,6 @@ namespace CharLoader
             ArcadeModeLineup = Preferences_General.CreateEntry<bool>("CustomCharsOnArcadeLineup", false);
 
             LoggerInstance.Msg("Initialized.");
-        }
-
-        void LogHandler(string message, string stacktrace, LogType type)
-        {
-            if (type != LogType.Exception && type != LogType.Error)
-                return;
-            LoggerInstance.Msg($"{message}\n{stacktrace}");
         }
 
         public override void OnLateInitializeMelon()
@@ -146,6 +143,52 @@ namespace CharLoader
 
 
             LoadCustomCharList();
+        }
+
+        void LogHandler(string message, string stacktrace, LogType type)
+        {
+            if (type != LogType.Exception && type != LogType.Error)
+                return;
+
+            string msg = $"{message}\n{stacktrace}";
+
+            LoggerInstance.Msg(msg);
+            ShowError(msg);
+        }
+
+        public void ShowError(string msg)
+        {
+            LastErrorMsg = msg;
+            BoxColorTimer = 1f;
+            BoxShowTimer = 10f;
+        }
+
+        public override void OnGUI()
+        {
+            if (BoxShowTimer > 0)
+            {
+                Vector2 size = GUI.skin.textField.CalcSize(new GUIContent(LastErrorMsg));
+
+                int x = 32;
+                int y = 32;
+                int w = Screen.width / 2 - x;
+                int h = (int)size.y;
+                Color oldColor = GUI.contentColor;
+
+                GUI.BeginGroup(new Rect(x, y, w, h+40));
+                    GUI.contentColor = new Color(1, 1-BoxColorTimer, 1-BoxColorTimer);
+                    GUI.Box(new Rect(0, 0, w, h+40), "Exception");
+                    GUI.contentColor = oldColor;
+                    GUI.Label(new Rect(8, 16, w - 16, h+32), LastErrorMsg);
+                GUI.EndGroup();
+
+                if (BoxColorTimer > 0)
+                {
+                    BoxColorTimer -= Time.deltaTime;
+                    if (BoxColorTimer <= 0) BoxColorTimer = 0;
+                }
+                BoxShowTimer -= Time.deltaTime;
+            }
         }
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
