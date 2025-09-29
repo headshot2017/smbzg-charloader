@@ -61,11 +61,17 @@ namespace CharLoader
 
 
         public static MelonPreferences_Category Preferences_General;
-        public static MelonPreferences_Entry<bool> ArcadeModeLineup;
+        public static List<BattleCache.CharacterEnum> ArcadeModeLineup;
+        public static List<BattleCache.CharacterEnum> ArcadeModeLineupDisabled;
+        public static List<BattleCache.CharacterEnum> ArcadeModeLineupDefault;
+        public static List<BattleCache.CharacterEnum> ArcadeModeLineupDisabledDefault;
+        public static int LineupSelectedOn;
+        public static int LineupSelectedOff;
 
         public string LastErrorMsg;
         public float BoxColorTimer;
         public float BoxShowTimer;
+        public bool SetupLineup;
 
 
         public override void OnInitializeMelon()
@@ -73,14 +79,44 @@ namespace CharLoader
             Preferences_General = MelonPreferences.CreateCategory("General");
             Preferences_General.SetFilePath("UserData/CharLoader.cfg");
 
-            ArcadeModeLineup = Preferences_General.CreateEntry<bool>("CustomCharsOnArcadeLineup", false);
-
             LoggerInstance.Msg("Initialized.");
         }
 
         public override void OnLateInitializeMelon()
         {
             Application.logMessageReceived += LogHandler;
+
+            ArcadeModeLineupDefault = new List<BattleCache.CharacterEnum>
+            {
+                BattleCache.CharacterEnum.Mario,
+                BattleCache.CharacterEnum.Luigi,
+                BattleCache.CharacterEnum.Yoshi,
+                BattleCache.CharacterEnum.Goomba,
+                BattleCache.CharacterEnum.KoopaBros,
+                BattleCache.CharacterEnum.Sonic,
+                BattleCache.CharacterEnum.AxemRangersX,
+                BattleCache.CharacterEnum.Shadow,
+                BattleCache.CharacterEnum.Basilisx,
+                BattleCache.CharacterEnum.MechaSonic
+            };
+            ArcadeModeLineupDisabledDefault = new List<BattleCache.CharacterEnum>();
+            foreach (CustomCharacter cc in customCharacters)
+                ArcadeModeLineupDisabledDefault.Add(cc.characterData.Character);
+
+            // there are custom character "mods" that are made through modification of the game's source code,
+            // such as Plot Boi's character mods (Kirby, Super Sonic, Goku...)
+            // this code will look for them in the BattleCache and add them to the list
+            //
+            // unfortunately this also adds standalone transformations, but there's nothing i can do about it
+            foreach (BattleCache.CharacterEnum character in Enum.GetValues(typeof(BattleCache.CharacterEnum)))
+            {
+                if (character == BattleCache.CharacterEnum.UNSET || ArcadeModeLineupDefault.Contains(character) || ArcadeModeLineupDisabledDefault.Contains(character))
+                    continue;
+
+                ArcadeModeLineupDisabledDefault.Add(character);
+            }
+
+            ResetArcadeLineup();
 
             // change all characters' CharacterData_SO instances to CustomCharacterData_SO
             // this allows adding extra information to them that can be used by custom characters
@@ -160,7 +196,7 @@ namespace CharLoader
         {
             LastErrorMsg = msg;
             BoxColorTimer = 1f;
-            BoxShowTimer = 10f;
+            BoxShowTimer = 5f;
         }
 
         public override void OnGUI()
@@ -176,18 +212,80 @@ namespace CharLoader
                 Color oldColor = GUI.contentColor;
 
                 GUI.BeginGroup(new Rect(x, y, w, h+40));
-                    GUI.contentColor = new Color(1, 1-BoxColorTimer, 1-BoxColorTimer);
-                    GUI.Box(new Rect(0, 0, w, h+40), "Exception");
-                    GUI.contentColor = oldColor;
-                    GUI.Label(new Rect(8, 16, w - 16, h+32), LastErrorMsg);
+                GUI.contentColor = new Color(1, 1-BoxColorTimer, 1-BoxColorTimer);
+                GUI.Box(new Rect(0, 0, w, h+40), "Exception");
+                GUI.contentColor = oldColor;
+                GUI.Label(new Rect(8, 16, w - 16, h+32), LastErrorMsg);
                 GUI.EndGroup();
+            }
 
-                if (BoxColorTimer > 0)
+            if (SetupLineup)
+            {
+                Vector2 size1 = GUI.skin.textField.CalcSize(new GUIContent("Enabled"));
+                Vector2 size2 = GUI.skin.textField.CalcSize(new GUIContent("Disabled"));
+
+                int x = Screen.width / 8;
+                int y = Screen.height / 12;
+                int w = Screen.width - (x*2);
+                int h = Screen.height - (y*2);
+                List<string> enabled = new List<string>();
+                List<string> disabled = new List<string>();
+                foreach (BattleCache.CharacterEnum character in ArcadeModeLineup)
+                    enabled.Add(BattleCache.Character_GetDisplayName(character));
+                foreach (BattleCache.CharacterEnum character in ArcadeModeLineupDisabled)
+                    disabled.Add(BattleCache.Character_GetDisplayName(character));
+
+                GUI.BeginGroup(new Rect(x, y, w, h));
+                GUI.Box(new Rect(0, 0, w, h), "Arcade Mode Lineup");
+
+                GUI.Label(new Rect(8 + (w / 2 - 40)/2 - (size1.x / 2), 48-24, size1.x, size1.y), "Enabled");
+                int selection = GUI.SelectionGrid(new Rect(8, 48, w / 2 - 40, h - 144), LineupSelectedOn, enabled.ToArray(), 1);
+                if (selection >= 0) LineupSelectedOn = selection;
+                if (LineupSelectedOn >= 0)
                 {
-                    BoxColorTimer -= Time.deltaTime;
-                    if (BoxColorTimer <= 0) BoxColorTimer = 0;
+                    if (LineupSelectedOn > 0 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 - (96+16), 48 + h - 144 + 8, 96, 32), "Move up"))
+                    {
+                        BattleCache.CharacterEnum moving = ArcadeModeLineup[LineupSelectedOn];
+                        ArcadeModeLineup.Remove(moving);
+                        ArcadeModeLineup.Insert(LineupSelectedOn-1, moving);
+                        LineupSelectedOn--;
+                    }
+                    if (GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48, 48 + h - 144 + 8, 96, 32), "Remove"))
+                    {
+                        BattleCache.CharacterEnum removing = ArcadeModeLineup[LineupSelectedOn];
+                        ArcadeModeLineup.Remove(removing);
+                        ArcadeModeLineupDisabled.Add(removing);
+                        while (LineupSelectedOn >= ArcadeModeLineup.Count) LineupSelectedOn--;
+                    }
+                    if (LineupSelectedOn < ArcadeModeLineup.Count-1 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 + (96+16), 48 + h - 144 + 8, 96, 32), "Move down"))
+                    {
+                        BattleCache.CharacterEnum moving = ArcadeModeLineup[LineupSelectedOn];
+                        ArcadeModeLineup.Remove(moving);
+                        ArcadeModeLineup.Insert(LineupSelectedOn+1, moving);
+                        LineupSelectedOn++;
+                    }
                 }
-                BoxShowTimer -= Time.deltaTime;
+
+                GUI.Label(new Rect((w - (w / 2 - 40) - 8) + (w / 2 - 40) / 2 - (size2.x/2), 48-24, size2.x, size2.y), "Disabled");
+                selection = GUI.SelectionGrid(new Rect(w - (w / 2 - 40) - 8, 48, w / 2 - 40, h - 144), LineupSelectedOff, disabled.ToArray(), 1);
+                if (selection >= 0) LineupSelectedOff = selection;
+                if (LineupSelectedOff >= 0 && GUI.Button(new Rect((w - (w / 2 - 40) - 8) + (w / 2 - 40) / 2 - 48, 48 + h - 144 + 8, 96, 32), "Add"))
+                {
+                    BattleCache.CharacterEnum adding = ArcadeModeLineupDisabled[LineupSelectedOff];
+                    ArcadeModeLineupDisabled.Remove(adding);
+                    ArcadeModeLineup.Add(adding);
+                    while (LineupSelectedOff >= ArcadeModeLineupDisabled.Count) LineupSelectedOff--;
+                }
+
+                if (GUI.Button(new Rect(w/2 - 48, 48 + h - 144 + 8, 96, 32), "Reset"))
+                {
+                    ResetArcadeLineup();
+                }
+
+                if (GUI.Button(new Rect(8, h-48, w-16, 32), "Close"))
+                    ShowLineupCustomizer(false);
+
+                GUI.EndGroup();
             }
         }
 
@@ -197,6 +295,16 @@ namespace CharLoader
                 SetupCharSelectVersus();
             if (buildIndex == 8)
                 SetupCharSelectArcade();
+        }
+
+        public override void OnUpdate()
+        {
+            if (BoxColorTimer > 0)
+            {
+                BoxColorTimer -= Time.deltaTime;
+                if (BoxColorTimer <= 0) BoxColorTimer = 0;
+            }
+            BoxShowTimer -= Time.deltaTime;
         }
 
         void LoadCustomCharList()
@@ -236,27 +344,56 @@ namespace CharLoader
 
             // Setup additional UIs
 
+            Sprite uisprite = null;
+            Sprite[] sprites = Resources.FindObjectsOfTypeAll<Sprite>();
+            foreach (Sprite sprite in sprites)
+            {
+                if (sprite.name == "UISprite")
+                    uisprite = sprite;
+            }
+
+            TMPro.TMP_FontAsset fnt = null;
+            TMPro.TMP_FontAsset[] fonts = Resources.FindObjectsOfTypeAll<TMPro.TMP_FontAsset>();
+            foreach (TMPro.TMP_FontAsset font in fonts)
+            {
+                if (font.name == "LiberationSans SDF")
+                {
+                    fnt = font;
+                    break;
+                }
+            }
+
             // Part 1: GameObjects
             Transform root = CharacterSelectRoot.Find("VBox_Settings");
 
             GameObject BattleCustomCharsObj = GameObject.Instantiate(root.Find("BattleRandomSkins").gameObject, root);
-            GameObject BattleCustomCharsLabelObj = BattleCustomCharsObj.transform.GetChild(0).gameObject;
-            GameObject BattleCustomCharsToggleObj = BattleCustomCharsObj.transform.GetChild(1).gameObject;
+            BattleCustomCharsObj.transform.RemoveAllChildren();
+            GameObject BattleCustomCharsLabelObj = new GameObject("Label");
 
+            BattleCustomCharsLabelObj.transform.SetParent(BattleCustomCharsObj.transform, false);
             BattleCustomCharsObj.name = "BattleCustomChars";
-            BattleCustomCharsLabelObj.name = "Label_BattleCustomChars";
-            BattleCustomCharsToggleObj.name = "Toggle_BattleCustomChars";
 
 
             // Part 2: Components
-            TMPro.TextMeshProUGUI BattleCustomCharsLabel = BattleCustomCharsLabelObj.GetComponent<TMPro.TextMeshProUGUI>();
-            Toggle BattleCustomCharsToggle = BattleCustomCharsToggleObj.GetComponent<Toggle>();
+            BattleCustomCharsObj.GetComponent<HorizontalLayoutGroup>().childForceExpandWidth = true;
+            Image img = BattleCustomCharsObj.AddComponent<Image>();
+            TMPro.TextMeshProUGUI text = BattleCustomCharsLabelObj.AddComponent<TMPro.TextMeshProUGUI>();
+            Button btn = BattleCustomCharsObj.AddComponent<Button>();
 
-            BattleCustomCharsLabel.text = "Custom Characters in Line-up";
-            BattleCustomCharsLabel.fontSize = 20;
-            BattleCustomCharsToggle.onValueChanged.RemoveAllListeners();
-            BattleCustomCharsToggle.isOn = ArcadeModeLineup.Value;
-            BattleCustomCharsToggle.onValueChanged.AddListener(OnCustomCharsToggle);
+            img.sprite = uisprite;
+            img.type = Image.Type.Sliced;
+            btn.image = img;
+            text.text = "Customize lineup";
+            text.color = Color.black;
+            text.fontSize = 24;
+            text.fontStyle = TMPro.FontStyles.Normal;
+            text.horizontalAlignment = TMPro.HorizontalAlignmentOptions.Center;
+            text.font = fnt;
+
+            //btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(OnCustomizeLineupClicked);
+
+            BattleCustomCharsLabelObj.transform.localPosition = new Vector3(0, -8, 0);
         }
 
         void SetupCharSelectVersus()
@@ -265,10 +402,35 @@ namespace CharLoader
             SetupPortraits(PortraitTableRoot, CharacterSelectScript.ins);
         }
 
-        void OnCustomCharsToggle(bool on)
+        void OnCustomizeLineupClicked()
         {
-            ArcadeModeLineup.Value = on;
-            MelonPreferences.Save();
+            ShowLineupCustomizer(true);
+        }
+
+        void ShowLineupCustomizer(bool on)
+        {
+            GameObject CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect").gameObject;
+            CharacterSelectRoot.SetActive(!on);
+            SetupLineup = on;
+            LineupSelectedOn = LineupSelectedOff = -1;
+
+            // when clicking the Customize Lineup button, this puts it in the unity UI input module component,
+            // so when you press D to, for example, add a character to the battle, it also triggers the Customize Lineup button from earlier.
+            // this code will remove this button from any ZIG_PlayerInput(s) so that the D key can be pressed safely.
+            foreach (ZIG_PlayerInput i in GameObject.FindObjectsOfType<ZIG_PlayerInput>())
+            {
+                var module = i.gameObject.GetComponent<UnityEngine.EventSystems.EventSystem>();
+                if (!module)
+                    continue;
+
+                module.SetSelectedGameObject(null);
+            }
+        }
+
+        public void ResetArcadeLineup()
+        {
+            ArcadeModeLineup = new List<BattleCache.CharacterEnum>(ArcadeModeLineupDefault);
+            ArcadeModeLineupDisabled = new List<BattleCache.CharacterEnum>(ArcadeModeLineupDisabledDefault);
         }
 
         [HarmonyPatch(typeof(CharacterSelectAcradeScript), "OnSubmit")]
@@ -276,9 +438,6 @@ namespace CharLoader
         {
             private static bool Prefix(CharacterSelectAcradeScript __instance)
             {
-                if (!ArcadeModeLineup.Value)
-                    return true;
-
                 List<CharacterSelectPlayerInputHandler_Base> ActiveCharacterSelectPlayerInputHandlerList =
                     (List<CharacterSelectPlayerInputHandler_Base>)__instance.GetType().GetField("ActiveCharacterSelectPlayerInputHandlerList", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
 
@@ -311,21 +470,9 @@ namespace CharLoader
                 SaveData.Data.LastUsedArcadeCpuHealth = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleHealth.text, 150f);
                 SaveData.Save();
 
-                List<CharacterData_SO> array = new List<CharacterData_SO>
-                {
-                    BattleCache.ins.CharacterData_Mario,
-                    BattleCache.ins.CharacterData_Luigi,
-                    BattleCache.ins.CharacterData_Yoshi,
-                    BattleCache.ins.CharacterData_Goomba,
-                    BattleCache.ins.CharacterData_KoopaBros,
-                    BattleCache.ins.CharacterData_Sonic,
-                    BattleCache.ins.CharacterData_AxemRangersX,
-                    BattleCache.ins.CharacterData_Shadow,
-                    BattleCache.ins.CharacterData_Basilisx,
-                    BattleCache.ins.CharacterData_MechaSonic
-                };
-                foreach (CustomCharacter cc in customCharacters)
-                    array.Add(cc.characterData);
+                List<CharacterData_SO> array = new List<CharacterData_SO>();
+                foreach (BattleCache.CharacterEnum cc in ArcadeModeLineup)
+                    array.Add(BattleCache.ins.Character_GetData(cc));
 
                 List<BattleSettings> list = new List<BattleSettings>();
                 foreach (CharacterData_SO characterData_SO in array)
@@ -411,13 +558,27 @@ namespace CharLoader
                     list.Add(battleSettings);
                 }
 
-                BattleParticipantSettings battleParticipantSettings = list.First((BattleSettings r) => r.TeamsList[1].ParticipantSettingList[0].CharacterData.Character == BattleCache.CharacterEnum.Goomba).TeamsList[1].ParticipantSettingList[0];
-                battleParticipantSettings.HealthMax = Mathf.Round(battleParticipantSettings.HealthMax * 0.6666666f);
-                if (battleParticipantSettings.HealthMax < 0f)
+                // find goomba and reduce its' health
+                BattleSettings setting = null;
+                try
                 {
-                    battleParticipantSettings.HealthMax = 1f;
+                    setting = list.First((BattleSettings r) => r.TeamsList[1].ParticipantSettingList[0].CharacterData.Character == BattleCache.CharacterEnum.Goomba);
+                }
+                catch(InvalidOperationException)
+                {
+                    // if goomba is missing
+                }
+                if (setting != null)
+                {
+                    BattleParticipantSettings battleParticipantSettings = setting.TeamsList[1].ParticipantSettingList[0];
+                    battleParticipantSettings.HealthMax = Mathf.Round(battleParticipantSettings.HealthMax * 0.6666666f);
+                    if (battleParticipantSettings.HealthMax < 0f)
+                    {
+                        battleParticipantSettings.HealthMax = 1f;
+                    }
                 }
 
+                // increase final boss health
                 list.Last().TeamsList[1].ParticipantSettingList[0].HealthMax *= 1.25f;
 
                 Melon<Core>.Logger.Msg($"Starting Arcade Mode with the following character line-up:");
