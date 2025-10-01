@@ -37,6 +37,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_results.valueChanged.connect(self.onYOffsetResultsChanged)
         self.spinbox_offsetX_ingame.valueChanged.connect(self.onXOffsetIngameChanged)
         self.spinbox_offsetY_ingame.valueChanged.connect(self.onYOffsetIngameChanged)
+        self.spinbox_defaultW.valueChanged.connect(self.onDefaultWChanged)
+        self.spinbox_defaultH.valueChanged.connect(self.onDefaultHChanged)
+        self.spinbox_defaultDelay.valueChanged.connect(self.onDefaultDelayChanged)
         self.view_primaryColor.changed.connect(self.onPrimaryColorChanged)
         self.view_secondaryColor.changed.connect(self.onSecondaryColorChanged)
         self.slider_hue.valueChanged.connect(self.onHueChanged)
@@ -70,6 +73,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_results.setValue(characterdata.jsonFile["general"]["offset"]["results"][1])
         self.spinbox_offsetX_ingame.setValue(characterdata.jsonFile["general"]["offset"]["ingame"][0])
         self.spinbox_offsetY_ingame.setValue(characterdata.jsonFile["general"]["offset"]["ingame"][1])
+        self.spinbox_defaultW.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][0])
+        self.spinbox_defaultH.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][1])
+        self.spinbox_defaultDelay.setValue(characterdata.jsonFile["editor"]["defaultDelay"])
         self.view_primaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["primary"]))
         self.view_secondaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["secondary"]))
         self.slider_hue.setValue(int(characterdata.jsonFile["general"]["colors"]["alternateColors"][0]*100))
@@ -102,6 +108,16 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if "puppets" not in jsonFile:
             jsonFile["puppets"] = {}
         self.tab_anims.reloadPuppetsTree()
+
+        # v1.6: CharLoader Editor specifics
+        if "editor" not in jsonFile:
+            jsonFile["editor"] = characterdata.defaultCharacterData()["editor"]
+        else:
+            if "defaultFrameSize" not in characterdata.jsonFile["editor"]:
+                characterdata.jsonFile["editor"]["defaultFrameSize"] = [0, 0]
+            self.spinbox_defaultW.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][0])
+            self.spinbox_defaultH.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][1])
+            self.spinbox_defaultDelay.setValue(characterdata.jsonFile["editor"].get("defaultDelay", 0.0))
 
         if "general" in jsonFile:
             general = jsonFile["general"]
@@ -250,6 +266,20 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     def onYOffsetIngameChanged(self, value):
         characterdata.jsonFile["general"]["offset"]["ingame"][1] = value
         self.tab_anims.onRefresh()
+
+    @QtCore.pyqtSlot(int)
+    def onDefaultWChanged(self, value):
+        characterdata.jsonFile["editor"]["defaultFrameSize"][0] = value
+        self.tab_anims.reloadTree()
+
+    @QtCore.pyqtSlot(int)
+    def onDefaultHChanged(self, value):
+        characterdata.jsonFile["editor"]["defaultFrameSize"][1] = value
+        self.tab_anims.reloadTree()
+
+    @QtCore.pyqtSlot(float)
+    def onDefaultDelayChanged(self, value):
+        characterdata.jsonFile["editor"]["defaultDelay"] = value
 
     @QtCore.pyqtSlot(QtGui.QColor)
     def onPrimaryColorChanged(self, color):

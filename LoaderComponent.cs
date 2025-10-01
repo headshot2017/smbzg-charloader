@@ -565,6 +565,13 @@ public class CharLoaderComponent : MonoBehaviour
             }
         }
 
+        // v1.6: Interpolation type
+        if (actionVar.Keys.Contains("interpolation"))
+        {
+            int value = actionVar["interpolation"];
+            action.interpolation = (ActionInterpType)value;
+        }
+
         action.callCustomQueue = actionVar.Keys.Contains("callCustomQueue");
 
         action.delay = (actionVar.Keys.Contains("delay")) ? (float)actionVar["delay"] : 0;

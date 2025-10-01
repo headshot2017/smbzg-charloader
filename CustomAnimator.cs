@@ -2,6 +2,37 @@
 using System.Reflection;
 using MelonLoader;
 
+public class InterpHelper
+{
+    public static float Linear(float x)
+    {
+        return x;
+    }
+
+    public static float In(float x)
+    {
+        return x * x;
+    }
+
+    public static float Out(float x)
+    {
+        return 1 - (1 - x) * (1 - x);
+    }
+
+    public static float InOut(float x)
+    {
+        return x < 0.5f ? 2 * x * x : 1 - Mathf.Pow(-2 * x + 2, 2) / 2;
+    }
+
+    public static Dictionary<ActionInterpType, Func<float, float>> Dict = new Dictionary<ActionInterpType, Func<float, float>>
+    {
+        {ActionInterpType.Linear, Linear},
+        {ActionInterpType.In, In},
+        {ActionInterpType.Out, Out},
+        {ActionInterpType.InOut, InOut},
+    };
+};
+
 public class CustomAnimator : MonoBehaviour
 {
     Dictionary<int, CustomAnimation> m_Animations = null;
@@ -553,6 +584,11 @@ public class CustomAnimator : MonoBehaviour
         if (currAction.delay <= 0) return;
 
         float lerp = m_Time / currAction.delay;
+        if (currAction.interpolation >= 0 && currAction.interpolation <= ActionInterpType.MAX)
+        {
+            lerp = InterpHelper.Dict[currAction.interpolation](lerp);
+        }
+
         AnimAction nextAction;
         if (m_Frame >= m_CurrentAnimation.actions.Count - 1)
             nextAction = (m_CurrentAnimation.loops < 0 || m_Loops < m_CurrentAnimation.loops) ? m_CurrentAnimation.actions[0] : currAction;

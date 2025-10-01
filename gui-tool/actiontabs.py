@@ -10,16 +10,18 @@ import gamepath
 class BaseActionTab(QtWidgets.QWidget):
     valueChanged = QtCore.pyqtSignal()
 
-    def __init__(self, parent):
+    def __init__(self, parent, jsonEditorRoot):
         super().__init__(parent)
+
+        self.jsonEditorRoot = jsonEditorRoot
 
     def setupForCharacter(self, jsonRoot):
         pass
 
 
 class ActionTab_General(BaseActionTab):
-    def __init__(self, parent, anim):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, anim):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_general.ui", self)
 
         self.anim = anim
@@ -74,8 +76,8 @@ class ActionTab_General(BaseActionTab):
 
 
 class ActionTab_GeneralEffect(BaseActionTab):
-    def __init__(self, parent, effect):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, effect):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_generalEffect.ui", self)
 
         self.effect = effect
@@ -86,6 +88,8 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.spinbox_offsetY.setValue(effect["offset"][1] if "offset" in effect else 0)
         self.spinbox_scaleX.setValue(effect["scale"][0] if "scale" in effect else 1)
         self.spinbox_scaleY.setValue(effect["scale"][1] if "scale" in effect else 1)
+        self.spinbox_defaultW.setValue(jsonEditorRoot["defaultFrameSize"][0] if "defaultFrameSize" in jsonEditorRoot else 0)
+        self.spinbox_defaultH.setValue(jsonEditorRoot["defaultFrameSize"][1] if "defaultFrameSize" in jsonEditorRoot else 0)
 
         self.checkbox_interpolate.stateChanged.connect(self.onSetInterpolate)
         self.btn_openFolder.clicked.connect(self.onOpenEffectsFolder)
@@ -94,6 +98,8 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
         self.spinbox_scaleX.valueChanged.connect(self.onChangeScaleX)
         self.spinbox_scaleY.valueChanged.connect(self.onChangeScaleY)
+        self.spinbox_defaultW.valueChanged.connect(self.onDefaultWChanged)
+        self.spinbox_defaultH.valueChanged.connect(self.onDefaultHChanged)
 
         self.refreshList()
         self.combobox_textures.currentTextChanged.connect(self.onChangeTexture)
@@ -159,10 +165,20 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.effect["scale"][1] = value
         self.valueChanged.emit()
 
+    @QtCore.pyqtSlot(int)
+    def onDefaultWChanged(self, value):
+        self.jsonEditorRoot["defaultFrameSize"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onDefaultHChanged(self, value):
+        self.jsonEditorRoot["defaultFrameSize"][1] = value
+        self.valueChanged.emit()
+
 
 class ActionTab_Companion(BaseActionTab):
-    def __init__(self, parent, companionName):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, companionName):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_companion.ui", self)
 
         self.companionName = companionName
@@ -172,12 +188,16 @@ class ActionTab_Companion(BaseActionTab):
         self.spinbox_offsetY.setValue(self.companion.get("general", {}).get("offset", [0, 0])[1])
         self.spinbox_scale.setValue(self.companion.get("general", {}).get("scale", 0.4))
         self.combobox_sheetFilter.setCurrentIndex(self.companion.get("general", {}).get("sheetFilter", 0))
+        self.spinbox_defaultW.setValue(jsonEditorRoot["defaultFrameSize"][0] if "defaultFrameSize" in jsonEditorRoot else 0)
+        self.spinbox_defaultH.setValue(jsonEditorRoot["defaultFrameSize"][1] if "defaultFrameSize" in jsonEditorRoot else 0)
 
         self.btn_openFolder.clicked.connect(self.onOpenCompanionFolder)
         self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
         self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
         self.spinbox_scale.valueChanged.connect(self.onChangeScale)
         self.combobox_sheetFilter.currentIndexChanged.connect(self.onSheetFilterChanged)
+        self.spinbox_defaultW.valueChanged.connect(self.onDefaultWChanged)
+        self.spinbox_defaultH.valueChanged.connect(self.onDefaultHChanged)
 
     @QtCore.pyqtSlot()
     def onOpenCompanionFolder(self):
@@ -210,11 +230,28 @@ class ActionTab_Companion(BaseActionTab):
         self.companion["general"]["sheetFilter"] = value
         self.valueChanged.emit()
 
+    @QtCore.pyqtSlot(int)
+    def onDefaultWChanged(self, value):
+        self.jsonEditorRoot["defaultFrameSize"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onDefaultHChanged(self, value):
+        self.jsonEditorRoot["defaultFrameSize"][1] = value
+        self.valueChanged.emit()
+
 
 class ActionTab_Frame(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
-        uic.loadUi("ui/actiontab_frame.ui", self)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
+
+        self.frameSizesAreSet = jsonEditorRoot["defaultFrameSize"][0] and jsonEditorRoot["defaultFrameSize"][1]
+        if self.frameSizesAreSet:
+            uic.loadUi("ui/actiontab_frameAlt.ui", self)
+            if actionInfo[2] == 0: actionInfo[2] = jsonEditorRoot["defaultFrameSize"][0]
+            if actionInfo[3] == 0: actionInfo[3] = jsonEditorRoot["defaultFrameSize"][1]
+        else:
+            uic.loadUi("ui/actiontab_frame.ui", self)
 
         self.actionInfo = actionInfo
         self.action = action
@@ -229,13 +266,42 @@ class ActionTab_Frame(BaseActionTab):
         self.spinbox_w.valueChanged.connect(self.onChangeW)
         self.spinbox_h.valueChanged.connect(self.onChangeH)
 
+        if self.frameSizesAreSet:
+            differentValues = actionInfo[2] != jsonEditorRoot["defaultFrameSize"][0] or actionInfo[3] != jsonEditorRoot["defaultFrameSize"][1]
+            self.checkbox_changeSize.setChecked(differentValues)
+            self.checkbox_changeSize.stateChanged.connect(self.onCheckboxChangeSize)
+            self.changeBehavior(not differentValues)
+
+    def changeBehavior(self, sizesLocked):
+        self.spinbox_x.setSingleStep(self.jsonEditorRoot["defaultFrameSize"][0] if sizesLocked else 1)
+        self.spinbox_y.setSingleStep(self.jsonEditorRoot["defaultFrameSize"][1] if sizesLocked else 1)
+        self.spinbox_w.setEnabled(not sizesLocked)
+        self.spinbox_h.setEnabled(not sizesLocked)
+        if sizesLocked:
+            newX = self.actionInfo[0] // self.jsonEditorRoot["defaultFrameSize"][0] * self.jsonEditorRoot["defaultFrameSize"][0]
+            newY = self.actionInfo[1] // self.jsonEditorRoot["defaultFrameSize"][1] * self.jsonEditorRoot["defaultFrameSize"][1]
+            self.spinbox_w.setValue(self.jsonEditorRoot["defaultFrameSize"][0])
+            self.spinbox_h.setValue(self.jsonEditorRoot["defaultFrameSize"][1])
+            self.spinbox_x.setValue(newX)
+            self.spinbox_y.setValue(newY)
+
     @QtCore.pyqtSlot(int)
     def onChangeX(self, value):
+        if self.frameSizesAreSet and not self.checkbox_changeSize.isChecked():
+            value = value // self.jsonEditorRoot["defaultFrameSize"][0] * self.jsonEditorRoot["defaultFrameSize"][0]
+            self.spinbox_x.blockSignals(True)
+            self.spinbox_x.setValue(value)
+            self.spinbox_x.blockSignals(False)
         self.actionInfo[0] = value
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeY(self, value):
+        if self.frameSizesAreSet and not self.checkbox_changeSize.isChecked():
+            value = value // self.jsonEditorRoot["defaultFrameSize"][1] * self.jsonEditorRoot["defaultFrameSize"][1]
+            self.spinbox_y.blockSignals(True)
+            self.spinbox_y.setValue(value)
+            self.spinbox_y.blockSignals(False)
         self.actionInfo[1] = value
         self.valueChanged.emit()
 
@@ -249,10 +315,15 @@ class ActionTab_Frame(BaseActionTab):
         self.actionInfo[3] = value
         self.valueChanged.emit()
 
+    @QtCore.pyqtSlot(int)
+    def onCheckboxChangeSize(self, value):
+        on = value > 0
+        self.changeBehavior(not on)
+
 
 class ActionTab_Delay(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_delay.ui", self)
 
         self.actionInfo = actionInfo
@@ -268,8 +339,8 @@ class ActionTab_Delay(BaseActionTab):
 
 
 class ActionTab_SetAnim(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_setAnim.ui", self)
 
         self.actionInfo = actionInfo
@@ -290,8 +361,8 @@ class ActionTab_SetAnim(BaseActionTab):
 
 
 class ActionTab_Offset(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_offset.ui", self)
 
         self.actionInfo = actionInfo
@@ -315,8 +386,8 @@ class ActionTab_Offset(BaseActionTab):
 
 
 class ActionTab_Scale(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_scale.ui", self)
 
         self.actionInfo = actionInfo
@@ -340,8 +411,8 @@ class ActionTab_Scale(BaseActionTab):
 
 
 class ActionTab_Angle(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_angle.ui", self)
 
         self.actionInfo = actionInfo
@@ -357,8 +428,8 @@ class ActionTab_Angle(BaseActionTab):
 
 
 class ActionTab_Sound(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_sound.ui", self)
 
         self.actionInfo = actionInfo
@@ -427,8 +498,8 @@ class ActionTab_Sound(BaseActionTab):
 
 
 class ActionTab_Color(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_color.ui", self)
 
         self.actionInfo = actionInfo
@@ -445,8 +516,8 @@ class ActionTab_Color(BaseActionTab):
 
 
 class ActionTab_Hitbox(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_hitbox.ui", self)
 
         self.actionInfo = actionInfo
@@ -491,8 +562,8 @@ class ActionTab_Hitbox(BaseActionTab):
 
 
 class ActionTab_CustomQueue(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_callCustomQueue.ui", self)
 
         self.actionInfo = actionInfo
@@ -500,8 +571,8 @@ class ActionTab_CustomQueue(BaseActionTab):
 
 
 class ActionTab_Puppets(BaseActionTab):
-    def __init__(self, parent, actionInfo, action):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/actiontab_puppets.ui", self)
 
         self.actionInfo = actionInfo
@@ -626,6 +697,23 @@ class ActionTab_Puppets(BaseActionTab):
         self.valueChanged.emit()
 
 
+class ActionTab_Interpolation(BaseActionTab):
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
+        uic.loadUi("ui/actiontab_interpolation.ui", self)
+
+        self.actionInfo = actionInfo
+        self.action = action
+
+        self.combobox_interp.setCurrentIndex(actionInfo)
+        self.combobox_interp.currentIndexChanged.connect(self.onChangeInterpolation)
+
+    @QtCore.pyqtSlot(int)
+    def onChangeInterpolation(self, value):
+        self.action["interpolation"] = value
+        self.valueChanged.emit()
+
+
 class ActionDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
@@ -710,4 +798,5 @@ actionTabsDict = {
     "hitbox": ActionTab_Hitbox,
     "callCustomQueue": ActionTab_CustomQueue,
     "puppets": ActionTab_Puppets,
+    "interpolation": ActionTab_Interpolation
 }

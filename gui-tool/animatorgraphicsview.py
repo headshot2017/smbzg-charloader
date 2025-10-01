@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
 import gamepath
 import characterdata
+import easing
 
 
 def lerp(a, b, x):
@@ -250,6 +251,9 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
         currAction = self.animDict["frames"][self.frame]
         if currAction["delay"] <= 0: return
+
+        if "interpolation" in currAction and currAction["interpolation"] in easing.Funcs:
+            x = easing.Funcs[currAction["interpolation"]](x)
 
         nextAction = None
         if self.frame >= len(self.animDict["frames"])-1:

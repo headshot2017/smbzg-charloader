@@ -1,5 +1,14 @@
 ﻿using UnityEngine;
 
+public enum ActionInterpType
+{
+    Linear,
+    In,
+    Out,
+    InOut,
+    MAX
+};
+
 public class HitboxAction
 {
     public bool on;
@@ -34,6 +43,7 @@ public class AnimAction
     public Color color = Color.white;
     public float angle;
     public bool callCustomQueue;
+    public ActionInterpType interpolation;
     public float delay;
 }
 

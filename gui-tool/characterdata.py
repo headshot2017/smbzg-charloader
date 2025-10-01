@@ -25,7 +25,8 @@ __defaultaction = {
     "color": [255, 255, 255, 255],
     "hitbox": {"on": False, "pos": [0, 0], "scale": [1, 1]},
     "callCustomQueue": True,
-    "puppets": {}
+    "puppets": {},
+    "interpolation": 0
 }
 
 def defaultAction(name):
@@ -113,6 +114,11 @@ def defaultCharacterData():
             }
         },
 
+        "editor": {
+            "defaultFrameSize": [0, 0],
+            "defaultDelay": 0.0
+        },
+
         "puppets": {},
 
         "effects": {},
@@ -122,11 +128,24 @@ def defaultCharacterData():
         "anims": {}
     }
 
+def defaultEffect():
+    return {
+        "editor": {
+            "defaultFrameSize": [0, 0]
+        },
+
+        "frames": []
+    }
+
 def defaultCompanion():
     return {
         "general": {
             "scale": 0.4,
             "offset": [0, 0]
+        },
+
+        "editor": {
+            "defaultFrameSize": [0, 0]
         },
 
         "puppets": {},

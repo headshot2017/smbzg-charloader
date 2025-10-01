@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>768</height>
+    <height>847</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,7 +66,7 @@ Create a new character or open an existing character from the File menu to get s
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <layout class="QVBoxLayout" name="layout_tabGeneral" stretch="0,0,0,0,0,0">
+         <layout class="QVBoxLayout" name="layout_tabGeneral" stretch="0,0,0,0,0,0,0">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -628,6 +628,69 @@ Create a new character or open an existing character from the File menu to get s
            </widget>
           </item>
           <item>
+           <widget class="QGroupBox" name="groupbox_defaultvalues">
+            <property name="title">
+             <string>Default values (hover mouse for info)</string>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_15">
+             <item>
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>Default size for frames W / H</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_14">
+               <item>
+                <widget class="QSpinBox" name="spinbox_defaultW">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When setting a default width and height for sprite frames, these two values will be used across all of your &amp;quot;frame&amp;quot; actions in your character's animations, allowing you to quickly change the sprite frame in one click instead of manually having to type the values yourself. Useful if the sprites in your sprite sheet all have the same size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>100000</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="spinbox_defaultH">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When setting a default width and height for sprite frames, these two values will be used across all of your &amp;quot;frame&amp;quot; actions in your character's animations, allowing you to quickly change the sprite frame in one click instead of manually having to type the values yourself. Useful if the sprites in your sprite sheet all have the same size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>100000</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Default delay in seconds</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QDoubleSpinBox" name="spinbox_defaultDelay">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This &amp;quot;delay&amp;quot; value will be automatically applied when adding a new frame to an animation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="decimals">
+                <number>3</number>
+               </property>
+               <property name="maximum">
+                <double>10000.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
            <widget class="QGroupBox" name="groupbox_colors">
             <property name="title">
              <string>Colors</string>
@@ -676,14 +739,7 @@ Create a new character or open an existing character from the File menu to get s
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_10">
                    <item>
-                    <widget class="ColorGraphicsView" name="view_secondaryColor">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                    </widget>
+                    <widget class="ColorGraphicsView" name="view_secondaryColor"/>
                    </item>
                   </layout>
                  </widget>
