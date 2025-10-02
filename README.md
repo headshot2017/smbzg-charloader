@@ -48,6 +48,7 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 * Create a new project in Visual Studio using the MelonLoader Mod template
 * When asked to select an executable file, choose SMBZ-G.exe
 * Add CharLoader.dll as an assembly dependency
+* Take a look at the "template" folder in this repository for a template character source code.
 * CharLoader.Core has these callbacks that you can implement:
   * afterCharacterLoad: Called after a CustomCharacter is loaded. You must check if it's your character by comparing the internalName, which by then you can replace the CustomBaseCharacter component with your own character control component. This one is important.
   * resetBattleParticipant: Called on BattleParticipantDataModel.Reset(). Compare participant.InitialCharacterData with CustomCharacter.characterData to check if it's your custom character. This is used for setting up participant.AdditionalCharacterSpecificDataDictionary, for things like inventory data models. If your character doesn't have an inventory, this can be ignored
