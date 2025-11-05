@@ -71,10 +71,12 @@ public class CustomAnimator : MonoBehaviour
         public bool InputingLeft;
         public bool InputingRight;
         public bool PreparingJump;
+        public bool Attacking;
     }
     public Properties m_CurrentProperties;
     Properties m_LastProperties;
     public float m_GetUpTimer;
+    public bool m_AttackingTurbo;
 
     public static readonly int ASN_Idle = Animator.StringToHash("Idle");
     public static readonly int ASN_IdleB = Animator.StringToHash("IdleB");
@@ -494,6 +496,15 @@ public class CustomAnimator : MonoBehaviour
     void HandleIngameSprite()
     {
         if (IgnoreIngameSprite || !m_CompSpriteRenderer || (m_CurrentAnimation != null && m_CurrentAnimation.hash == ASN_Land && !m_Ended)) return;
+        if (SMBZGlobals.BattleSetting.TurboModeIsOn)
+        {
+            if (m_CurrentProperties.Attacking)
+                m_AttackingTurbo = true;
+            else if (m_Ended && m_AttackingTurbo)
+                m_AttackingTurbo = false;
+            else if (m_AttackingTurbo)
+                return;
+        }
 
         Properties p = m_CurrentProperties;
 

@@ -3,7 +3,6 @@ using SMBZG;
 using System.Reflection;
 using System.Collections;
 using UnityEngine;
-using MelonLoader;
 
 public class CustomBaseCharacter : BaseCharacter
 {
@@ -472,9 +471,11 @@ public class CustomBaseCharacter : BaseCharacter
                 GetPlayerState() == PlayerStateENUM.Attacking ||
                 GetPlayerState() == PlayerStateENUM.Pursuing ||
                 GetPlayerState() == PlayerStateENUM.Cinematic_NoInput ||
+                IsRushing ||
                 (IsMovementRushing && !MovementRushIntro)
             );
         Comp_CustomAnimator.IgnoreIngameSprite = GetMovementRushState() == MovementRushStateENUM.IsDodging;
+        Comp_CustomAnimator.m_CurrentProperties.Attacking = GetPlayerState() == PlayerStateENUM.Attacking || GetPlayerState() == PlayerStateENUM.Cinematic_NoInput;
 
         if (MovementRushIntro)
         {
@@ -484,7 +485,7 @@ public class CustomBaseCharacter : BaseCharacter
             Comp_CustomAnimator.m_CurrentProperties.InputingRight = flag;
         }
 
-        if (!Comp_CustomAnimator.m_CurrentProperties.DontChangeSprite && CurrentAttackData != null)
+        if (!Comp_CustomAnimator.m_CurrentProperties.DontChangeSprite && CurrentAttackData != null && !Comp_CustomAnimator.m_AttackingTurbo)
             CurrentAttackData = null;
     }
 
@@ -625,7 +626,7 @@ public class CustomBaseCharacter : BaseCharacter
             Comp_CustomAnimator.Play(ASN_Tumble);
             return;
         }
-        if (GetPlayerState() == PlayerStateENUM.Idle)
+        if (GetPlayerState() == PlayerStateENUM.Idle && !Comp_CustomAnimator.m_AttackingTurbo && !IsRushing)
             Comp_CustomAnimator.Play(ASN_Land);
     }
 

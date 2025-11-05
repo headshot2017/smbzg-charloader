@@ -202,6 +202,9 @@ public static class SMBZGlobals
     public static BattleDataModel ActiveBattleData =>
         (BattleDataModel)typeof(GC).GetField("ActiveBattleData", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(GC.ins);
 
+    public static BattleSettings BattleSetting =>
+        (BattleSettings)typeof(GC).GetField("BattleSetting", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(GC.ins);
+
     public static bool IsInArcadeMode =>
         (bool)typeof(GC).GetProperty("IsInArcadeMode", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(GC.ins);
 }
