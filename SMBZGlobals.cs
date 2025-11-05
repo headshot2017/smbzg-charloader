@@ -198,4 +198,10 @@ public static class SMBZGlobals
 
     public static bool SomeoneHasDied =>
         (bool)typeof(BattleController).GetField("SomeoneHasDied", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
+
+    public static BattleDataModel ActiveBattleData =>
+        (BattleDataModel)typeof(GC).GetField("ActiveBattleData", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(GC.ins);
+
+    public static bool IsInArcadeMode =>
+        (bool)typeof(GC).GetProperty("IsInArcadeMode", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(GC.ins);
 }

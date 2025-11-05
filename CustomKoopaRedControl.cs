@@ -109,6 +109,18 @@ public class CustomKoopaRedControl : KoopaRedControl
         }
     }
 
+    public string PlayerNumber
+    {
+        get
+        {
+            return (string)GetType().BaseType.GetField("PlayerNumber", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+        }
+        set
+        {
+            GetType().BaseType.GetField("PlayerNumber", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(this, value);
+        }
+    }
+
 
     protected override void Start()
     {
@@ -164,9 +176,29 @@ public class CustomKoopaRedControl : KoopaRedControl
             array[i].IsFacingRight = IsFacingRight;
             array[i].tag = base.tag;
             array[i].SetSkin(CurrentSkin);
+            string teamTag = SMBZGlobals.ActiveBattleData.TeamsList[1].TeamTag;
+            bool flag = MyCharacterControl.ParticipantDataReference.TeamTag == teamTag && SMBZGlobals.IsInArcadeMode;
+            if (MyCharacterControl.ParticipantDataReference.CPUSettings != BattleCache.CPUSettingsENUM.Player || flag)
+            {
+                if (SMBZGlobals.ActiveBattleData.GetAllParticipants().Count > 2)
+                {
+                    int num5 = ((SMBZGlobals.ActiveCharacterControlList[0].ParticipantDataReference.ParticipantIndex != 0 || SMBZGlobals.ActiveCharacterControlList[0].ParticipantDataReference.InputPlayerIndex.HasValue) ? GlobalInputManager.ins.PIM.playerCount : 0);
+                    num5 = (flag ? (num5 + 99) : num5);
+                    PlayerNumber = "CPU-" + (MyCharacterControl.ParticipantDataReference.ParticipantIndex - num5 + 1);
+                }
+                else
+                {
+                    PlayerNumber = "CPU";
+                }
+            }
+            else
+            {
+                PlayerNumber = "P" + (MyCharacterControl.ParticipantDataReference.InputPlayerIndex + 1);
+            }
+
             if (SaveData.Data.Get_IsPlayerIndicatorsEnabled())
             {
-                GameObject.Instantiate(BattleController.instance.PlayerIndicatorPrefab).GetComponent<PlayerIndicator>().Setup(array[i], array[i].tag, isNPC: true);
+                GameObject.Instantiate(BattleController.instance.PlayerIndicatorPrefab).GetComponent<PlayerIndicator>().Setup(array[i], array[i].tag, isNPC: true, PlayerNumber);
             }
         }
 
