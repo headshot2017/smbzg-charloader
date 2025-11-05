@@ -322,7 +322,7 @@ namespace CharLoader
             GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
             PortraitNewRow.transform.RemoveAllChildren();
             PortraitNewRow.name = "CustomRow";
-            PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, -65);
+            PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
 
             foreach (CustomCharacter cc in customCharacters)
             {
