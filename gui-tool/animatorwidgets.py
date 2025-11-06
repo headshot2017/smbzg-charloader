@@ -471,7 +471,7 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         animName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd, frameClipboard.current)
+        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd, copy.deepcopy(frameClipboard.current))
 
         self.reloadTree()
 
@@ -964,7 +964,7 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         fxName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        frameClipboard.current = characterdata.jsonFile["effects"][fxName]["frames"][frameInd]
+        frameClipboard.current = copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd])
         del characterdata.jsonFile["effects"][fxName]["frames"][frameInd]
         self.reloadTree()
 
@@ -975,7 +975,7 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         fxName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        frameClipboard.current = characterdata.jsonFile["effects"][fxName]["frames"][frameInd]
+        frameClipboard.current = copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd])
 
     @QtCore.pyqtSlot()
     def onMenuActionPaste(self):
@@ -1622,7 +1622,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
 
-        frameClipboard.current = companion["anims"][animName]["frames"][frameInd]
+        frameClipboard.current = copy.deepcopy(companion["anims"][animName]["frames"][frameInd])
         del companion["anims"][animName]["frames"][frameInd]
         self.reloadTree()
 
@@ -1636,7 +1636,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
 
-        frameClipboard.current = companion["anims"][animName]["frames"][frameInd]
+        frameClipboard.current = copy.deepcopy(companion["anims"][animName]["frames"][frameInd])
 
     @QtCore.pyqtSlot()
     def onMenuActionPaste(self):
