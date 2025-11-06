@@ -116,6 +116,7 @@ def defaultCharacterData():
 
         "editor": {
             "defaultFrameSize": [0, 0],
+            "spriteSpacing": [0, 0],
             "defaultDelay": 0.0
         },
 
@@ -131,7 +132,8 @@ def defaultCharacterData():
 def defaultEffect():
     return {
         "editor": {
-            "defaultFrameSize": [0, 0]
+            "defaultFrameSize": [0, 0],
+            "spriteSpacing": [0, 0]
         },
 
         "frames": []
@@ -145,7 +147,8 @@ def defaultCompanion():
         },
 
         "editor": {
-            "defaultFrameSize": [0, 0]
+            "defaultFrameSize": [0, 0],
+            "spriteSpacing": [0, 0]
         },
 
         "puppets": {},

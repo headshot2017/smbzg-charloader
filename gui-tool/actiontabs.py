@@ -90,6 +90,8 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.spinbox_scaleY.setValue(effect["scale"][1] if "scale" in effect else 1)
         self.spinbox_defaultW.setValue(jsonEditorRoot["defaultFrameSize"][0] if "defaultFrameSize" in jsonEditorRoot else 0)
         self.spinbox_defaultH.setValue(jsonEditorRoot["defaultFrameSize"][1] if "defaultFrameSize" in jsonEditorRoot else 0)
+        self.spinbox_spacingX.setValue(jsonEditorRoot["spriteSpacing"][0] if "spriteSpacing" in jsonEditorRoot else 0)
+        self.spinbox_spacingY.setValue(jsonEditorRoot["spriteSpacing"][1] if "spriteSpacing" in jsonEditorRoot else 0)
 
         self.checkbox_interpolate.stateChanged.connect(self.onSetInterpolate)
         self.btn_openFolder.clicked.connect(self.onOpenEffectsFolder)
@@ -175,6 +177,16 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.jsonEditorRoot["defaultFrameSize"][1] = value
         self.valueChanged.emit()
 
+    @QtCore.pyqtSlot(int)
+    def onSpacingXChanged(self, value):
+        self.jsonEditorRoot["spriteSpacing"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onSpacingYChanged(self, value):
+        self.jsonEditorRoot["spriteSpacing"][1] = value
+        self.valueChanged.emit()
+
 
 class ActionTab_Companion(BaseActionTab):
     def __init__(self, parent, jsonEditorRoot, companionName):
@@ -190,6 +202,8 @@ class ActionTab_Companion(BaseActionTab):
         self.combobox_sheetFilter.setCurrentIndex(self.companion.get("general", {}).get("sheetFilter", 0))
         self.spinbox_defaultW.setValue(jsonEditorRoot["defaultFrameSize"][0] if "defaultFrameSize" in jsonEditorRoot else 0)
         self.spinbox_defaultH.setValue(jsonEditorRoot["defaultFrameSize"][1] if "defaultFrameSize" in jsonEditorRoot else 0)
+        self.spinbox_spacingX.setValue(jsonEditorRoot["spriteSpacing"][0] if "spriteSpacing" in jsonEditorRoot else 0)
+        self.spinbox_spacingY.setValue(jsonEditorRoot["spriteSpacing"][1] if "spriteSpacing" in jsonEditorRoot else 0)
 
         self.btn_openFolder.clicked.connect(self.onOpenCompanionFolder)
         self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
@@ -198,6 +212,8 @@ class ActionTab_Companion(BaseActionTab):
         self.combobox_sheetFilter.currentIndexChanged.connect(self.onSheetFilterChanged)
         self.spinbox_defaultW.valueChanged.connect(self.onDefaultWChanged)
         self.spinbox_defaultH.valueChanged.connect(self.onDefaultHChanged)
+        self.spinbox_spacingX.valueChanged.connect(self.onSpacingXChanged)
+        self.spinbox_spacingY.valueChanged.connect(self.onSpacingYChanged)
 
     @QtCore.pyqtSlot()
     def onOpenCompanionFolder(self):
@@ -240,6 +256,16 @@ class ActionTab_Companion(BaseActionTab):
         self.jsonEditorRoot["defaultFrameSize"][1] = value
         self.valueChanged.emit()
 
+    @QtCore.pyqtSlot(int)
+    def onSpacingXChanged(self, value):
+        self.jsonEditorRoot["spriteSpacing"][0] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onSpacingYChanged(self, value):
+        self.jsonEditorRoot["spriteSpacing"][1] = value
+        self.valueChanged.emit()
+
 
 class ActionTab_Frame(BaseActionTab):
     def __init__(self, parent, jsonEditorRoot, actionInfo, action):
@@ -273,13 +299,17 @@ class ActionTab_Frame(BaseActionTab):
             self.changeBehavior(not differentValues)
 
     def changeBehavior(self, sizesLocked):
-        self.spinbox_x.setSingleStep(self.jsonEditorRoot["defaultFrameSize"][0] if sizesLocked else 1)
-        self.spinbox_y.setSingleStep(self.jsonEditorRoot["defaultFrameSize"][1] if sizesLocked else 1)
+        singleSteps = [
+            self.jsonEditorRoot["defaultFrameSize"][0]+self.jsonEditorRoot["spriteSpacing"][0] if sizesLocked else 1,
+            self.jsonEditorRoot["defaultFrameSize"][1]+self.jsonEditorRoot["spriteSpacing"][1] if sizesLocked else 1
+        ]
+        self.spinbox_x.setSingleStep(singleSteps[0])
+        self.spinbox_y.setSingleStep(singleSteps[1])
         self.spinbox_w.setEnabled(not sizesLocked)
         self.spinbox_h.setEnabled(not sizesLocked)
         if sizesLocked:
-            newX = self.actionInfo[0] // self.jsonEditorRoot["defaultFrameSize"][0] * self.jsonEditorRoot["defaultFrameSize"][0]
-            newY = self.actionInfo[1] // self.jsonEditorRoot["defaultFrameSize"][1] * self.jsonEditorRoot["defaultFrameSize"][1]
+            newX = self.actionInfo[0] // singleSteps[0] * singleSteps[0]
+            newY = self.actionInfo[1] // singleSteps[1] * singleSteps[1]
             self.spinbox_w.setValue(self.jsonEditorRoot["defaultFrameSize"][0])
             self.spinbox_h.setValue(self.jsonEditorRoot["defaultFrameSize"][1])
             self.spinbox_x.setValue(newX)
@@ -288,7 +318,8 @@ class ActionTab_Frame(BaseActionTab):
     @QtCore.pyqtSlot(int)
     def onChangeX(self, value):
         if self.frameSizesAreSet and not self.checkbox_changeSize.isChecked():
-            value = value // self.jsonEditorRoot["defaultFrameSize"][0] * self.jsonEditorRoot["defaultFrameSize"][0]
+            singleStep = self.jsonEditorRoot["defaultFrameSize"][0]+self.jsonEditorRoot["spriteSpacing"][0]
+            value = value // singleStep * singleStep
             self.spinbox_x.blockSignals(True)
             self.spinbox_x.setValue(value)
             self.spinbox_x.blockSignals(False)
@@ -298,7 +329,8 @@ class ActionTab_Frame(BaseActionTab):
     @QtCore.pyqtSlot(int)
     def onChangeY(self, value):
         if self.frameSizesAreSet and not self.checkbox_changeSize.isChecked():
-            value = value // self.jsonEditorRoot["defaultFrameSize"][1] * self.jsonEditorRoot["defaultFrameSize"][1]
+            singleStep = self.jsonEditorRoot["defaultFrameSize"][1]+self.jsonEditorRoot["spriteSpacing"][1]
+            value = value // singleStep * singleStep
             self.spinbox_y.blockSignals(True)
             self.spinbox_y.setValue(value)
             self.spinbox_y.blockSignals(False)

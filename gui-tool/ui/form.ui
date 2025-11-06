@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>847</height>
+    <height>894</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -656,6 +656,37 @@ Create a new character or open an existing character from the File menu to get s
                 <widget class="QSpinBox" name="spinbox_defaultH">
                  <property name="toolTip">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When setting a default width and height for sprite frames, these two values will be used across all of your &amp;quot;frame&amp;quot; actions in your character's animations, allowing you to quickly change the sprite frame in one click instead of manually having to type the values yourself. Useful if the sprites in your sprite sheet all have the same size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>100000</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>X / Y frame spacing</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <item>
+                <widget class="QSpinBox" name="spinbox_spacingX">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the default size for frames are both non-zero, the spacing is applied when changing sprite frames. For example, if default size is 60x60 and spacing is 1x1, changing frames will give 61x61, 122x122 and so on.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>100000</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="spinbox_spacingY">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the default size for frames are both non-zero, the spacing is applied when changing sprite frames. For example, if default size is 60x60 and spacing is 1x1, changing frames will give 61x61, 122x122 and so on.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="maximum">
                   <number>100000</number>

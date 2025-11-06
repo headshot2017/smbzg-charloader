@@ -39,6 +39,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_ingame.valueChanged.connect(self.onYOffsetIngameChanged)
         self.spinbox_defaultW.valueChanged.connect(self.onDefaultWChanged)
         self.spinbox_defaultH.valueChanged.connect(self.onDefaultHChanged)
+        self.spinbox_spacingX.valueChanged.connect(self.onSpacingXChanged)
+        self.spinbox_spacingY.valueChanged.connect(self.onSpacingYChanged)
         self.spinbox_defaultDelay.valueChanged.connect(self.onDefaultDelayChanged)
         self.view_primaryColor.changed.connect(self.onPrimaryColorChanged)
         self.view_secondaryColor.changed.connect(self.onSecondaryColorChanged)
@@ -75,6 +77,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.spinbox_offsetY_ingame.setValue(characterdata.jsonFile["general"]["offset"]["ingame"][1])
         self.spinbox_defaultW.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][0])
         self.spinbox_defaultH.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][1])
+        self.spinbox_spacingX.setValue(characterdata.jsonFile["editor"]["spriteSpacing"][0])
+        self.spinbox_spacingY.setValue(characterdata.jsonFile["editor"]["spriteSpacing"][1])
         self.spinbox_defaultDelay.setValue(characterdata.jsonFile["editor"]["defaultDelay"])
         self.view_primaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["primary"]))
         self.view_secondaryColor.setColor(QtGui.QColor(*characterdata.jsonFile["general"]["colors"]["secondary"]))
@@ -115,8 +119,12 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         else:
             if "defaultFrameSize" not in characterdata.jsonFile["editor"]:
                 characterdata.jsonFile["editor"]["defaultFrameSize"] = [0, 0]
+            if "spriteSpacing" not in characterdata.jsonFile["editor"]:
+                characterdata.jsonFile["editor"]["spriteSpacing"] = [0, 0]
             self.spinbox_defaultW.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][0])
             self.spinbox_defaultH.setValue(characterdata.jsonFile["editor"]["defaultFrameSize"][1])
+            self.spinbox_spacingX.setValue(characterdata.jsonFile["editor"]["spriteSpacing"][0])
+            self.spinbox_spacingY.setValue(characterdata.jsonFile["editor"]["spriteSpacing"][1])
             self.spinbox_defaultDelay.setValue(characterdata.jsonFile["editor"].get("defaultDelay", 0.0))
 
         if "general" in jsonFile:
@@ -275,6 +283,16 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(int)
     def onDefaultHChanged(self, value):
         characterdata.jsonFile["editor"]["defaultFrameSize"][1] = value
+        self.tab_anims.reloadTree()
+
+    @QtCore.pyqtSlot(int)
+    def onSpacingXChanged(self, value):
+        characterdata.jsonFile["editor"]["spriteSpacing"][0] = value
+        self.tab_anims.reloadTree()
+
+    @QtCore.pyqtSlot(int)
+    def onSpacingYChanged(self, value):
+        characterdata.jsonFile["editor"]["spriteSpacing"][1] = value
         self.tab_anims.reloadTree()
 
     @QtCore.pyqtSlot(float)
