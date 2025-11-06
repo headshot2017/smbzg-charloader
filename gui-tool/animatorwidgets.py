@@ -194,6 +194,18 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             animTree = self.addAnimation(animName)
 
     def reloadTree(self):
+        expanded = {}
+        for i in range(self.animationsTree.topLevelItemCount()):
+            animItem = self.animationsTree.topLevelItem(i)
+            if not animItem.isExpanded(): continue
+
+            expanded[animItem.text(0)] = {}
+            for j in range(animItem.childCount()):
+                frameItem = animItem.child(j)
+                if not frameItem.isExpanded(): continue
+
+                expanded[animItem.text(0)][frameItem.text(0)] = False
+
         self.animationsTree.clear()
 
         addAnim = QtWidgets.QTreeWidgetItem(self.animationsTree, ["Add animation..."])
@@ -214,12 +226,22 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
                         frame = frameDict[frameName]
                         thisFrameTree = QtWidgets.QTreeWidgetItem(rootFrameTree, [frameName])
                         thisFrameTree.itemLevel = 2
+
+                    if animName in expanded and rootFrameTree.text(0) in expanded[animName]:
+                        expanded[animName][rootFrameTree.text(0)] = rootFrameTree
+
                     addAction = QtWidgets.QTreeWidgetItem(rootFrameTree, ["Add action..."])
                     addAction.itemLevel = -3
 
             addFrame = QtWidgets.QTreeWidgetItem(animTree, ["Add frame..."])
             addFrame.itemLevel = -2
             self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, animTree)
+
+            if animName in expanded:
+                animTree.setExpanded(True)
+                for k in expanded[animName]:
+                    if not expanded[animName][k]: continue
+                    expanded[animName][k].setExpanded(True)
 
     def reloadPuppetsTree(self):
         self.puppetsTree.clear()
@@ -739,6 +761,18 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         return thisFrameTree
 
     def reloadTree(self):
+        expanded = {}
+        for i in range(self.animationsTree.topLevelItemCount()):
+            animItem = self.animationsTree.topLevelItem(i)
+            if not animItem.isExpanded(): continue
+
+            expanded[animItem.text(0)] = {}
+            for j in range(animItem.childCount()):
+                frameItem = animItem.child(j)
+                if not frameItem.isExpanded(): continue
+
+                expanded[animItem.text(0)][frameItem.text(0)] = False
+
         self.animationsTree.clear()
 
         addEffect = QtWidgets.QTreeWidgetItem(self.animationsTree, ["New effect..."])
@@ -759,12 +793,22 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
                         frame = frameDict[frameName]
                         thisFrameTree = QtWidgets.QTreeWidgetItem(rootFrameTree, [frameName])
                         thisFrameTree.itemLevel = 2
+
+                    if fxName in expanded and rootFrameTree.text(0) in expanded[fxName]:
+                        expanded[fxName][rootFrameTree.text(0)] = rootFrameTree
+
                     addAction = QtWidgets.QTreeWidgetItem(rootFrameTree, ["Add action..."])
                     addAction.itemLevel = -3
 
             addFrame = QtWidgets.QTreeWidgetItem(fxTree, ["Add frame..."])
             addFrame.itemLevel = -2
             self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, fxTree)
+
+            if fxName in expanded:
+                fxTree.setExpanded(True)
+                for k in expanded[fxName]:
+                    if not expanded[fxName][k]: continue
+                    expanded[fxName][k].setExpanded(True)
 
 
     @QtCore.pyqtSlot()
@@ -1246,6 +1290,23 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             animTree = self.addAnimation(companionTree, animName)
 
     def reloadTree(self):
+        expanded = {}
+        for i in range(self.animationsTree.topLevelItemCount()):
+            companionItem = self.animationsTree.topLevelItem(i)
+            if not companionItem.isExpanded(): continue
+
+            expanded[companionItem.text(0)] = {}
+            for j in range(companionItem.childCount()):
+                animItem = companionItem.child(j)
+                if not animItem.isExpanded(): continue
+
+                expanded[companionItem.text(0)][animItem.text(0)] = {}
+                for k in range(animItem.childCount()):
+                    frameItem = animItem.child(k)
+                    if not frameItem.isExpanded(): continue
+
+                    expanded[companionItem.text(0)][animItem.text(0)][frameItem.text(0)] = False
+
         self.animationsTree.clear()
 
         addCompanion = QtWidgets.QTreeWidgetItem(self.animationsTree, ["New companion..."])
@@ -1271,8 +1332,15 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
                             frame = frameDict[frameName]
                             thisFrameTree = QtWidgets.QTreeWidgetItem(rootFrameTree, [frameName])
                             thisFrameTree.itemLevel = 3
+
+                        if companionName in expanded and animName in expanded[companionName] and rootFrameTree.text(0) in expanded[companionName][animName]:
+                            expanded[companionName][animName][rootFrameTree.text(0)] = rootFrameTree
+
                         addAction = QtWidgets.QTreeWidgetItem(rootFrameTree, ["Add action..."])
                         addAction.itemLevel = -4
+
+                if companionName in expanded and animName in expanded[companionName]:
+                    expanded[companionName][animName][0] = animTree
 
                 addFrame = QtWidgets.QTreeWidgetItem(animTree, ["Add frame..."])
                 addFrame.itemLevel = -3
@@ -1280,6 +1348,14 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             addAnim = QtWidgets.QTreeWidgetItem(companionTree, ["Add animation..."])
             addAnim.itemLevel = -2
             self.animationsTree.insertTopLevelItem(self.animationsTree.topLevelItemCount()-1, companionTree)
+
+            if companionName in expanded:
+                companionTree.setExpanded(True)
+                for animName in expanded[companionName]:
+                    expanded[companionName][animName][0].setExpanded(True)
+                    for k in expanded[companionName][animName]:
+                        if not expanded[companionName][animName][k]: continue
+                        expanded[companionName][animName][k].setExpanded(True)
 
     def reloadPuppetsTree(self):
         self.puppetsTree.clear()
