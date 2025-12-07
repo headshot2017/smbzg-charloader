@@ -474,22 +474,29 @@ namespace CharLoader
                 foreach (BattleCache.CharacterEnum cc in ArcadeModeLineup)
                     array.Add(BattleCache.ins.Character_GetData(cc));
 
+                BattleSettings battleSettings = new BattleSettings();
                 List<BattleSettings> list = new List<BattleSettings>();
                 foreach (CharacterData_SO characterData_SO in array)
                 {
-                    BattleSettings battleSettings = new BattleSettings
+                    BattleSettings battleSettings2 = new BattleSettings
                     {
                         RoundsToWin = 1,
                         Stage = BattleCache.GetRandomStage(),
                         TeamsList = new List<BattleSettings.TeamDataModel>(),
-                        DefaultParticipantHealth = SaveData.Data.LastUsedArcadeCpuHealth
+                        DefaultParticipantHealth = SaveData.Data.LastUsedArcadeCpuHealth,
+                        ActiveEnergyGainMultiplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleActiveEnergyGainMultiplier.text, battleSettings.ActiveEnergyGainMultiplier),
+                        IntensityMultipier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleIntensityMultiplier.text, battleSettings.IntensityMultipier),
+                        PassiveEnergyGainMultiplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattlePassiveEnergyGainMultiplier.text, battleSettings.IntensityMultipier),
+                        StunMultiplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleStunMultiplier.text, battleSettings.StunMultiplier),
+                        DefaultDamageMulitplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleDamageMultiplier.text, battleSettings.DefaultDamageMulitplier)
                     };
                     BattleSettings.TeamDataModel teamDataModel = new BattleSettings.TeamDataModel(BattleCache.teamTags[1])
                     {
                         ParticipantSettingList = new List<BattleParticipantSettings>()
                     };
-                    battleSettings.TeamsList.Add(teamDataModel);
                     UI_Participant[] array2 = UnityEngine.Object.FindObjectsOfType<UI_Participant>(includeInactive: true);
+                    teamDataModel.TeamTag = (string)typeof(UI_Participant).GetField("TeamTag", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(array2.Last());
+                    battleSettings2.TeamsList.Add(teamDataModel);
                     UI_Participant[] array3 = array2;
                     foreach (UI_Participant uI_Participant in array3)
                     {
@@ -513,8 +520,12 @@ namespace CharLoader
                             CharacterData = SelectedCharacter,
                             TeamTag = teamDataModel.TeamTag,
                             CPUSettings = CPUSetting,
-                            HealthMax = (uI_Participant.Toggle_Health.isOn ? uI_Participant.Input_Health.value : battleSettings.DefaultParticipantHealth),
+                            HealthMax = (uI_Participant.Toggle_Health.isOn ? uI_Participant.Input_Health.value : battleSettings2.DefaultParticipantHealth),
                             InputDelay = (int)uI_Participant.Input_Delay.value,
+                            DamageMultiplierOverride = (uI_Participant.Toggle_DamageMultiplier.isOn ? uI_Participant.Input_DamageMultiplier.value : battleSettings2.DefaultDamageMulitplier),
+                            ActiveEnergyGainMultiplierOverride = (uI_Participant.Toggle_ActiveEnergyGainMultiplier.isOn ? uI_Participant.Input_ActiveEnergyGainMultiplier.value : battleSettings2.ActiveEnergyGainMultiplier),
+                            PassiveEnergyGainMultiplierOverride = (uI_Participant.Toggle_PassiveEnergyGainMultiplier.isOn ? uI_Participant.Input_PassiveEnergyGainMultiplier.value : battleSettings2.PassiveEnergyGainMultiplier),
+                            StunMultiplierOverride = (uI_Participant.Toggle_StunMultiplier.isOn ? uI_Participant.Input_StunMultiplier.value : battleSettings2.StunMultiplier),
                             InputPlayerIndex = InputPlayerIndex,
                             SkinName = SkinName,
                             PlayerProfile = SelectedProfile,
@@ -528,20 +539,27 @@ namespace CharLoader
                         teamDataModel.ParticipantSettingList.Add(item);
                     }
 
+                    int index = 2;
+                    if (teamDataModel.TeamTag == "Team2")
+                    {
+                        index = 1;
+                    }
+
                     List<BattleCache.CPUSettingsENUM> CPUSettingList = (List<BattleCache.CPUSettingsENUM>)__instance.GetType().GetField("CPUSettingList", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
-                    battleSettings.TeamsList.Add(new BattleSettings.TeamDataModel(BattleCache.teamTags[2])
+                    battleSettings2.TeamsList.Add(new BattleSettings.TeamDataModel(BattleCache.teamTags[index])
                     {
                         ParticipantSettingList = new List<BattleParticipantSettings>
                         {
-                            new BattleParticipantSettings(1, BattleCache.teamTags[2], characterData_SO, CPUSettingList[__instance.Difficulty_CPUSetting.value], SaveData.Data.LastUsedArcadeCpuHealth, string.Empty, 0, null)
+                            new BattleParticipantSettings(1, BattleCache.teamTags[index], characterData_SO, CPUSettingList[__instance.Difficulty_CPUSetting.value], SaveData.Data.LastUsedArcadeCpuHealth, string.Empty, 0, null)
                             {
-                                ParticipantIndex = array2.Select((UI_Participant p) => (int)p.GetType().GetField("ParticipantIndex", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(p)).DefaultIfEmpty(1).Max() + 100
+                                ParticipantIndex = array2.Select((UI_Participant p) => (int)p.GetType().GetField("ParticipantIndex", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(p)).DefaultIfEmpty(1).Max() + 100,
+                                DamageMultiplierOverride = battleSettings2.DefaultDamageMulitplier
                             }
                         }
                     });
                     if (SaveData.Data.ArcadeRandomSkinsEnabled)
                     {
-                        foreach (BattleParticipantSettings participantSetting in battleSettings.TeamsList[1].ParticipantSettingList)
+                        foreach (BattleParticipantSettings participantSetting in battleSettings2.TeamsList[1].ParticipantSettingList)
                         {
                             CharacterSkinDataStore.Skin random = CharacterSkinManager.ins.GetCharacterSkinData(characterData_SO.Character).SkinList.GetRandom();
                             participantSetting.SkinName = random.Name;
@@ -549,13 +567,13 @@ namespace CharLoader
                     }
                     else if (SaveData.Data.Get_MainMenuScenaryMode() == SceneConstants.MainMenuScenaryModeENUM.Halloween2022)
                     {
-                        foreach (BattleParticipantSettings participantSetting2 in battleSettings.TeamsList[1].ParticipantSettingList)
+                        foreach (BattleParticipantSettings participantSetting2 in battleSettings2.TeamsList[1].ParticipantSettingList)
                         {
                             participantSetting2.SkinName = "Halloween";
                         }
                     }
 
-                    list.Add(battleSettings);
+                    list.Add(battleSettings2);
                 }
 
                 // find goomba and reduce its' health
@@ -714,12 +732,28 @@ namespace CharLoader
         [HarmonyPatch(typeof(BattleCache), "Character_GetPrefab", new Type[] { typeof(BattleCache.CharacterEnum) })]
         private static class GetPrefabPatch
         {
-            private static bool Prefix(BattleCache __instance, ref GameObject __result, BattleCache.CharacterEnum character)
+            private static bool Prefix(ref GameObject __result, BattleCache.CharacterEnum character)
             {
                 foreach (CustomCharacter cc in customCharacters)
                 {
                     if (cc.characterData.Character != character) continue;
                     __result = cc.characterData.Prefab_BattleGameObject;
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(BattleCache), "Character_GetData", new Type[] { typeof(BattleCache.CharacterEnum) })]
+        private static class GetDataPatch
+        {
+            private static bool Prefix(ref CharacterData_SO __result, BattleCache.CharacterEnum character)
+            {
+                foreach (CustomCharacter cc in customCharacters)
+                {
+                    if (cc.characterData.Character != character) continue;
+                    __result = cc.characterData;
                     return false;
                 }
 
@@ -797,263 +831,6 @@ namespace CharLoader
                 }
 
                 return true;
-            }
-        }
-
-        [HarmonyPatch(typeof(UI_Participant), "HandleInput")]
-        private static class HandleInputPatch
-        {
-            private static bool Prefix(UI_Participant __instance)
-            {
-                int? UI_OwnershipPlayerIndex = (int?)typeof(UI_Participant).GetProperty("UI_OwnershipPlayerIndex", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                if (UI_OwnershipPlayerIndex == null)
-                    return false;
-
-                var playerInput = GlobalInputManager.ins.GetPlayerInputByIndex(UI_OwnershipPlayerIndex);
-                if (playerInput == null)
-                {
-                    LogHelper.LogError($"Failed to find player index {UI_OwnershipPlayerIndex.Value}");
-                    return false;
-                }
-
-                var pInput = playerInput.InputActionAsset.CharacterSelect;
-                var selectedElement = playerInput.EventSystem.currentSelectedGameObject;
-                if (selectedElement == __instance.Input_Health.gameObject)
-                {
-                    // sliders already increment/decrement by 1, so keep that in mind.
-                    int increment = 9;
-                    if (pInput.Submit.IsPressed())
-                    {
-                        increment -= 9;
-                    }
-                    if (increment != 0)
-                    {
-                        if (pInput.Right.WasPressedThisFrame())
-                        {
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                            __instance.Input_Health.value += increment;
-                        }
-                        else if (pInput.Left.WasPressedThisFrame())
-                        {
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                            __instance.Input_Health.value -= increment;
-                        }
-                    }
-                }
-                if (selectedElement == __instance.Input_Delay.gameObject)
-                {
-                    // sliders already increment/decrement by 1, so keep that in mind.
-                    int increment = 9;
-                    if (pInput.Submit.IsPressed())
-                    {
-                        increment += 9;
-                    }
-                    if (increment != 0)
-                    {
-                        if (pInput.Right.WasPressedThisFrame())
-                        {
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                            __instance.Input_Delay.value += increment;
-                        }
-                        else if (pInput.Left.WasPressedThisFrame())
-                        {
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                            __instance.Input_Delay.value -= increment;
-                        }
-                    }
-                }
-                if (selectedElement == __instance.Image_Team.gameObject)
-                {
-                    string TeamTag = (string)typeof(UI_Participant).GetField("TeamTag", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                    var index = BattleCache.teamTags.IndexOf(TeamTag);
-                    bool doChangeTeam = false;
-                    if (pInput.Right.WasPressedThisFrame())
-                    {
-                        index++;
-                        doChangeTeam = true;
-                        SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                    }
-                    else if (pInput.Left.WasPressedThisFrame())
-                    {
-                        index--;
-                        doChangeTeam = true;
-                        SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                    }
-                    if (doChangeTeam)
-                    {
-                        if (index < 1)
-                            index = BattleCache.teamTags.Count - 1;
-                        if (index > BattleCache.teamTags.Count - 1)
-                            index = 1;
-                        __instance.UpdateTeamTag(BattleCache.teamTags[index]);
-                    }
-                }
-
-                var handler = (CharacterSelectPlayerInputHandler_Base)typeof(UI_Participant).GetMethod("GetHandler", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(__instance, null);
-
-                // When participant doesn't have a character selected...
-                if (selectedElement == __instance.Input_SelectedCharacter.gameObject)
-                {
-                    CharacterData_SO SelectedCharacter = (CharacterData_SO)typeof(UI_Participant).GetField("SelectedCharacter", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                    CharacterSelectScript_Base CSScript = (CharacterSelectScript_Base)typeof(UI_Participant).GetField("CSScript", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                    FieldInfo CharacterSelectionCurrentIndex = handler.GetType().GetField("CharacterSelectionCurrentIndex", BindingFlags.NonPublic | BindingFlags.Instance);
-                    FieldInfo StandaloneTransformation_IsEnabled = typeof(UI_Participant).GetField("StandaloneTransformation_IsEnabled", BindingFlags.NonPublic | BindingFlags.Instance);
-                    FieldInfo FollowPlayerEventSystem = typeof(UI_PlayerCursor).GetField("FollowPlayerEventSystem", BindingFlags.NonPublic | BindingFlags.Instance);
-                    MethodInfo HoverCharacterPortrait = typeof(UI_Participant).GetMethod("HoverCharacterPortrait", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(CharacterPortrait) }, null);
-                    MethodInfo SelectCharacter = typeof(UI_Participant).GetMethod("SelectCharacter", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(CharacterData_SO) }, null);
-                    MethodInfo BeginCharacterSelection = typeof(UI_Participant).GetMethod("BeginCharacterSelection", BindingFlags.NonPublic | BindingFlags.Instance);
-                    MethodInfo MoveToPosition = typeof(UI_PlayerCursor).GetMethod("MoveToPosition", BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(RectTransform) }, null);
-                    MethodInfo SetState_HoveringLastActionButton = handler.GetType().GetMethod("SetState_HoveringLastActionButton", BindingFlags.NonPublic | BindingFlags.Instance);
-                    UI_Participant ParticipantUI_CurrentlySelected = (UI_Participant)handler.GetType().GetField("ParticipantUI_CurrentlySelected", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(handler);
-                    bool IsCPU = (bool)typeof(UI_Participant).GetProperty("IsCPU", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-
-                    if (SelectedCharacter == null)
-                    {
-                        var cList = CSScript.CharacterPortraitList;
-
-                        Transform CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect");
-                        if (!CharacterSelectRoot)
-                            CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelectPage");
-                        Transform PortraitTableRoot = CharacterSelectRoot.Find("CharacterSelectPortraitTable");
-
-                        int rowCount = PortraitTableRoot.childCount;
-                        List<int> columnsInRows = new List<int>();
-                        List<int> rowStartIndex = new List<int>();
-                        for (int i = 0; i < rowCount; i++)
-                        {
-                            rowStartIndex.Add(columnsInRows.Sum(x => x));
-                            columnsInRows.Add(PortraitTableRoot.GetChild(i).childCount);
-                        }
-                        int currentRow = -1;
-                        for (int i=rowCount-1; i>=0; i--)
-                        {
-                            if ((int)CharacterSelectionCurrentIndex.GetValue(handler) >= rowStartIndex[i])
-                            {
-                                currentRow = i;
-                                break;
-                            }
-                        }
-
-                        // Listen to left/right inputs to switch between the options.
-                        if (pInput.Right.WasPressedThisFrame())
-                        {
-                            CharacterSelectionCurrentIndex.SetValue(handler, (int)CharacterSelectionCurrentIndex.GetValue(handler) + 1);
-                            if (cList.Count <= (int)CharacterSelectionCurrentIndex.GetValue(handler))
-                                CharacterSelectionCurrentIndex.SetValue(handler, 0);
-                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
-                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                        }
-                        else if (pInput.Left.WasPressedThisFrame())
-                        {
-                            CharacterSelectionCurrentIndex.SetValue(handler, (int)CharacterSelectionCurrentIndex.GetValue(handler) - 1);
-                            if ((int)CharacterSelectionCurrentIndex.GetValue(handler) < 0)
-                                CharacterSelectionCurrentIndex.SetValue(handler, cList.Count - 1);
-                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
-                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                        }
-                        if (pInput.Down.WasPressedThisFrame())
-                        {
-                            int nextRow = currentRow + 1;
-                            if (nextRow >= rowCount) nextRow = 0;
-                            bool evenDifferences = (columnsInRows[currentRow] % 2) != (columnsInRows[nextRow] % 2);
-                            int awayFromCenter = -(rowStartIndex[currentRow] + columnsInRows[currentRow]/2 - (int)CharacterSelectionCurrentIndex.GetValue(handler));
-                            if (evenDifferences)
-                            {
-                                if (columnsInRows[currentRow] % 2 == 0)
-                                    awayFromCenter++;
-                                else
-                                    awayFromCenter--;
-                            }
-
-                            int nextIndex = Mathf.Clamp(
-                                rowStartIndex[nextRow] + columnsInRows[nextRow]/2 + awayFromCenter,
-                                rowStartIndex[nextRow],
-                                rowStartIndex[nextRow] + columnsInRows[nextRow] - 1
-                            );
-                            CharacterSelectionCurrentIndex.SetValue(handler, nextIndex);
-
-                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
-                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                        }
-                        else if (pInput.Up.WasPressedThisFrame())
-                        {
-                            int nextRow = currentRow - 1;
-                            if (nextRow < 0) nextRow = rowCount-1;
-                            bool evenDifferences = (columnsInRows[currentRow] % 2) != (columnsInRows[nextRow] % 2);
-                            int awayFromCenter = -(rowStartIndex[currentRow] + columnsInRows[currentRow] / 2 - (int)CharacterSelectionCurrentIndex.GetValue(handler));
-                            if (evenDifferences)
-                            {
-                                if (columnsInRows[currentRow] % 2 == 0)
-                                    awayFromCenter++;
-                                else
-                                    awayFromCenter--;
-                            }
-
-                            int nextIndex = Mathf.Clamp(
-                                rowStartIndex[nextRow] + columnsInRows[nextRow] / 2 + awayFromCenter,
-                                rowStartIndex[nextRow],
-                                rowStartIndex[nextRow] + columnsInRows[nextRow] - 1
-                            );
-                            CharacterSelectionCurrentIndex.SetValue(handler, nextIndex);
-
-                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
-                            HoverCharacterPortrait.Invoke(__instance, new object[] { portrait });
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                        }
-
-                        // Listen to Submit input to select the character.
-                        if (pInput.Submit.WasPressedThisFrame())
-                        {
-                            var portrait = cList[(int)CharacterSelectionCurrentIndex.GetValue(handler)];
-                            if (portrait.IsRandom)
-                            {
-                                StandaloneTransformation_IsEnabled.SetValue(__instance, false);
-                                SelectCharacter.Invoke(__instance, new object[] { CSScript.GetRandomCharacter().Data });
-                                __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
-                            }
-                            else if (portrait.Data != null)
-                            {
-                                StandaloneTransformation_IsEnabled.SetValue(__instance, false);
-                                SelectCharacter.Invoke(__instance, new object[] { portrait.Data });
-                                __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
-                            }
-                            else
-                            {
-                                LogHelper.LogError("Submitted but no valid option available...");
-                            }
-                            FollowPlayerEventSystem.SetValue(handler.UI_PlayerCursor, true);
-                            MoveToPosition.Invoke(handler.UI_PlayerCursor, new object[] { __instance.rectTransform });
-                            playerInput.EventSystem.playerRoot = __instance.gameObject;
-                            if (IsCPU)
-                                playerInput.EventSystem.SetSelectedGameObject(__instance.Button_Okay.gameObject);
-                            else
-                                playerInput.EventSystem.SetSelectedGameObject(__instance.Dropdown_Profile.gameObject);
-                        }
-                        // Listen to Cancel input to deactivate the UI again.
-                        else if (pInput.Cancel.WasPressedThisFrame())
-                        {
-                            CSScript.RemoveParticipantUI(ParticipantUI_CurrentlySelected);
-                            SetState_HoveringLastActionButton.Invoke(handler, null);
-                            __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                        }
-                    }
-                    else
-                    {
-                        // Listen to deselect character.
-                        if (pInput.Submit.WasPressedThisFrame())
-                        {
-                            BeginCharacterSelection.Invoke(__instance, null);
-                            __instance.StandaloneTransformation_Marker.gameObject.SetActive(false);
-                            SoundCache.ins.PlaySound(SoundCache.ins.Menu_Navigate);
-                        }
-                    }
-                }
-
-                return false;
             }
         }
 
