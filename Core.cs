@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HarmonyLib;
 
-[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.7.1", "Headshotnoby/headshot2017", null)]
+[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.7.2", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
 
 namespace CharLoader
@@ -786,7 +786,7 @@ namespace CharLoader
                     CustomAnimator c = imageObj.GetComponent<CustomAnimator>();
                     if (!c) c = imageObj.AddComponent<CustomAnimator>();
                     c.IgnoreColorAction = true;
-                    c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.GetChild(0).gameObject, cc.charSelectOffset, cc.charSelectScale);
+                    c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.Find("Image").gameObject, cc.charSelectOffset, cc.charSelectScale);
                     c.Play(Animator.StringToHash("IdleCharSelect"), true);
 
                     __instance.SelectedCharacterDisplay.gameObject.GetComponentInChildren<Image>().color = new Color(1f, 1f, 1f, 0.5f);
@@ -827,7 +827,7 @@ namespace CharLoader
                     if (!c) c = imageObj.AddComponent<CustomAnimator>();
                     c.m_OriginalAnimator = imageObj.GetComponent<Animator>();
                     c.IgnoreColorAction = true;
-                    c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.GetChild(0).gameObject, cc.charSelectOffset, cc.charSelectScale);
+                    c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.Find("Image").gameObject, cc.charSelectOffset, cc.charSelectScale);
                 }
 
                 return true;
