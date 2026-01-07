@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HarmonyLib;
 
-[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.7.2", "Headshotnoby/headshot2017", null)]
+[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.8.0", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
 
 namespace CharLoader
@@ -484,11 +484,11 @@ namespace CharLoader
                         Stage = BattleCache.GetRandomStage(),
                         TeamsList = new List<BattleSettings.TeamDataModel>(),
                         DefaultParticipantHealth = SaveData.Data.LastUsedArcadeCpuHealth,
-                        ActiveEnergyGainMultiplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleActiveEnergyGainMultiplier.text, battleSettings.ActiveEnergyGainMultiplier),
-                        IntensityMultipier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleIntensityMultiplier.text, battleSettings.IntensityMultipier),
-                        PassiveEnergyGainMultiplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattlePassiveEnergyGainMultiplier.text, battleSettings.IntensityMultipier),
-                        StunMultiplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleStunMultiplier.text, battleSettings.StunMultiplier),
-                        DefaultDamageMulitplier = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleDamageMultiplier.text, battleSettings.DefaultDamageMulitplier)
+                        ActiveEnergyGainMultiplier = __instance.Input_BattleActiveEnergyGainMultiplier.Value ?? battleSettings.ActiveEnergyGainMultiplier,
+                        IntensityMultipier = __instance.Input_BattleIntensityMultiplier.Value ?? battleSettings.IntensityMultipier,
+                        PassiveEnergyGainMultiplier = __instance.Input_BattlePassiveEnergyGainMultiplier.Value ?? battleSettings.IntensityMultipier,
+                        StunMultiplier = __instance.Input_BattleStunMultiplier.Value ?? battleSettings.StunMultiplier,
+                        DefaultDamageMulitplier = __instance.Input_BattleDamageMultiplier.Value ?? battleSettings.DefaultDamageMulitplier
                     };
                     BattleSettings.TeamDataModel teamDataModel = new BattleSettings.TeamDataModel(BattleCache.teamTags[1])
                     {
