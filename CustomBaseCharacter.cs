@@ -749,7 +749,7 @@ public class CustomBaseCharacter : BaseCharacter
         {
             if (SMBZGlobals.BattleState == BattleController.BattleStateENUM.Normal)
             {
-                if (IsOnGround && request.launch.y <= -3f)
+                if (IsOnGround && request.launch?.y <= -3f)
                 {
                     Comp_CustomAnimator.Play(ASN_Grounded);
                 }
