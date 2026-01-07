@@ -437,6 +437,7 @@ public class CharLoaderComponent : MonoBehaviour
             }
 
             FormsListManager.CharacterFormsDictionary[Data.Character] = new List<string>() { cc.internalName };
+            SaveData.Data.unlockedCharacters[Data.Character] = true;
 
             CharLoader.Core.ArcadeModeLineupDisabledDefault.Add(Data.Character);
             Melon<CharLoader.Core>.Instance.ResetArcadeLineup();
