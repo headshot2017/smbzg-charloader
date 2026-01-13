@@ -43,6 +43,18 @@ public class CustomBaseCharacter : BaseCharacter
         }
     }
 
+    public bool PursueIsCharging
+    {
+        get
+        {
+            return (bool)typeof(PursueBundle).GetField("isCharging", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).GetValue(PursueData);
+        }
+        set
+        {
+            typeof(PursueBundle).GetField("isCharging", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(PursueData, value);
+        }
+    }
+
     public CharacterControl MyCharacterControl
     {
         get
