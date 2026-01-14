@@ -439,7 +439,7 @@ public class CharLoaderComponent : MonoBehaviour
             FormsListManager.CharacterFormsDictionary[Data.Character] = new List<string>() { cc.internalName };
             SaveData.Data.unlockedCharacters[Data.Character] = true;
 
-            CharLoader.Core.ArcadeModeLineupDisabledDefault.Add(Data.Character);
+            CharLoader.Core.ArcadeModeLineupDisabledDefault.Add(Data);
             Melon<CharLoader.Core>.Instance.ResetArcadeLineup();
 
             Melon<CharLoader.Core>.Logger.Msg($"Loaded custom character \"{cc.rootCharacter.name}\"");

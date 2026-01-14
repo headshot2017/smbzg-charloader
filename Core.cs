@@ -61,10 +61,10 @@ namespace CharLoader
 
 
         public static MelonPreferences_Category Preferences_General;
-        public static List<BattleCache.CharacterEnum> ArcadeModeLineup;
-        public static List<BattleCache.CharacterEnum> ArcadeModeLineupDisabled;
-        public static List<BattleCache.CharacterEnum> ArcadeModeLineupDefault;
-        public static List<BattleCache.CharacterEnum> ArcadeModeLineupDisabledDefault;
+        public static List<CharacterData_SO> ArcadeModeLineup;
+        public static List<CharacterData_SO> ArcadeModeLineupDisabled;
+        public static List<CharacterData_SO> ArcadeModeLineupDefault;
+        public static List<CharacterData_SO> ArcadeModeLineupDisabledDefault;
         public static int LineupSelectedOn;
         public static int LineupSelectedOff;
 
@@ -86,22 +86,10 @@ namespace CharLoader
         {
             Application.logMessageReceived += LogHandler;
 
-            ArcadeModeLineupDefault = new List<BattleCache.CharacterEnum>
-            {
-                BattleCache.CharacterEnum.Mario,
-                BattleCache.CharacterEnum.Luigi,
-                BattleCache.CharacterEnum.Yoshi,
-                BattleCache.CharacterEnum.Goomba,
-                BattleCache.CharacterEnum.KoopaBros,
-                BattleCache.CharacterEnum.Sonic,
-                BattleCache.CharacterEnum.AxemRangersX,
-                BattleCache.CharacterEnum.Shadow,
-                BattleCache.CharacterEnum.Basilisx,
-                BattleCache.CharacterEnum.MechaSonic
-            };
-            ArcadeModeLineupDisabledDefault = new List<BattleCache.CharacterEnum>();
+            ArcadeModeLineupDefault = [.. BattleCache.ins.GetAcradeModeCharacterLineup()];
+            ArcadeModeLineupDisabledDefault = new List<CharacterData_SO>();
             foreach (CustomCharacter cc in customCharacters)
-                ArcadeModeLineupDisabledDefault.Add(cc.characterData.Character);
+                ArcadeModeLineupDisabledDefault.Add(cc.characterData);
 
             // there are custom character "mods" that are made through modification of the game's source code,
             // such as Plot Boi's character mods (Kirby, Super Sonic, Goku...)
@@ -110,10 +98,11 @@ namespace CharLoader
             // unfortunately this also adds standalone transformations, but there's nothing i can do about it
             foreach (BattleCache.CharacterEnum character in Enum.GetValues(typeof(BattleCache.CharacterEnum)))
             {
-                if (character == BattleCache.CharacterEnum.UNSET || ArcadeModeLineupDefault.Contains(character) || ArcadeModeLineupDisabledDefault.Contains(character))
+                CharacterData_SO charData = BattleCache.ins.Character_GetData(character);
+                if (!charData || ArcadeModeLineupDefault.Contains(charData) || ArcadeModeLineupDisabledDefault.Contains(charData))
                     continue;
 
-                ArcadeModeLineupDisabledDefault.Add(character);
+                ArcadeModeLineupDisabledDefault.Add(charData);
             }
 
             ResetArcadeLineup();
@@ -230,10 +219,10 @@ namespace CharLoader
                 int h = Screen.height - (y*2);
                 List<string> enabled = new List<string>();
                 List<string> disabled = new List<string>();
-                foreach (BattleCache.CharacterEnum character in ArcadeModeLineup)
-                    enabled.Add(BattleCache.Character_GetDisplayName(character));
-                foreach (BattleCache.CharacterEnum character in ArcadeModeLineupDisabled)
-                    disabled.Add(BattleCache.Character_GetDisplayName(character));
+                foreach (var character in ArcadeModeLineup)
+                    enabled.Add(BattleCache.Character_GetDisplayName(character.Character));
+                foreach (var character in ArcadeModeLineupDisabled)
+                    disabled.Add(BattleCache.Character_GetDisplayName(character.Character));
 
                 GUI.BeginGroup(new Rect(x, y, w, h));
                 GUI.Box(new Rect(0, 0, w, h), "Arcade Mode Lineup");
@@ -245,21 +234,21 @@ namespace CharLoader
                 {
                     if (LineupSelectedOn > 0 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 - (96+16), 48 + h - 144 + 8, 96, 32), "Move up"))
                     {
-                        BattleCache.CharacterEnum moving = ArcadeModeLineup[LineupSelectedOn];
+                        var moving = ArcadeModeLineup[LineupSelectedOn];
                         ArcadeModeLineup.Remove(moving);
                         ArcadeModeLineup.Insert(LineupSelectedOn-1, moving);
                         LineupSelectedOn--;
                     }
                     if (GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48, 48 + h - 144 + 8, 96, 32), "Remove"))
                     {
-                        BattleCache.CharacterEnum removing = ArcadeModeLineup[LineupSelectedOn];
+                        var removing = ArcadeModeLineup[LineupSelectedOn];
                         ArcadeModeLineup.Remove(removing);
                         ArcadeModeLineupDisabled.Add(removing);
                         while (LineupSelectedOn >= ArcadeModeLineup.Count) LineupSelectedOn--;
                     }
                     if (LineupSelectedOn < ArcadeModeLineup.Count-1 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 + (96+16), 48 + h - 144 + 8, 96, 32), "Move down"))
                     {
-                        BattleCache.CharacterEnum moving = ArcadeModeLineup[LineupSelectedOn];
+                        var moving = ArcadeModeLineup[LineupSelectedOn];
                         ArcadeModeLineup.Remove(moving);
                         ArcadeModeLineup.Insert(LineupSelectedOn+1, moving);
                         LineupSelectedOn++;
@@ -271,7 +260,7 @@ namespace CharLoader
                 if (selection >= 0) LineupSelectedOff = selection;
                 if (LineupSelectedOff >= 0 && GUI.Button(new Rect((w - (w / 2 - 40) - 8) + (w / 2 - 40) / 2 - 48, 48 + h - 144 + 8, 96, 32), "Add"))
                 {
-                    BattleCache.CharacterEnum adding = ArcadeModeLineupDisabled[LineupSelectedOff];
+                    var adding = ArcadeModeLineupDisabled[LineupSelectedOff];
                     ArcadeModeLineupDisabled.Remove(adding);
                     ArcadeModeLineup.Add(adding);
                     while (LineupSelectedOff >= ArcadeModeLineupDisabled.Count) LineupSelectedOff--;
@@ -364,9 +353,10 @@ namespace CharLoader
             }
 
             // Part 1: GameObjects
-            Transform root = CharacterSelectRoot.Find("VBox_Settings");
+            Transform AcradeSettings = CharacterSelectAcradeScript.ins.Page_ArcadeSettings.transform;
+            Transform root = AcradeSettings.Find("VBox_Settings");
 
-            GameObject BattleCustomCharsObj = GameObject.Instantiate(root.Find("BattleRandomSkins").gameObject, root);
+            GameObject BattleCustomCharsObj = GameObject.Instantiate(root.Find("ArcadeToggles").Find("BattleRandomSkins").gameObject, root);
             BattleCustomCharsObj.transform.RemoveAllChildren();
             GameObject BattleCustomCharsLabelObj = new GameObject("Label");
 
@@ -394,6 +384,17 @@ namespace CharLoader
             btn.onClick.AddListener(OnCustomizeLineupClicked);
 
             BattleCustomCharsLabelObj.transform.localPosition = new Vector3(0, -8, 0);
+
+            // put Customize button above Default Settings and Back buttons
+            BattleCustomCharsObj.transform.SetSiblingIndex(BattleCustomCharsObj.transform.GetSiblingIndex() - 2);
+
+            // disable the Semi Super Mecha Sonic checkbox?
+            // but if this is disabled and players do not have the unlockable character,
+            // they can never earn it...
+            /*
+            Toggle SemiSuperToggle = root.Find("SemiSuperToggle").Find("Toggle_SemiSuperToggle").GetComponent<Toggle>();
+            SemiSuperToggle.interactable = false;
+            */
         }
 
         void SetupCharSelectVersus()
@@ -409,8 +410,8 @@ namespace CharLoader
 
         void ShowLineupCustomizer(bool on)
         {
-            GameObject CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect").gameObject;
-            CharacterSelectRoot.SetActive(!on);
+            GameObject root = GameObject.Find("Canvas").transform.Find("AcradeSettings").gameObject;
+            root.SetActive(!on);
             SetupLineup = on;
             LineupSelectedOn = LineupSelectedOff = -1;
 
@@ -419,7 +420,7 @@ namespace CharLoader
             // this code will remove this button from any ZIG_PlayerInput(s) so that the D key can be pressed safely.
             foreach (ZIG_PlayerInput i in GameObject.FindObjectsOfType<ZIG_PlayerInput>())
             {
-                var module = i.gameObject.GetComponent<UnityEngine.EventSystems.EventSystem>();
+                var module = i.EventSystem;
                 if (!module)
                     continue;
 
@@ -429,8 +430,8 @@ namespace CharLoader
 
         public void ResetArcadeLineup()
         {
-            ArcadeModeLineup = new List<BattleCache.CharacterEnum>(ArcadeModeLineupDefault);
-            ArcadeModeLineupDisabled = new List<BattleCache.CharacterEnum>(ArcadeModeLineupDisabledDefault);
+            ArcadeModeLineup = [.. ArcadeModeLineupDefault];
+            ArcadeModeLineupDisabled = [.. ArcadeModeLineupDisabledDefault];
         }
 
         [HarmonyPatch(typeof(CharacterSelectAcradeScript), "OnSubmit")]
@@ -447,9 +448,10 @@ namespace CharLoader
                     int CurrentState = (int)activeCharacterSelectPlayerInputHandler.GetType().GetProperty("CurrentState", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(activeCharacterSelectPlayerInputHandler);
                     UI_Participant ParticipantUI_MyPrimary = (UI_Participant)activeCharacterSelectPlayerInputHandler.GetType().GetProperty("ParticipantUI_MyPrimary", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(activeCharacterSelectPlayerInputHandler);
 
-                    if (CurrentState != 7 && ParticipantUI_MyPrimary != null)
+                    int HoveringGoNext = (int)activeCharacterSelectPlayerInputHandler.GetType().GetNestedType("StateENUM", BindingFlags.NonPublic).GetField("HoveringGoNext").GetValue(activeCharacterSelectPlayerInputHandler);
+
+                    if (CurrentState != HoveringGoNext && ParticipantUI_MyPrimary != null)
                     {
-                        // 7 = HoveringGoNext
                         flag = false;
                         break;
                     }
@@ -467,12 +469,12 @@ namespace CharLoader
                     return false;
                 }
 
-                SaveData.Data.LastUsedArcadeCpuHealth = Helpers.TryParseToFloatWithFallback(__instance.Input_BattleHealth.text, 150f);
-                SaveData.Save();
+                SaveData.Data.LastUsedArcadeCpuHealth = __instance.Input_BattleHealthV2.Value ?? 150f;
+                __instance.GetType().GetMethod("OnMovementRushPlayerHealthCHange", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(__instance, [__instance.Input_MovementRushPlayerHealth.Value.ToString()]);
 
                 List<CharacterData_SO> array = new List<CharacterData_SO>();
-                foreach (BattleCache.CharacterEnum cc in ArcadeModeLineup)
-                    array.Add(BattleCache.ins.Character_GetData(cc));
+                foreach (var cc in ArcadeModeLineup)
+                    array.Add(cc);
 
                 BattleSettings battleSettings = new BattleSettings();
                 List<BattleSettings> list = new List<BattleSettings>();
@@ -539,18 +541,18 @@ namespace CharLoader
                         teamDataModel.ParticipantSettingList.Add(item);
                     }
 
-                    int index = 2;
-                    if (teamDataModel.TeamTag == "Team2")
+                    string text = BattleCache.teamTags[2];
+                    if (teamDataModel.TeamTag == text)
                     {
-                        index = 1;
+                        text = BattleCache.teamTags[1];
                     }
 
                     List<BattleCache.CPUSettingsENUM> CPUSettingList = (List<BattleCache.CPUSettingsENUM>)__instance.GetType().GetField("CPUSettingList", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
-                    battleSettings2.TeamsList.Add(new BattleSettings.TeamDataModel(BattleCache.teamTags[index])
+                    battleSettings2.TeamsList.Add(new BattleSettings.TeamDataModel(text)
                     {
                         ParticipantSettingList = new List<BattleParticipantSettings>
                         {
-                            new BattleParticipantSettings(1, BattleCache.teamTags[index], characterData_SO, CPUSettingList[__instance.Difficulty_CPUSetting.value], SaveData.Data.LastUsedArcadeCpuHealth, string.Empty, 0, null)
+                            new BattleParticipantSettings(null, text, characterData_SO, CPUSettingList[__instance.Difficulty_CPUSetting.value], SaveData.Data.LastUsedArcadeCpuHealth, string.Empty, 0, null)
                             {
                                 ParticipantIndex = array2.Select((UI_Participant p) => (int)p.GetType().GetField("ParticipantIndex", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(p)).DefaultIfEmpty(1).Max() + 100,
                                 DamageMultiplierOverride = battleSettings2.DefaultDamageMulitplier
