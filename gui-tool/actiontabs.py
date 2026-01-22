@@ -781,8 +781,8 @@ class ActionDialog_Puppet(QtWidgets.QDialog):
 
 
 class PuppetTab(BaseActionTab):
-    def __init__(self, parent, actionInfo):
-        super().__init__(parent)
+    def __init__(self, parent, jsonEditorRoot, actionInfo):
+        super().__init__(parent, jsonEditorRoot)
         uic.loadUi("ui/puppettab.ui", self)
 
         self.actionInfo = actionInfo

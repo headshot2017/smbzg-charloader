@@ -128,7 +128,7 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
 
         self.puppetsTabs.clear()
 
-        general = actiontabs.PuppetTab(self.puppetsTabs, puppet)
+        general = actiontabs.PuppetTab(self.puppetsTabs, characterdata.jsonFile["editor"], puppet)
         general.valueChanged.connect(self.onActionTabValueChangePuppet)
         self.puppetsTabs.addTab(general, puppetName)
 
