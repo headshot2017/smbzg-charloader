@@ -42,6 +42,8 @@ public class CustomEffectSprite : MonoBehaviour
 
     private void Update()
     {
+        Comp_CustomAnimator.enabled = !SMBZGlobals.IsPaused && BattleController.instance.CinematicSettings.PauseTimer <= 0;
+
         if (AnchorObject != null)
         {
             Vector3 position = AnchorObject.position + (Vector3)AnchorOffset;
