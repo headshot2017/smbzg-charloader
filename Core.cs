@@ -639,6 +639,7 @@ namespace CharLoader
             }
         }
 
+        /*
         [HarmonyPatch(typeof(BattleController), "Pause_OnClick_CommandList", new Type[] { typeof(int) })]
         private static class CommandListPatch
         {
@@ -663,6 +664,7 @@ namespace CharLoader
                 return true;
             }
         }
+        */
 
         [HarmonyPatch(typeof(BattleCache), "Character_GetDisplayName", new Type[] { typeof(BattleCache.CharacterEnum) })]
         private static class DisplayNamePatch
