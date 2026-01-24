@@ -135,6 +135,7 @@ public class CharLoaderComponent : MonoBehaviour
             Data.DittoHue = BattleCache.ins.CharacterData_Mario.DittoHue;
             Data.DittoSaturation = BattleCache.ins.CharacterData_Mario.DittoSaturation;
             Data.DittoContrast = BattleCache.ins.CharacterData_Mario.DittoContrast;
+            Data.Sprite_CharacterIcon = cc.portrait;
 
             if (general.Keys.Contains("colors"))
             {
