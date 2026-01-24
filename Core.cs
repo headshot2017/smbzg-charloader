@@ -698,6 +698,22 @@ namespace CharLoader
             }
         }
 
+        [HarmonyPatch(typeof(BattleCache), "GetCharacterByInternalCharacterName", new Type[] { typeof(string) })]
+        private static class InternalNameEnumPatch
+        {
+            private static bool Prefix(ref BattleCache.CharacterEnum __result, string internalCharacterName)
+            {
+                foreach (CustomCharacter cc in customCharacters)
+                {
+                    if (cc.internalName != internalCharacterName) continue;
+                    __result = cc.characterData.Character;
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
         /*
         [HarmonyPatch(typeof(FormsListManager), "Character_GetFormsLists", new Type[] { typeof(BattleCache.CharacterEnum) })]
         private static class FormsListPatch
