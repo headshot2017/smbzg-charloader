@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HarmonyLib;
 
-[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.8.1", "Headshotnoby/headshot2017", null)]
+[assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.9.0", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
 
 namespace CharLoader
@@ -638,7 +638,6 @@ namespace CharLoader
                 }
             }
         }
-
 
         [HarmonyPatch(typeof(BattleController), "Pause_OnClick_CommandList", new Type[] { typeof(int) })]
         private static class CommandListPatch
