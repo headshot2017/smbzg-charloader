@@ -404,6 +404,37 @@ namespace CharLoader
             SetupPortraits(PortraitTableRoot, CharacterSelectScript.ins);
         }
 
+        void OnCustomizeLineupClicked()
+        {
+            ShowLineupCustomizer(true);
+        }
+
+        void ShowLineupCustomizer(bool on)
+        {
+            GameObject root = GameObject.Find("Canvas").transform.Find("AcradeSettings").gameObject;
+            root.SetActive(!on);
+            SetupLineup = on;
+            LineupSelectedOn = LineupSelectedOff = -1;
+
+            // when clicking the Customize Lineup button, this puts it in the unity UI input module component,
+            // so when you press D to, for example, add a character to the battle, it also triggers the Customize Lineup button from earlier.
+            // this code will remove this button from any ZIG_PlayerInput(s) so that the D key can be pressed safely.
+            foreach (ZIG_PlayerInput i in GameObject.FindObjectsOfType<ZIG_PlayerInput>())
+            {
+                var module = i.EventSystem;
+                if (!module)
+                    continue;
+
+                module.SetSelectedGameObject(null);
+            }
+        }
+
+        public void ResetArcadeLineup()
+        {
+            ArcadeModeLineup = [.. ArcadeModeLineupDefault];
+            ArcadeModeLineupDisabled = [.. ArcadeModeLineupDisabledDefault];
+        }
+
         [HarmonyPatch(typeof(RecordsScript), "Awake")]
         private static class RecordsPatch
         {
@@ -443,35 +474,34 @@ namespace CharLoader
             }
         }
 
-        void OnCustomizeLineupClicked()
+        [HarmonyPatch(typeof(CommandListScript), "Start")]
+        private static class CommandListScriptPatch
         {
-            ShowLineupCustomizer(true);
-        }
-
-        void ShowLineupCustomizer(bool on)
-        {
-            GameObject root = GameObject.Find("Canvas").transform.Find("AcradeSettings").gameObject;
-            root.SetActive(!on);
-            SetupLineup = on;
-            LineupSelectedOn = LineupSelectedOff = -1;
-
-            // when clicking the Customize Lineup button, this puts it in the unity UI input module component,
-            // so when you press D to, for example, add a character to the battle, it also triggers the Customize Lineup button from earlier.
-            // this code will remove this button from any ZIG_PlayerInput(s) so that the D key can be pressed safely.
-            foreach (ZIG_PlayerInput i in GameObject.FindObjectsOfType<ZIG_PlayerInput>())
+            private static void Prefix(CommandListScript __instance)
             {
-                var module = i.EventSystem;
-                if (!module)
-                    continue;
+                Transform PortraitTableRoot = __instance.portraitList;
 
-                module.SetSelectedGameObject(null);
+                // Add custom characters to commands list roster
+                Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
+                if (PortraitRow.name == "CustomRow") return;
+
+                GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject);
+                PortraitNewRow.transform.SetParent(PortraitTableRoot);
+                PortraitNewRow.transform.RemoveAllChildren();
+                PortraitNewRow.name = "CustomRow";
+                PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
+
+                foreach (CustomCharacter cc in customCharacters)
+                {
+                    GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitNewRow.transform);
+                    CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
+                    Image PortraitImg = PortraitGameObj.GetComponent<Image>();
+                    PortraitGameObj.name = $"Character_{cc.internalName}";
+                    Portrait.Data = cc.characterData;
+                    Portrait.isUnlockable = false;
+                    PortraitImg.sprite = cc.portrait;
+                }
             }
-        }
-
-        public void ResetArcadeLineup()
-        {
-            ArcadeModeLineup = [.. ArcadeModeLineupDefault];
-            ArcadeModeLineupDisabled = [.. ArcadeModeLineupDisabledDefault];
         }
 
         [HarmonyPatch(typeof(CharacterSelectAcradeScript), "OnSubmit")]
