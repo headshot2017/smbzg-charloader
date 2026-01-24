@@ -320,6 +320,7 @@ namespace CharLoader
                 Image PortraitImg = PortraitGameObj.GetComponent<Image>();
                 PortraitGameObj.name = $"Character_{cc.internalName}";
                 Portrait.Data = cc.characterData;
+                Portrait.isUnlockable = false;
                 PortraitImg.sprite = cc.portrait;
                 charSelect.CharacterPortraitList.Add(Portrait);
             }
@@ -401,6 +402,45 @@ namespace CharLoader
         {
             Transform PortraitTableRoot = CharacterSelectScript.ins.Section_CharacterSelect.transform.Find("CharacterSelectPortraitTable");
             SetupPortraits(PortraitTableRoot, CharacterSelectScript.ins);
+        }
+
+        [HarmonyPatch(typeof(RecordsScript), "Awake")]
+        private static class RecordsPatch
+        {
+            private static void Prefix(RecordsScript __instance)
+            {
+                Transform PortraitTableRoot = __instance.PortraitTablePrefab;
+
+                // Find "Character_Random" and destroy it
+                foreach (Transform row in PortraitTableRoot)
+                {
+                    Transform r = row.Find("Character_Random");
+                    if (r == null) continue;
+                    GameObject.Destroy(r.gameObject);
+                    break;
+                }
+
+                // Add custom characters to records
+                Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
+                if (PortraitRow.name == "CustomRow") return;
+
+                GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject);
+                PortraitNewRow.transform.SetParent(PortraitTableRoot);
+                PortraitNewRow.transform.RemoveAllChildren();
+                PortraitNewRow.name = "CustomRow";
+                PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
+
+                foreach (CustomCharacter cc in customCharacters)
+                {
+                    GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitNewRow.transform);
+                    CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
+                    Image PortraitImg = PortraitGameObj.GetComponent<Image>();
+                    PortraitGameObj.name = $"Character_{cc.internalName}";
+                    Portrait.Data = cc.characterData;
+                    Portrait.isUnlockable = false;
+                    PortraitImg.sprite = cc.portrait;
+                }
+            }
         }
 
         void OnCustomizeLineupClicked()
@@ -639,32 +679,21 @@ namespace CharLoader
             }
         }
 
-        /*
-        [HarmonyPatch(typeof(BattleController), "Pause_OnClick_CommandList", new Type[] { typeof(int) })]
+        [HarmonyPatch(typeof(CommandListData), "GetCharacterCommandListData", new Type[] { typeof(BattleCache.CharacterEnum) })]
         private static class CommandListPatch
         {
-            private static bool Prefix(BattleController __instance, int PlayerIndex)
+            private static bool Prefix(ref CommandListModel __result, BattleCache.CharacterEnum character)
             {
-                //CharacterControl Player1 = (CharacterControl)typeof(BattleController).GetField("Player1", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                //CharacterControl Player2 = (CharacterControl)typeof(BattleController).GetField("Player2", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                List<CharacterControl> ActiveCharacterControlList = (List<CharacterControl>)typeof(BattleController).GetField("ActiveCharacterControlList", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(__instance);
-                CharacterControl characterControl = ((PlayerIndex == 2) ? ActiveCharacterControlList.ElementAtOrDefault(1) : ActiveCharacterControlList.ElementAtOrDefault(0));
-                BattleParticipantDataModel PlayerModel = characterControl.ParticipantDataReference;
                 foreach (CustomCharacter cc in customCharacters)
                 {
-                    if (cc.characterData == PlayerModel.InitialCharacterData)
-                    {
-                        __instance.PauseMenuPanel_CommandList.gameObject.SetActive(true);
-                        __instance.PauseMenuPanel_CommandList.Button_Close.Select();
-                        __instance.PauseMenuPanel_CommandList.Load(cc.commandList);
-                        return false;
-                    }
+                    if (cc.characterData.Character != character) continue;
+                    __result = cc.commandList;
+                    return false;
                 }
 
                 return true;
             }
         }
-        */
 
         [HarmonyPatch(typeof(BattleCache), "Character_GetDisplayName", new Type[] { typeof(BattleCache.CharacterEnum) })]
         private static class DisplayNamePatch
