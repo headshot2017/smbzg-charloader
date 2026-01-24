@@ -211,8 +211,9 @@ public class CustomAnimator : MonoBehaviour
 
             if (m_Ended && m_CurrentAttack.OnAnimationEnd != null)
             {
+                AttackBundle LastAttack = m_CurrentAttack;
                 m_CurrentAttack.OnAnimationEnd();
-                m_CurrentAttack = null;
+                if (m_CurrentAttack == LastAttack) m_CurrentAttack = null;
                 return true;
             }
         }
