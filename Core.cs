@@ -228,25 +228,25 @@ namespace CharLoader
                 GUI.Box(new Rect(0, 0, w, h), "Arcade Mode Lineup");
 
                 GUI.Label(new Rect(8 + (w / 2 - 40)/2 - (size1.x / 2), 48-24, size1.x, size1.y), "Enabled");
-                int selection = GUI.SelectionGrid(new Rect(8, 48, w / 2 - 40, h - 144), LineupSelectedOn, enabled.ToArray(), 1);
+                int selection = GUI.SelectionGrid(new Rect(8, 48, w / 2 - 40, h - 160), LineupSelectedOn, enabled.ToArray(), 1);
                 if (selection >= 0) LineupSelectedOn = selection;
                 if (LineupSelectedOn >= 0)
                 {
-                    if (LineupSelectedOn > 0 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 - (96+16), 48 + h - 144 + 8, 96, 32), "Move up"))
+                    if (LineupSelectedOn > 0 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 - (96+16), 48 + h - 160 + 8, 96, 32), "Move up"))
                     {
                         var moving = ArcadeModeLineup[LineupSelectedOn];
                         ArcadeModeLineup.Remove(moving);
                         ArcadeModeLineup.Insert(LineupSelectedOn-1, moving);
                         LineupSelectedOn--;
                     }
-                    if (GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48, 48 + h - 144 + 8, 96, 32), "Remove"))
+                    if (GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48, 48 + h - 160 + 8, 96, 32), "Remove"))
                     {
                         var removing = ArcadeModeLineup[LineupSelectedOn];
                         ArcadeModeLineup.Remove(removing);
                         ArcadeModeLineupDisabled.Add(removing);
                         while (LineupSelectedOn >= ArcadeModeLineup.Count) LineupSelectedOn--;
                     }
-                    if (LineupSelectedOn < ArcadeModeLineup.Count-1 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 + (96+16), 48 + h - 144 + 8, 96, 32), "Move down"))
+                    if (LineupSelectedOn < ArcadeModeLineup.Count-1 && GUI.Button(new Rect(8 + (w / 2 - 40) / 2 - 48 + (96+16), 48 + h - 160 + 8, 96, 32), "Move down"))
                     {
                         var moving = ArcadeModeLineup[LineupSelectedOn];
                         ArcadeModeLineup.Remove(moving);
@@ -256,9 +256,9 @@ namespace CharLoader
                 }
 
                 GUI.Label(new Rect((w - (w / 2 - 40) - 8) + (w / 2 - 40) / 2 - (size2.x/2), 48-24, size2.x, size2.y), "Disabled");
-                selection = GUI.SelectionGrid(new Rect(w - (w / 2 - 40) - 8, 48, w / 2 - 40, h - 144), LineupSelectedOff, disabled.ToArray(), 1);
+                selection = GUI.SelectionGrid(new Rect(w - (w / 2 - 40) - 8, 48, w / 2 - 40, h - 160), LineupSelectedOff, disabled.ToArray(), 1);
                 if (selection >= 0) LineupSelectedOff = selection;
-                if (LineupSelectedOff >= 0 && GUI.Button(new Rect((w - (w / 2 - 40) - 8) + (w / 2 - 40) / 2 - 48, 48 + h - 144 + 8, 96, 32), "Add"))
+                if (LineupSelectedOff >= 0 && GUI.Button(new Rect((w - (w / 2 - 40) - 8) + (w / 2 - 40) / 2 - 48, 48 + h - 160 + 8, 96, 32), "Add"))
                 {
                     var adding = ArcadeModeLineupDisabled[LineupSelectedOff];
                     ArcadeModeLineupDisabled.Remove(adding);
@@ -266,9 +266,15 @@ namespace CharLoader
                     while (LineupSelectedOff >= ArcadeModeLineupDisabled.Count) LineupSelectedOff--;
                 }
 
-                if (GUI.Button(new Rect(w/2 - 48, 48 + h - 144 + 8, 96, 32), "Reset"))
-                {
+                if (GUI.Button(new Rect(w/2 - 48, 48 + h - 160 + 8, 96, 32), "Reset"))
                     ResetArcadeLineup();
+
+                if (!ArcadeModeLineupDefault.SequenceEqual(ArcadeModeLineup))
+                {
+                    var centeredStyle = GUI.skin.GetStyle("Label");
+                    centeredStyle.alignment = TextAnchor.UpperCenter;
+                    GUI.Label(new Rect(8, h-72, w-16, 24), "Arcade ranks (star badges) will not be saved when playing with a customized lineup.", centeredStyle);
+                    centeredStyle.alignment = TextAnchor.UpperLeft;
                 }
 
                 if (GUI.Button(new Rect(8, h-48, w-16, 32), "Close"))
@@ -280,8 +286,6 @@ namespace CharLoader
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
-            if (buildIndex == 7)
-                SetupCharSelectVersus();
             if (buildIndex == 8)
                 SetupCharSelectArcade();
         }
@@ -303,35 +307,8 @@ namespace CharLoader
             CharLoaderComponent dl = obj.AddComponent<CharLoaderComponent>();
         }
 
-        void SetupPortraits(Transform PortraitTableRoot, CharacterSelectScript_Base charSelect)
-        {
-            // Add character portraits
-
-            Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
-            GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
-            PortraitNewRow.transform.RemoveAllChildren();
-            PortraitNewRow.name = "CustomRow";
-            PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
-
-            foreach (CustomCharacter cc in customCharacters)
-            {
-                GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitNewRow.transform);
-                CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
-                Image PortraitImg = PortraitGameObj.GetComponent<Image>();
-                PortraitGameObj.name = $"Character_{cc.internalName}";
-                Portrait.Data = cc.characterData;
-                Portrait.isUnlockable = false;
-                PortraitImg.sprite = cc.portrait;
-                charSelect.CharacterPortraitList.Add(Portrait);
-            }
-        }
-
         void SetupCharSelectArcade()
         {
-            Transform CharacterSelectRoot = GameObject.Find("Canvas").transform.Find("CharacterSelect");
-            Transform PortraitTableRoot = CharacterSelectRoot.Find("CharacterSelectPortraitTable");
-            SetupPortraits(PortraitTableRoot, CharacterSelectAcradeScript.ins);
-
             // Setup additional UIs
 
             Sprite uisprite = null;
@@ -398,12 +375,6 @@ namespace CharLoader
             */
         }
 
-        void SetupCharSelectVersus()
-        {
-            Transform PortraitTableRoot = CharacterSelectScript.ins.Section_CharacterSelect.transform.Find("CharacterSelectPortraitTable");
-            SetupPortraits(PortraitTableRoot, CharacterSelectScript.ins);
-        }
-
         void OnCustomizeLineupClicked()
         {
             ShowLineupCustomizer(true);
@@ -433,6 +404,46 @@ namespace CharLoader
         {
             ArcadeModeLineup = [.. ArcadeModeLineupDefault];
             ArcadeModeLineupDisabled = [.. ArcadeModeLineupDisabledDefault];
+        }
+
+        [HarmonyPatch(typeof(BattleResultsController), "CalculateArcadeRank")]
+        private static class ArcadeRankPatch
+        {
+            private static bool Prefix()
+            {
+                // do not update arcade ranks if the lineup was customized
+                return ArcadeModeLineupDefault.SequenceEqual(ArcadeModeLineup);
+            }
+        }
+
+        [HarmonyPatch(typeof(CharacterSelectScript_Base), "Awake")]
+        private static class CharacterSelectPatch
+        {
+            private static void Prefix(CharacterSelectScript_Base __instance)
+            {
+                Transform transform = GameObject.Find("Canvas").transform.Find("CharacterSelect");
+                if (!transform)
+                    transform = GameObject.Find("Canvas").transform.Find("CharacterSelectPage");
+
+                Transform PortraitTableRoot = transform.Find("CharacterSelectPortraitTable");
+                Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
+                GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
+                PortraitNewRow.transform.RemoveAllChildren();
+                PortraitNewRow.name = "CustomRow";
+                PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
+
+                foreach (CustomCharacter cc in customCharacters)
+                {
+                    GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitNewRow.transform);
+                    CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
+                    Image PortraitImg = PortraitGameObj.GetComponent<Image>();
+                    PortraitGameObj.name = $"Character_{cc.internalName}";
+                    Portrait.Data = cc.characterData;
+                    Portrait.isUnlockable = false;
+                    PortraitImg.sprite = cc.portrait;
+                    __instance.CharacterPortraitList.Add(Portrait);
+                }
+            }
         }
 
         [HarmonyPatch(typeof(RecordsScript), "Awake")]
