@@ -520,6 +520,9 @@ namespace CharLoader
         {
             private static bool Prefix(CharacterSelectAcradeScript __instance)
             {
+                if (ArcadeModeLineupDefault.SequenceEqual(ArcadeModeLineup))
+                    return true; // execute regular arcade mode function
+
                 List<CharacterSelectPlayerInputHandler_Base> ActiveCharacterSelectPlayerInputHandlerList =
                     (List<CharacterSelectPlayerInputHandler_Base>)__instance.GetType().GetField("ActiveCharacterSelectPlayerInputHandlerList", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
 
