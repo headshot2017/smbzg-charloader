@@ -428,7 +428,7 @@ namespace CharLoader
                 Transform PortraitTableRoot = transform.Find("CharacterSelectPortraitTable");
                 Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
                 GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
-                PortraitNewRow.transform.RemoveAllChildren();
+                while (PortraitNewRow.transform.childCount > 0) GameObject.DestroyImmediate(PortraitNewRow.transform.GetChild(0).gameObject);
                 PortraitNewRow.name = "CustomRow";
                 PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
 
@@ -468,7 +468,7 @@ namespace CharLoader
 
                 GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject);
                 PortraitNewRow.transform.SetParent(PortraitTableRoot);
-                PortraitNewRow.transform.RemoveAllChildren();
+                while (PortraitNewRow.transform.childCount > 0) GameObject.DestroyImmediate(PortraitNewRow.transform.GetChild(0).gameObject);
                 PortraitNewRow.name = "CustomRow";
                 PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
 
@@ -498,7 +498,7 @@ namespace CharLoader
 
                 GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject);
                 PortraitNewRow.transform.SetParent(PortraitTableRoot);
-                PortraitNewRow.transform.RemoveAllChildren();
+                foreach (Transform t in PortraitNewRow.transform) GameObject.Destroy(t.GetChild(0).gameObject);
                 PortraitNewRow.name = "CustomRow";
                 PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
 
