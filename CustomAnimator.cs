@@ -477,9 +477,15 @@ public class CustomAnimator : MonoBehaviour
         return true;
     }
 
+    // Function kept here to maintain compatibility.
     public bool Play(string animName)
     {
         return Play(Animator.StringToHash(animName));
+    }
+
+    public bool Play(string animName, AttackBundle attack = null)
+    {
+        return Play(Animator.StringToHash(animName), attack);
     }
 
     public bool Play(int animHash, AttackBundle attack)
