@@ -334,6 +334,7 @@ public class CharLoaderComponent : MonoBehaviour
                     companion.prefab = GameObject.Instantiate(CharPrefab);
                     companion.prefab.name = companionName;
                     companion.prefab.SetActive(false);
+                    GameObject.Destroy(companion.prefab.GetComponent<SonicControl>());
                     GameObject.DontDestroyOnLoad(companion.prefab);
 
                     // v1.6: Puppet animation
