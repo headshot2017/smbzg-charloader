@@ -1576,7 +1576,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
 
     @QtCore.pyqtSlot()
     def onMenuActionRename(self):
-        animTree = self.sender().data()
+        item = self.sender().data()
         companionTree = item.parent()
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
