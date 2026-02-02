@@ -181,6 +181,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         if characterdata.companionJson:
             for companionName in characterdata.companionJson:
                 companion = characterdata.companionJson[companionName]
+                if not companion:
+                    characterdata.companionJson[companionName] = characterdata.defaultCompanion()
+                    companion = characterdata.companionJson[companionName]
                 if "puppets" not in companion:
                     companion["puppets"] = {}
             self.tab_companions.reloadPuppetsTree()
