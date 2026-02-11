@@ -184,6 +184,200 @@ public class YourCharacterControl : CustomBaseCharacter
             AI.MoodSwitchTimer = AI.GetRethinkCooldown(AI_Bundle.Enum_RethinkCooldownType.Mood);
         }
 
-        // Further CPU code...
+        if (AI.RethinkCooldown_Movement > 0f)
+        {
+            AI.RethinkCooldown_Movement -= BattleController.instance.UnscaledDeltaTime;
+        }
+        else
+        {
+            if (AI.GetMood() == AI_Bundle.Enum_Mood.Aggressive)
+            {
+                if (AI.DeltaData.distanceToTarget > 10f && GetMyParticipantDataReference().Energy.GetCurrent() > 100f)
+                {
+                    // Use pursue if too far away
+                    AI.PursueIdea = new AI_Bundle.Internal_PursueIdea((UnityEngine.Random.Range(0, 3) == 0) ? 100f : UnityEngine.Random.Range(0f, 100f));
+                }
+                else if (AI.DeltaData.distanceToTarget > 1f)
+                {
+                    AI.MovementIdea.Reset(AI.DeltaData.IsTargetToMyRight ? 1 : (-1));
+                }
+                else
+                {
+                    AI.MovementIdea.Reset(AI.DeltaData.IsTargetToMyRight ? 1 : (-1), 1f, JustTurn: true);
+                }
+            }
+            else if (AI.GetMood() == AI_Bundle.Enum_Mood.Defensive)
+            {
+                if (AI.DeltaData.distanceToTarget > 6f)
+                {
+                    AI.MovementIdea.Reset(AI.DeltaData.IsTargetToMyRight ? 1 : (-1));
+                }
+                else
+                {
+                    AI.MovementIdea.Reset(AI.DeltaData.IsTargetToMyRight ? 1 : (-1), 1f, JustTurn: true);
+                }
+            }
+            else if (AI.GetMood() == AI_Bundle.Enum_Mood.Tactical)
+            {
+                if (AI.DeltaData.distanceToTarget > 1f)
+                {
+                    AI.MovementIdea.Reset(AI.DeltaData.IsTargetToMyRight ? 1 : (-1));
+                }
+                else
+                {
+                    AI.MovementIdea.Reset(AI.DeltaData.IsTargetToMyRight ? 1 : (-1), 1f, JustTurn: true);
+                }
+
+                // Jump if target is far away
+                if (AI.DeltaData.vectorToTarget_Absolute.x > 6f)
+                {
+                    AI.JumpIdea = new AI_Bundle.Internal_JumpIdea(IsFullJump: true, AI.DeltaData.IsTargetToMyRight ? 1 : (-1));
+                }
+            }
+
+            AI.RethinkCooldown_Movement = AI.GetRethinkCooldown(AI_Bundle.Enum_RethinkCooldownType.Movement);
+        }
+
+        if (AI.RethinkCooldown_Guarding > 0f)
+        {
+            AI.RethinkCooldown_Guarding -= BattleController.instance.UnscaledDeltaTime;
+        }
+        else
+        {
+            AI.FireMarioFireballHandling(this, AI.DeltaData.Target);
+        }
+
+        if (AI.CommandList.ActionQueue.Count > 0)
+        {
+            AI_CommandList_Update();
+            return;
+        }
+
+        if (IsAttacking)
+            return;
+
+        if (AI.RethinkCooldown_Attacking > 0f)
+        {
+            AI.RethinkCooldown_Attacking -= BattleController.instance.UnscaledDeltaTime;
+            return;
+        }
+
+        if (IsOnGround) // Ground Options
+        {
+            // Critical strike when appropriate
+            // Most characters have their critical strike assigned to Down + Z-Attack
+            // If your character is different, change the AttackIdea input below
+            if (AI.DeltaData.IsCriticalHitReady && (AI.Difficulty == AI_Bundle.Enum_DifficultyLevel.Hard || UnityEngine.Random.Range(0, 3) <= 1))
+            {
+                float maximumHeight = AI.DeltaData.TargetIsApproachingMe ? 3 : 2;
+                float maximumXDistance = AI.DeltaData.TargetIsApproachingMe ? 3 : 2;
+
+                if (AI.DeltaData.vectorToTarget_Absolute.x <= maximumXDistance && AI.DeltaData.vectorToTarget.y <= maximumHeight)
+                {
+                    AI.AttackIdea = new AI_Bundle.Internal_AttackIdea(AI_Bundle.Enum_DirectionalInput.Down, true);
+                    AI.RethinkCooldown_Attacking = AI.GetRethinkCooldown(AI_Bundle.Enum_RethinkCooldownType.Attacking);
+                    return;
+                }
+            }
+
+            // Basic attacks
+            if (AI.DeltaData.IsTargetInMeleeRange)
+            {
+                AI.RethinkCooldown_Attacking = AI.GetRethinkCooldown(AI_Bundle.Enum_RethinkCooldownType.Attacking);
+                switch (UnityEngine.Random.Range(0, 4)) // change 4 to how many attacks you want.
+                {
+                    // in this case, for 4 attacks, we do from case 0 to case 3:
+
+                    // neutral jabs
+                    case 0:
+                        // set the AI command list, with a condition to cancel it if opponent is too far away
+                        // AI ideas that you can use in this command list:
+                        // AI.Bundle_Internal_AttackIdea
+                        // AI.Bundle_Internal_JumpIdea
+                        // AI.Bundle_Internal_PursueIdea
+                        // AI.Bundle_Internal_MovementIdea
+                        AI.CommandList.Set(new AI_Bundle.AI_Action[]
+                        {
+                            new AI_Bundle.AI_Action(new AI_Bundle.Internal_AttackIdea(AI_Bundle.Enum_DirectionalInput.Neutral, false)),
+                            new AI_Bundle.AI_Action(new AI_Bundle.Internal_AttackIdea(AI_Bundle.Enum_DirectionalInput.Neutral, false)),
+                            new AI_Bundle.AI_Action(new AI_Bundle.Internal_AttackIdea(AI_Bundle.Enum_DirectionalInput.Neutral, false)),
+                        }, () => AI.DeltaData.vectorToTarget_Absolute.x > 3f);
+                        break;
+
+                    case 1:
+                        // If you only want a single attack:
+                        AI.AttackIdea = new AI_Bundle.Internal_AttackIdea(AI_Bundle.Enum_DirectionalInput.Up, false);
+                        break;
+
+                    case 2:
+                        // If you want to use a super attack:
+                        if (GetMyParticipantDataReference().Energy.GetCurrent() < 100f)
+                        {
+                            // Not enough energy for super, so reset the rethink cooldown as if this never happened
+                            AI.RethinkCooldown_Attacking = 0;
+                            return;
+                        }
+                        AI.AttackIdea = new AI_Bundle.Internal_AttackIdea(AI_Bundle.Enum_DirectionalInput.Neutral, true, true);
+                        break;
+
+                    case 3:
+                        break;
+                }
+            }
+            else if (UnityEngine.Random.Range(0, 1000) >= 970)
+            {
+                // if your character has any ranged attacks (i.e. projectiles), you can put them here
+                // For grounded attacks
+
+                switch (UnityEngine.Random.Range(0, 2)) // change 2 to how many attacks you want.
+                {
+                    case 0:
+                        break;
+
+                    case 1:
+                        break;
+                }
+            }
+            return;
+        }// End Grounded Options
+        else
+        {
+            // Aerial choices
+            if (AI.DeltaData.IsTargetInMeleeRange)
+            {
+                AI.RethinkCooldown_Attacking = AI.GetRethinkCooldown(AI_Bundle.Enum_RethinkCooldownType.Attacking);
+                switch (UnityEngine.Random.Range(0, 4)) // change 4 to how many attacks you want.
+                {
+                    // Same idea as with the grounded attacks shown above.
+
+                    case 0:
+                        break;
+
+                    case 1:
+                        break;
+
+                    case 2:
+                        break;
+
+                    case 3:
+                        break;
+                }
+            }
+            else if (UnityEngine.Random.Range(0, 1000) >= 970)
+            {
+                // if your character has any ranged attacks (i.e. projectiles), you can put them here
+                // For aerial attacks
+
+                switch (UnityEngine.Random.Range(0, 2)) // change 2 to how many attacks you want.
+                {
+                    case 0:
+                        break;
+
+                    case 1:
+                        break;
+                }
+            }
+            return;
+        }// End Aerial Options
     }
 }
