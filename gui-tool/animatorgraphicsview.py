@@ -138,9 +138,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
         self.pixmapItem.resetTransform()
         self.pixmapItem.setPos(self.graphicsView.sceneRect().width()/2, self.graphicsView.sceneRect().height()/2)
-        self.pixmapItem.setRotation(frame["angle"] if "angle" in frame else 0)
         self.pixmapItem.moveBy(*offsetPos)
-        self.pixmapItem.setTransform(self.pixmapItem.transform().scale(
+        self.pixmapItem.setTransform(self.pixmapItem.transform().rotate(frame["angle"] if "angle" in frame else 0).scale(
             globalAnimScale[0] * (frame["scale"][0] if "scale" in frame else 1),
             globalAnimScale[1] * (frame["scale"][1] if "scale" in frame else 1)
         ))
@@ -189,9 +188,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
                 puppet.setPos(0, 0)
                 puppet.setOpacity(1 if puppetAction["on"] else 0.5)
                 puppet.setZValue(puppetAction["layer"] if "layer" in puppetAction else 0)
-                puppet.setRotation(puppetAction["angle"] if "angle" in puppetAction else 0)
                 puppet.moveBy(*puppetOffset)
-                puppet.setTransform(puppet.transform().scale(
+                puppet.setTransform(puppet.transform().rotate(puppetAction["angle"] if "angle" in puppetAction else 0).scale(
                     puppetAction["scale"][0] if "scale" in puppetAction else 1,
                     puppetAction["scale"][1] if "scale" in puppetAction else 1
                 ))
@@ -351,9 +349,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
                 puppet.resetTransform()
                 puppet.setPos(0, 0)
-                puppet.setRotation(angleLerp)
                 puppet.moveBy(*offsetLerp)
-                puppet.setTransform(puppet.transform().scale(*scaleLerp))
+                puppet.setTransform(puppet.transform().rotate(angleLerp).scale(*scaleLerp))
 
 
         colorLerp = [
@@ -400,9 +397,8 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
         self.pixmapItem.resetTransform()
         self.pixmapItem.setPos(self.graphicsView.sceneRect().width()/2, self.graphicsView.sceneRect().height()/2)
-        self.pixmapItem.setRotation(angleLerp)
         self.pixmapItem.moveBy(*offsetLerp)
-        self.pixmapItem.setTransform(self.pixmapItem.transform().scale(*scaleLerp))
+        self.pixmapItem.setTransform(self.pixmapItem.transform().rotate(angleLerp).scale(*scaleLerp))
         self.pixmapItem.setOpacity(colorLerp[3]/255.)
 
     def getTimeFrames(self):
