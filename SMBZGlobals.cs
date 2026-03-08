@@ -160,6 +160,24 @@ public static class SMBZGlobals
         BackgroundManager.Particle_TransitionSpeedLines.transform.rotation = Quaternion.Euler(0f, 0f, z);
     }
 
+    public static void FloorCollider_SetActive(bool isActive)
+    {
+        MainBoundingColliders FloorCollider = (MainBoundingColliders)BackgroundManager.GetType().GetField("FloorCollider", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BackgroundManager);
+        FloorCollider.gameObject.SetActive(isActive);
+    }
+
+    public static void AirRushCollider_SetActive(bool isActive)
+    {
+        MainBoundingColliders AirRushBoundariesCollider = (MainBoundingColliders)BackgroundManager.GetType().GetField("AirRushBoundariesCollider", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BackgroundManager);
+        AirRushBoundariesCollider.gameObject.SetActive(isActive);
+    }
+
+    public static void AirRushCollider_SetPosition(Vector2 position)
+    {
+        MainBoundingColliders AirRushBoundariesCollider = (MainBoundingColliders)BackgroundManager.GetType().GetField("AirRushBoundariesCollider", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BackgroundManager);
+        AirRushBoundariesCollider.transform.position = position;
+    }
+
     public static ClashAndBurstManager ClashAndBurstManager =>
         (ClashAndBurstManager)typeof(BattleController).GetField("ClashAndBurstManager", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BattleController.instance);
 
@@ -207,4 +225,7 @@ public static class SMBZGlobals
 
     public static bool IsInArcadeMode =>
         (bool)typeof(GC).GetProperty("IsInArcadeMode", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(GC.ins);
+
+    public static float GroundPositionY =>
+        (float)typeof(BattleBackgroundManager).GetField("GroundPositionY", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BackgroundManager);
 }
