@@ -456,7 +456,16 @@ public class CharLoaderComponent : MonoBehaviour
         using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(url))
         {
             yield return www.SendWebRequest();
-            texture = DownloadHandlerTexture.GetContent(www);
+            try
+            {
+                texture = DownloadHandlerTexture.GetContent(www);
+            }
+            catch(Exception e)
+            {
+                Melon<CharLoader.Core>.Logger.Msg($"Failed to load: {url}\n{e}");
+                Debug.Log($"[CharLoader] Failed to load: {url}");
+                texture = Texture2D.blackTexture;
+            }
         }
     }
 
