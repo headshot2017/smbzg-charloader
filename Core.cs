@@ -496,10 +496,8 @@ namespace CharLoader
                 Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
                 if (PortraitRow.name == "CustomRow") return;
 
-                GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject);
+                GameObject PortraitNewRow = new GameObject("CustomRow");
                 PortraitNewRow.transform.SetParent(PortraitTableRoot);
-                foreach (Transform t in PortraitNewRow.transform) GameObject.Destroy(t.GetChild(0).gameObject);
-                PortraitNewRow.name = "CustomRow";
                 PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
 
                 foreach (CustomCharacter cc in customCharacters)
