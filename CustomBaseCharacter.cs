@@ -284,7 +284,7 @@ public class CustomBaseCharacter : BaseCharacter
     {
         Comp_Animator = GetComponent<Animator>();
         Comp_CustomAnimator = GetComponent<CustomAnimator>();
-        Comp_InterplayerCollider = gameObject.transform.GetChild(2).gameObject.GetComponent<InterplayerCollider>();
+        Comp_InterplayerCollider = gameObject.transform.Find("InterplayerCollider").gameObject.GetComponent<InterplayerCollider>();
         Comp_InterplayerCollider.GetType().GetField("MyCharacter", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(Comp_InterplayerCollider, this);
         //Comp_InterplayerCollider.gameObject.GetComponent<CapsuleCollider2D>().size = new Vector2(2.8f, 1f);
         AdditionalCharacterSpriteList = new List<SpriteRenderer>();
