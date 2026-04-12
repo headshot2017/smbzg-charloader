@@ -244,7 +244,7 @@ public class CustomAnimator : MonoBehaviour
             }
         }
 
-        if (currAction.sound != null)
+        if (currAction.sound != null && currAction.sound.sounds.Count > 0)
         {
             AudioClip sound = currAction.sound.sounds[UnityEngine.Random.Range(0, currAction.sound.sounds.Count)];
             if (!currAction.sound.loop)
