@@ -40,6 +40,24 @@ class ActionTab_General(BaseActionTab):
         self.spinbox_scaleX.valueChanged.connect(self.onChangeScaleX)
         self.spinbox_scaleY.valueChanged.connect(self.onChangeScaleY)
 
+        self.refreshLength()
+
+    def refreshLength(self):
+        loops = self.anim["loops"] if "loops" in self.anim else -1
+        if "frames" in self.anim:
+            length = 0
+            for f in self.anim["frames"]:
+                length += f["delay"] if "delay" in f else 0
+            lengthLoops = length * (loops+1)
+
+            finalStr = "Animation length: %.3fs" % length
+            if lengthLoops <= 0:
+                finalStr += "\nTotal length: Infinity"
+            else:
+                finalStr += "\nTotal length: %.3fs" % lengthLoops
+
+            self.lbl_length.setText(finalStr)
+
     @QtCore.pyqtSlot(int)
     def onSetInterpolate(self, value):
         self.anim["interpolate"] = value > 0
@@ -48,6 +66,7 @@ class ActionTab_General(BaseActionTab):
     @QtCore.pyqtSlot(int)
     def onChangeLoops(self, value):
         self.anim["loops"] = value
+        self.refreshLength()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(float)
@@ -106,6 +125,18 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.refreshList()
         self.combobox_textures.currentTextChanged.connect(self.onChangeTexture)
         self.combobox_filter.currentIndexChanged.connect(self.onChangeFilter)
+
+        self.refreshLength()
+
+    def refreshLength(self):
+        if "frames" in self.effect:
+            length = 0
+            for f in self.effect["frames"]:
+                length += f["delay"] if "delay" in f else 0
+
+            finalStr = "Animation length: %.3fs" % length
+
+            self.lbl_length.setText(finalStr)
 
     def refreshList(self, dirFolder=False):
         if dirFolder:

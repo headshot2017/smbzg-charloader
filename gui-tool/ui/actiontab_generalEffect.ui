@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>222</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -271,6 +271,19 @@ W / H</string>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="lbl_length">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Animation length: 0.0s</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
