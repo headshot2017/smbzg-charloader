@@ -12,6 +12,8 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
             └── (Internal Character Name)
                 ├── effects/
                 │   └── .png files
+                ├── icons/
+                │   └── .png files
                 ├── companions/
                 │   └── (Companion character name)
                 │       ├── sheet.png
@@ -27,7 +29,8 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 ```
 
 * **effects:** Assortment of png files that can be used as custom particle effects with CustomEffectSprite.
-* **companions:** Extra "characters" that can be used as NPCs or transformations for the base character.
+* **icons:** Folder containing asortment of png files that can be used for miscellaneous things, such as inventory icons.
+* **companions:** Extra "characters" that can be used as projectiles, NPCs or transformations for the base character.
 * **sounds:** Folder containing sound files.
   * Special sound effects:
     * **jump**: Automatically replaces the default DBZ jump with this file when the character loads.
@@ -47,10 +50,11 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 * Download [CharLoader.dll](https://github.com/headshot2017/smbzg-charloader/releases) and put it in the SMBZ-G Mods folder
 * Create a new project in Visual Studio using the MelonLoader Mod template
 * When asked to select an executable file, choose SMBZ-G.exe
-* Add CharLoader.dll as an assembly dependency
+* In the Solution Explorer panel located in the right side, right-click 'Dependencies', then click 'Add assembly reference'
+* Browse for CharLoader.dll in your mods folder and add it as a dependency
 * Take a look at the "template" folder in this repository for a template character source code.
 * CharLoader.Core has these callbacks that you can implement:
-  * afterCharacterLoad: Called after a CustomCharacter is loaded. You must check if it's your character by comparing the internalName, which by then you can replace the CustomBaseCharacter component with your own character control component. This one is important.
+  * afterCharacterLoad: Called after a CustomCharacter is loaded. You must check if it's your character by comparing the internalName string, which by then you can replace the CustomBaseCharacter component with your own character control component. This one is important.
   * resetBattleParticipant: Called on BattleParticipantDataModel.Reset(). Compare participant.InitialCharacterData with CustomCharacter.characterData to check if it's your custom character. This is used for setting up participant.AdditionalCharacterSpecificDataDictionary, for things like inventory data models. If your character doesn't have an inventory, this can be ignored
   * setupSpecificInventory: Called when setting up the character's inventory UI. Compare participant.InitialCharacterData with CustomCharacter.characterData to check if it's your custom character. This is where you'd call the SetupInventoryUI function on your Inventory data model. If your character doesn't have an inventory, this can be ignored
 
