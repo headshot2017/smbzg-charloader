@@ -317,10 +317,10 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
     @QtCore.pyqtSlot(QtCore.QPoint)
     def onAnimationTreeContextMenu(self, point):
         item = self.animationsTree.itemAt(point)
-        if item.itemLevel < 0 and item.itemLevel != -2: return
+        if item.itemLevel < 0 and item.itemLevel > -2: return
 
         menu = QtWidgets.QMenu()
-        if item.itemLevel == 0:
+        if item.itemLevel == 0: # animation
             actionRename = menu.addAction("Rename")
             actionDuplicate = menu.addAction("Duplicate")
             menu.addSeparator()
@@ -329,7 +329,7 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             actionRename.setData(item)
             actionDuplicate.setData(item)
 
-        elif item.itemLevel == 1:
+        elif item.itemLevel == 1: # frame
             actionCut = menu.addAction("Cut")
             actionCopy = menu.addAction("Copy")
             actionPaste = menu.addAction("Paste")
@@ -359,12 +359,30 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             actionMoveBottom.setData(item)
             actionDuplicate.setData(item)
 
-        elif item.itemLevel == -2:
+        elif item.itemLevel == 2: # action
+            actionCut = menu.addAction("Cut")
+            actionCopy = menu.addAction("Copy")
+            actionPaste = menu.addAction("Paste")
+
+            actionCut.triggered.connect(self.onMenuActionCutAction)
+            actionCopy.triggered.connect(self.onMenuActionCopyAction)
+            actionPaste.triggered.connect(self.onMenuActionPasteAction)
+
+            actionCut.setData(item)
+            actionCopy.setData(item)
+            actionPaste.setData(item)
+
+        elif item.itemLevel == -2: # 'Add frame'
             actionPaste = menu.addAction("Paste")
             actionPaste.triggered.connect(self.onMenuActionPaste)
             actionPaste.setData(item)
 
-        if item.itemLevel >= 0:
+        elif item.itemLevel == -3: # 'Add action'
+            actionPaste = menu.addAction("Paste")
+            actionPaste.triggered.connect(self.onMenuActionPasteAction)
+            actionPaste.setData(item)
+
+        if item.itemLevel >= 0: # animation, frame or action
             actionDelete = menu.addAction("Delete")
             actionDelete.triggered.connect(self.onMenuActionDelete)
             actionDelete.setData(item)
@@ -448,7 +466,7 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         animName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        frameClipboard.current = copy.deepcopy(characterdata.jsonFile["anims"][animName]["frames"][frameInd])
+        frameClipboard.frame = copy.deepcopy(characterdata.jsonFile["anims"][animName]["frames"][frameInd])
         del characterdata.jsonFile["anims"][animName]["frames"][frameInd]
         self.reloadTree()
 
@@ -459,11 +477,11 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         animName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        frameClipboard.current = copy.deepcopy(characterdata.jsonFile["anims"][animName]["frames"][frameInd])
+        frameClipboard.frame = copy.deepcopy(characterdata.jsonFile["anims"][animName]["frames"][frameInd])
 
     @QtCore.pyqtSlot()
     def onMenuActionPaste(self):
-        if not frameClipboard.current:
+        if not frameClipboard.frame:
             return
 
         item = self.sender().data()
@@ -471,7 +489,7 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         animName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd, copy.deepcopy(frameClipboard.current))
+        characterdata.jsonFile["anims"][animName]["frames"].insert(frameInd, copy.deepcopy(frameClipboard.frame))
 
         self.reloadTree()
 
@@ -536,6 +554,59 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
 
         anim = characterdata.jsonFile["anims"][animName]["frames"].pop(frameInd)
         characterdata.jsonFile["anims"][animName]["frames"].append(anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionCutAction(self):
+        item = self.sender().data()
+        actionName = item.text(0)
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(frameTree)
+
+        frameClipboard.action = [actionName, copy.deepcopy(characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName])]
+        del characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName]
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionCopyAction(self):
+        item = self.sender().data()
+        actionName = item.text(0)
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(frameTree)
+
+        frameClipboard.action = [actionName, copy.deepcopy(characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName])]
+
+    @QtCore.pyqtSlot()
+    def onMenuActionPasteAction(self):
+        if not frameClipboard.action:
+            return
+
+        item = self.sender().data()
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        animName = animTree.text(0)
+        frameInd = animTree.indexOfChild(frameTree)
+
+        actionName, action = frameClipboard.action
+
+        if actionName in characterdata.jsonFile["anims"][animName]["frames"][frameInd]:
+            result = QtWidgets.QMessageBox.warning(self,
+                "Warning",
+                "The action '%s' already exists in Frame %d of animation '%s'.\nOverwrite it with clipboard contents?" % (actionName, frameInd+1, animName),
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+
+            if result != QtWidgets.QMessageBox.Yes: return
+
+        characterdata.jsonFile["anims"][animName]["frames"][frameInd][actionName] = copy.deepcopy(frameClipboard.action[1])
 
         self.reloadTree()
 
@@ -875,7 +946,7 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
     @QtCore.pyqtSlot(QtCore.QPoint)
     def onAnimationTreeContextMenu(self, point):
         item = self.animationsTree.itemAt(point)
-        if item.itemLevel < 0 and item.itemLevel != -2: return
+        if item.itemLevel < 0 and item.itemLevel > -2: return
 
         menu = QtWidgets.QMenu()
         if item.itemLevel == 0:
@@ -917,9 +988,27 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
             actionMoveBottom.setData(item)
             actionDuplicate.setData(item)
 
+        elif item.itemLevel == 2: # action
+            actionCut = menu.addAction("Cut")
+            actionCopy = menu.addAction("Copy")
+            actionPaste = menu.addAction("Paste")
+
+            actionCut.triggered.connect(self.onMenuActionCutAction)
+            actionCopy.triggered.connect(self.onMenuActionCopyAction)
+            actionPaste.triggered.connect(self.onMenuActionPasteAction)
+
+            actionCut.setData(item)
+            actionCopy.setData(item)
+            actionPaste.setData(item)
+
         elif item.itemLevel == -2:
             actionPaste = menu.addAction("Paste")
             actionPaste.triggered.connect(self.onMenuActionPaste)
+            actionPaste.setData(item)
+
+        elif item.itemLevel == -3:
+            actionPaste = menu.addAction("Paste")
+            actionPaste.triggered.connect(self.onMenuActionPasteAction)
             actionPaste.setData(item)
 
         if item.itemLevel >= 0:
@@ -966,7 +1055,7 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         fxName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        frameClipboard.current = copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd])
+        frameClipboard.frame = copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd])
         del characterdata.jsonFile["effects"][fxName]["frames"][frameInd]
         self.reloadTree()
 
@@ -977,11 +1066,11 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         fxName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        frameClipboard.current = copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd])
+        frameClipboard.frame = copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd])
 
     @QtCore.pyqtSlot()
     def onMenuActionPaste(self):
-        if not frameClipboard.current:
+        if not frameClipboard.frame:
             return
 
         item = self.sender().data()
@@ -989,7 +1078,7 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         fxName = animTree.text(0)
         frameInd = animTree.indexOfChild(item)
 
-        characterdata.jsonFile["effects"][fxName]["frames"].insert(frameInd, copy.deepcopy(frameClipboard.current))
+        characterdata.jsonFile["effects"][fxName]["frames"].insert(frameInd, copy.deepcopy(frameClipboard.frame))
 
         self.reloadTree()
 
@@ -1054,6 +1143,59 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
 
         anim = characterdata.jsonFile["effects"][fxName]["frames"].pop(frameInd)
         characterdata.jsonFile["effects"][fxName]["frames"].append(anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionCutAction(self):
+        item = self.sender().data()
+        actionName = item.text(0)
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        fxName = animTree.text(0)
+        frameInd = animTree.indexOfChild(frameTree)
+
+        frameClipboard.action = [actionName, copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd][actionName])]
+        del characterdata.jsonFile["effects"][fxName]["frames"][frameInd][actionName]
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionCopyAction(self):
+        item = self.sender().data()
+        actionName = item.text(0)
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        fxName = animTree.text(0)
+        frameInd = animTree.indexOfChild(frameTree)
+
+        frameClipboard.action = [actionName, copy.deepcopy(characterdata.jsonFile["effects"][fxName]["frames"][frameInd][actionName])]
+
+    @QtCore.pyqtSlot()
+    def onMenuActionPasteAction(self):
+        if not frameClipboard.action:
+            return
+
+        item = self.sender().data()
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        fxName = animTree.text(0)
+        frameInd = animTree.indexOfChild(frameTree)
+
+        actionName, action = frameClipboard.action
+
+        if actionName in characterdata.jsonFile["effects"][fxName]["frames"][frameInd]:
+            result = QtWidgets.QMessageBox.warning(self,
+                "Warning",
+                "The action '%s' already exists in Frame %d of effect '%s'.\nOverwrite it with clipboard contents?" % (actionName, frameInd+1, fxName),
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+
+            if result != QtWidgets.QMessageBox.Yes: return
+
+        characterdata.jsonFile["effects"][fxName]["frames"][frameInd][actionName] = copy.deepcopy(frameClipboard.action[1])
 
         self.reloadTree()
 
@@ -1476,7 +1618,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
     @QtCore.pyqtSlot(QtCore.QPoint)
     def onAnimationTreeContextMenu(self, point):
         item = self.animationsTree.itemAt(point)
-        if item.itemLevel < 0 and item.itemLevel != -3: return
+        if item.itemLevel < 0 and item.itemLevel > -3: return
 
         menu = QtWidgets.QMenu()
         if item.itemLevel == 1:
@@ -1518,9 +1660,27 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             actionMoveBottom.setData(item)
             actionDuplicate.setData(item)
 
+        elif item.itemLevel == 3: # action
+            actionCut = menu.addAction("Cut")
+            actionCopy = menu.addAction("Copy")
+            actionPaste = menu.addAction("Paste")
+
+            actionCut.triggered.connect(self.onMenuActionCutAction)
+            actionCopy.triggered.connect(self.onMenuActionCopyAction)
+            actionPaste.triggered.connect(self.onMenuActionPasteAction)
+
+            actionCut.setData(item)
+            actionCopy.setData(item)
+            actionPaste.setData(item)
+
         elif item.itemLevel == -3:
             actionPaste = menu.addAction("Paste")
             actionPaste.triggered.connect(self.onMenuActionPaste)
+            actionPaste.setData(item)
+
+        elif item.itemLevel == -4:
+            actionPaste = menu.addAction("Paste")
+            actionPaste.triggered.connect(self.onMenuActionPasteAction)
             actionPaste.setData(item)
 
         if item.itemLevel >= 0:
@@ -1624,7 +1784,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
 
-        frameClipboard.current = copy.deepcopy(companion["anims"][animName]["frames"][frameInd])
+        frameClipboard.frame = copy.deepcopy(companion["anims"][animName]["frames"][frameInd])
         del companion["anims"][animName]["frames"][frameInd]
         self.reloadTree()
 
@@ -1638,11 +1798,11 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
 
-        frameClipboard.current = copy.deepcopy(companion["anims"][animName]["frames"][frameInd])
+        frameClipboard.frame = copy.deepcopy(companion["anims"][animName]["frames"][frameInd])
 
     @QtCore.pyqtSlot()
     def onMenuActionPaste(self):
-        if not frameClipboard.current:
+        if not frameClipboard.frame:
             return
 
         item = self.sender().data()
@@ -1653,7 +1813,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
 
-        companion["anims"][animName]["frames"].insert(frameInd, copy.deepcopy(frameClipboard.current))
+        companion["anims"][animName]["frames"].insert(frameInd, copy.deepcopy(frameClipboard.frame))
 
         self.reloadTree()
 
@@ -1713,7 +1873,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         frameInd = animTree.indexOfChild(item)
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
-        if frameInd >= len(characterdata.jsonFile["anims"][animName]["frames"])-1: return
+        if frameInd >= len(companion["anims"][animName]["frames"])-1: return
 
         anim = companion["anims"][animName]["frames"].pop(frameInd)
         companion["anims"][animName]["frames"].insert(frameInd+1, anim)
@@ -1729,10 +1889,76 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         frameInd = animTree.indexOfChild(item)
         companionName = companionTree.text(0)
         companion = characterdata.companionJson[companionName]
-        if frameInd >= len(characterdata.jsonFile["anims"][animName]["frames"])-1: return
+        if frameInd >= len(companion["anims"][animName]["frames"])-1: return
 
         anim = companion["anims"][animName]["frames"].pop(frameInd)
         companion["anims"][animName]["frames"].append(anim)
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionCutAction(self):
+        item = self.sender().data()
+        actionName = item.text(0)
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        animName = animTree.text(0)
+        companionTree = animTree.parent()
+        companionName = companionTree.text(0)
+
+        frameInd = animTree.indexOfChild(frameTree)
+        companion = characterdata.companionJson[companionName]
+
+        frameClipboard.action = [actionName, copy.deepcopy(companion["anims"][animName]["frames"][frameInd][actionName])]
+        del companion["anims"][animName]["frames"][frameInd][actionName]
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionCopyAction(self):
+        item = self.sender().data()
+        actionName = item.text(0)
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        animName = animTree.text(0)
+        companionTree = animTree.parent()
+        companionName = companionTree.text(0)
+
+        frameInd = animTree.indexOfChild(frameTree)
+        companion = characterdata.companionJson[companionName]
+
+        frameClipboard.action = [actionName, copy.deepcopy(companion["anims"][animName]["frames"][frameInd][actionName])]
+
+    @QtCore.pyqtSlot()
+    def onMenuActionPasteAction(self):
+        if not frameClipboard.action:
+            return
+
+        item = self.sender().data()
+        actionName = item.text(0)
+        frameTree = item.parent()
+        frameName = frameTree.text(0)
+        animTree = frameTree.parent()
+        animName = animTree.text(0)
+        companionTree = animTree.parent()
+        companionName = companionTree.text(0)
+
+        frameInd = animTree.indexOfChild(frameTree)
+        companion = characterdata.companionJson[companionName]
+
+        actionName, action = frameClipboard.action
+
+        if actionName in companion["anims"][animName]["frames"][frameInd]:
+            result = QtWidgets.QMessageBox.warning(self,
+                "Warning",
+                "The action '%s' already exists in Frame %d of animation '%s'.\nOverwrite it with clipboard contents?" % (actionName, frameInd+1, animName),
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+
+            if result != QtWidgets.QMessageBox.Yes: return
+
+        companion["anims"][animName]["frames"][frameInd][actionName] = copy.deepcopy(frameClipboard.action[1])
 
         self.reloadTree()
 
