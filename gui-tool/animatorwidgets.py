@@ -190,8 +190,10 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         return puppetTree
 
     def addNecessaryAnimations(self):
-        for animName in characterdata.defaultAnimationEntries():
+        for anim in characterdata.defaultAnimationEntries():
+            animName, loopCount = anim
             animTree = self.addAnimation(animName)
+            characterdata.jsonFile["anims"][animName]["loops"] = loopCount
 
     def reloadTree(self):
         expanded = {}
@@ -1430,8 +1432,13 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         return puppetTree
 
     def addNecessaryAnimations(self, companionTree):
-        for animName in characterdata.defaultAnimationEntries():
+        companionName = companionTree.text(0)
+        companion = characterdata.companionJson[companionName]
+
+        for anim in characterdata.defaultAnimationEntries():
+            animName, loopCount = anim
             animTree = self.addAnimation(companionTree, animName)
+            companion["anims"][animName]["loops"] = loopCount
 
     def reloadTree(self):
         expanded = {}
