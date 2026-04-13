@@ -406,6 +406,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         open(path+"/portrait.png", "wb").write(open("images/default_portrait.png", "rb").read())
         open(path+"/battleportrait.png", "wb").write(open("images/default_battleportrait.png", "rb").read())
 
+        characterdata.save()
+
         QtWidgets.QMessageBox.information(self, "Done",
             "Character '%s' created.\n" % (charName) +
             "Remember to do the following:\n" +
