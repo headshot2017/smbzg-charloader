@@ -680,15 +680,15 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         self.refreshFx()
 
         fx = characterdata.jsonFile["effects"][fxName]
+        if "loops" not in fx: fx["loops"] = 0
 
         self.actionTabs.clear()
 
-        general = actiontabs.ActionTab_GeneralEffect(self.actionTabs, characterdata.jsonFile["effects"][fxName]["editor"], fx)
+        general = actiontabs.ActionTab_GeneralEffect(self.actionTabs, fx["editor"], fx)
         general.valueChanged.connect(self.onActionTabValueChange)
         self.actionTabs.addTab(general, fxName)
 
         self.animatorView.animator.setAnimation(fx)
-        self.animatorView.animator.setLoopCount(1)
 
     def populateAnimTabs(self, fxName, frameInd):
         if not characterdata.jsonFile or fxName not in characterdata.jsonFile["effects"]:
@@ -700,18 +700,20 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         self.currentFx = fxName
         self.refreshFx()
 
-        actions = characterdata.jsonFile["effects"][fxName]["frames"][frameInd]
+        fx = characterdata.jsonFile["effects"][fxName]
+        if "loops" not in fx: fx["loops"] = 0
+
+        actions = fx["frames"][frameInd]
 
         self.actionTabs.clear()
         for action in actions:
             if action in actiontabs.actionTabsDict:
-                widget = actiontabs.actionTabsDict[action](self.actionTabs, characterdata.jsonFile["effects"][fxName]["editor"], actions[action], actions)
+                widget = actiontabs.actionTabsDict[action](self.actionTabs, fx["editor"], actions[action], actions)
                 widget.valueChanged.connect(self.onActionTabValueChange)
                 self.actionTabs.addTab(widget, action)
 
-        self.animatorView.animator.setAnimation(characterdata.jsonFile["effects"][fxName])
+        self.animatorView.animator.setAnimation(fx)
         self.animatorView.animator.setFrame(frameInd)
-        self.animatorView.animator.setLoopCount(1)
 
     def addEffect(self, fxName):
         animTree = QtWidgets.QTreeWidgetItem([fxName])

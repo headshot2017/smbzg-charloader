@@ -136,6 +136,8 @@ def defaultEffect():
             "spriteSpacing": [0, 0]
         },
 
+        "loops": 0,
+
         "frames": []
     }
 

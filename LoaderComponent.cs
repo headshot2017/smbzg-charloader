@@ -290,7 +290,7 @@ public class CharLoaderComponent : MonoBehaviour
                 CustomAnimation customAnim = new CustomAnimation();
                 customAnim.actions = new List<AnimAction>();
                 customAnim.hash = Animator.StringToHash(pair.Key);
-                customAnim.loops = 0;
+                customAnim.loops = effectObject.Keys.Contains("loops") ? effectObject["loops"] : 0;
                 customAnim.interpolate = effectObject.Keys.Contains("interpolate") ? effectObject["interpolate"] : true;
                 if (effectObject.Keys.Contains("scale")) customAnim.scale = new Vector2(effectObject["scale"][0], effectObject["scale"][1]);
                 if (effectObject.Keys.Contains("offset")) customAnim.offset = new Vector2(effectObject["offset"][0], effectObject["offset"][1]);

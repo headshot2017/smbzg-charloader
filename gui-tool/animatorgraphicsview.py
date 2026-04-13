@@ -112,6 +112,10 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
         self.onFrameChange(False)
         self.animDuration = 0
+
+        loops = self.animDict["loops"] if "loops" in self.animDict else -1
+        self.setLoopCount(-1 if loops == -1 else loops+1)
+
         for frame in self.animDict["frames"]:
             if "delay" in frame:
                 self.animDuration += frame["delay"]*1000

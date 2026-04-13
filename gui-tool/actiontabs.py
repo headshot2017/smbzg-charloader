@@ -102,6 +102,7 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.effect = effect
 
         self.checkbox_interpolate.setChecked(effect["interpolate"] if "interpolate" in effect else True)
+        self.spinbox_loops.setValue(effect["loops"] if "loops" in effect else 0)
         self.combobox_filter.setCurrentIndex(effect["filter"] if "filter" in effect else 1)
         self.spinbox_offsetX.setValue(effect["offset"][0] if "offset" in effect else 0)
         self.spinbox_offsetY.setValue(effect["offset"][1] if "offset" in effect else 0)
@@ -113,6 +114,7 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.spinbox_spacingY.setValue(jsonEditorRoot["spriteSpacing"][1] if "spriteSpacing" in jsonEditorRoot else 0)
 
         self.checkbox_interpolate.stateChanged.connect(self.onSetInterpolate)
+        self.spinbox_loops.valueChanged.connect(self.onChangeLoops)
         self.btn_openFolder.clicked.connect(self.onOpenEffectsFolder)
         self.btn_refresh.clicked.connect(self.onRefreshClicked)
         self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
@@ -129,12 +131,18 @@ class ActionTab_GeneralEffect(BaseActionTab):
         self.refreshLength()
 
     def refreshLength(self):
+        loops = self.effect["loops"] if "loops" in self.effect else 0
         if "frames" in self.effect:
             length = 0
             for f in self.effect["frames"]:
                 length += f["delay"] if "delay" in f else 0
+            lengthLoops = length * (loops+1)
 
             finalStr = "Animation length: %.3fs" % length
+            if lengthLoops <= 0:
+                finalStr += "\nTotal length: Infinity"
+            else:
+                finalStr += "\nTotal length: %.3fs" % lengthLoops
 
             self.lbl_length.setText(finalStr)
 
@@ -153,6 +161,12 @@ class ActionTab_GeneralEffect(BaseActionTab):
     @QtCore.pyqtSlot(int)
     def onSetInterpolate(self, value):
         self.effect["interpolate"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onChangeLoops(self, value):
+        self.effect["loops"] = value
+        self.refreshLength()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(str)
