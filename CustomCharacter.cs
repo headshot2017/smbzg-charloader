@@ -101,4 +101,7 @@ public class CustomCharacter
     public Dictionary<string, AudioClip> sounds;
     public Dictionary<string, AudioClip> music;
     public float getUpTimer;
+
+    // v1.10.0
+    public Dictionary<string, Sprite> icons;
 }

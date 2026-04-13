@@ -388,7 +388,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             path+"/music",
             path+"/sounds",
             path+"/effects",
-            path+"/companions"
+            path+"/companions",
+            path+"/icons"
         ]
         for extraPath in extraPaths:
             if not os.path.exists(extraPath): os.mkdir(extraPath)
@@ -412,7 +413,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             "* Add portrait images for your character: portrait.png and battleportrait.png\n" +
             "* OPTIONAL: Add custom sounds to the 'sounds' directory: .wav, .ogg and .mp3 files are accepted\n" +
             "* OPTIONAL: Add custom music to the 'music' directory: .wav, .ogg and .mp3 files are accepted\n" +
-            "* OPTIONAL: Add custom particle images to the 'effects' directory: .png only"
+            "* OPTIONAL: Add custom particle images to the 'effects' directory: .png only\n" +
+            "* OPTIONAL: Add other sprites (such as inventory icons) to the 'icons' directory: .png only"
         )
 
         self.statusbar.showMessage("Created character '%s'" % charName, 3000)

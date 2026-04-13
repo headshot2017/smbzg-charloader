@@ -126,6 +126,20 @@ public class CharLoaderComponent : MonoBehaviour
                 }
             }
 
+            cc.icons = new Dictionary<string, Sprite>();
+            if (Directory.Exists($"{path}/icons"))
+            {
+                foreach (string _iconName in Directory.GetFiles($"{path}/icons"))
+                {
+                    string iconPath = _iconName.Replace('\\', '/');
+                    string iconName = Path.GetFileNameWithoutExtension(iconPath);
+
+                    yield return TextureDownload($"{path}/icons/{iconName}.png");
+                    texture.filterMode = FilterMode.Point;
+                    cc.icons[iconName] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
+                }
+            }
+
             CustomCharacterData_SO Data = ScriptableObject.CreateInstance<CustomCharacterData_SO>();
             Data.Prefab_SpecialCharacterSettingsUI = BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI;
             Data.Character = (BattleCache.CharacterEnum)(1000 + CharLoader.Core.customCharacters.Count);
