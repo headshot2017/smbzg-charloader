@@ -147,21 +147,24 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         if playSound and "sound" in frame:
             snd = ""
             loop = False
+            volume = 100
 
             # CharLoader v1.2: new SoundAction class
             if type(frame["sound"]) == str:
                 snd = frame["sound"]
-                loop = False
             else:
                 snd = random.choice(frame["sound"]["sounds"])
-                loop = frame["sound"]["loop"]
+                loop = frame["sound"]["loop"] if "loop" in frame["sound"] else False
+                volume = frame["sound"]["volume"] if "volume" in frame["sound"] else 100
 
             if snd in characterdata.sounds:
+                channel = None
                 if not loop:
-                    characterdata.sounds[snd].play()
+                    channel = characterdata.sounds[snd].play()
                 elif snd not in self.playingSounds:
-                    characterdata.sounds[snd].play(loops=-1)
+                    channel = characterdata.sounds[snd].play(loops=-1)
                     self.playingSounds.add(snd)
+                channel.set_volume(volume/100.)
 
         if "color" in frame:
             self.pixmapItem.setOpacity(frame["color"][3]/255. if len(frame["color"]) >= 4 else 1)

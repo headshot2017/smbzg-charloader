@@ -473,18 +473,24 @@ class ActionTab_Sound(BaseActionTab):
         self.refresh()
 
         self.checkbox_loop.setChecked(self.actionInfo["loop"] if "loop" in self.actionInfo else False)
+        self.checkbox_pause.setChecked(self.actionInfo["pauseWithGame"] if "pauseWithGame" in self.actionInfo else False)
+        self.slider_volume.setValue(self.actionInfo["volume"] if "volume" in self.actionInfo else 100)
+        self.slider_pitch.setValue(self.actionInfo["pitch"] if "pitch" in self.actionInfo else 100)
+        self.lbl_volume.setText("%d%%" % (self.slider_volume.value()))
+        self.lbl_pitch.setText("%d%%" % (self.slider_pitch.value()))
 
         self.list_sounds.itemDoubleClicked.connect(self.onItemDoubleClick)
         self.checkbox_loop.stateChanged.connect(self.onSetLoop)
+        self.checkbox_pause.stateChanged.connect(self.onSetPause)
+        self.slider_volume.valueChanged.connect(self.onVolumeChanged)
+        self.slider_pitch.valueChanged.connect(self.onPitchChanged)
         self.btn_add.clicked.connect(self.onAdd)
         self.btn_remove.clicked.connect(self.onRemove)
 
     def legacyActionSetup(self):
         # CharLoader v1.2: new SoundAction class
-        newAction = {
-            "sounds": [self.actionInfo],
-            "loop": False
-        }
+        newAction = characterdata.defaultAction("sound")
+        newAction.sounds = [self.actionInfo]
 
         self.actionInfo = newAction
         self.action["sound"] = self.actionInfo
@@ -493,7 +499,6 @@ class ActionTab_Sound(BaseActionTab):
         self.list_sounds.clear()
         for snd in self.actionInfo["sounds"]:
             self.list_sounds.addItem(snd)
-
 
     @QtCore.pyqtSlot(QtWidgets.QListWidgetItem)
     def onItemDoubleClick(self, item):
@@ -504,6 +509,23 @@ class ActionTab_Sound(BaseActionTab):
     @QtCore.pyqtSlot(int)
     def onSetLoop(self, value):
         self.actionInfo["loop"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onSetPause(self, value):
+        self.actionInfo["pauseWithGame"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onVolumeChanged(self, value):
+        self.lbl_volume.setText("%d%%" % value)
+        self.actionInfo["volume"] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onPitchChanged(self, value):
+        self.lbl_pitch.setText("%d%%" % value)
+        self.actionInfo["pitch"] = value
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot()

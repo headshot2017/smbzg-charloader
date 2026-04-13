@@ -249,11 +249,22 @@ public class CustomAnimator : MonoBehaviour
             AudioClip sound = currAction.sound.sounds[UnityEngine.Random.Range(0, currAction.sound.sounds.Count)];
             if (!currAction.sound.loop)
             {
-                SoundCache.ins.PlaySound(sound);
+                SoundCache.ins.PlaySound(
+                    sound,
+                    volume: currAction.sound.volume,
+                    pitch: currAction.sound.pitch,
+                    pauseWithGame: currAction.sound.pauseWithGame
+                );
             }
             else if (!m_PlayingSounds.ContainsKey(sound))
             {
-                AudioSource src = SoundCache.ins.PlaySound(sound, DestroyAfterPlay: false);
+                AudioSource src = SoundCache.ins.PlaySound(
+                    sound,
+                    volume: currAction.sound.volume,
+                    pitch: currAction.sound.pitch,
+                    pauseWithGame: currAction.sound.pauseWithGame,
+                    DestroyAfterPlay: false
+                );
                 src.loop = true;
                 m_PlayingSounds[sound] = src;
             }

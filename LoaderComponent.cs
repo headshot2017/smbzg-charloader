@@ -1,11 +1,9 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.Networking;
 using MelonLoader;
 using TinyJSON;
+using System.Collections;
 using System.Reflection;
-using System;
-using static System.Collections.Specialized.BitVector32;
 
 public class CharLoaderComponent : MonoBehaviour
 {
@@ -527,12 +525,19 @@ public class CharLoaderComponent : MonoBehaviour
             {
                 if (soundKeys.ContainsKey(soundVar)) action.sound.sounds.Add(soundKeys[soundVar]);
                 action.sound.loop = false;
+                action.sound.volume = 1;
+                action.sound.pitch = 1;
+                action.sound.pauseWithGame = false;
             }
             else
             {
-                foreach (Variant soundName in soundVar["sounds"] as ProxyArray)
+                ProxyObject soundObj = soundVar as ProxyObject;
+                foreach (Variant soundName in soundObj["sounds"] as ProxyArray)
                     if (soundKeys.ContainsKey(soundName)) action.sound.sounds.Add(soundKeys[soundName]);
-                action.sound.loop = soundVar["loop"];
+                action.sound.loop = soundObj.Keys.Contains("loop") ? soundObj["loop"] : false;
+                action.sound.volume = soundObj.Keys.Contains("volume") ? soundObj["volume"]/100f : 1;
+                action.sound.pitch = soundObj.Keys.Contains("pitch") ? soundObj["pitch"]/100f : 1;
+                action.sound.pauseWithGame = soundObj.Keys.Contains("pauseWithGame") ? soundObj["pauseWithGame"] : false;
             }
         }
 

@@ -20,6 +20,9 @@ public class SoundAction
 {
     public List<AudioClip> sounds = new List<AudioClip>();
     public bool loop;
+    public float volume;
+    public float pitch;
+    public bool pauseWithGame;
 }
 
 public class PuppetAction

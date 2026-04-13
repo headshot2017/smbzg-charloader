@@ -21,7 +21,7 @@ __defaultaction = {
     "offset": [0, 0],
     "scale": [1, 1],
     "angle": 0,
-    "sound": {"sounds": [], "loop": False},
+    "sound": {"sounds": [], "loop": False, "volume": 100, "pitch": 100, "pauseWithGame": False},
     "color": [255, 255, 255, 255],
     "hitbox": {"on": False, "pos": [0, 0], "scale": [1, 1]},
     "callCustomQueue": True,
