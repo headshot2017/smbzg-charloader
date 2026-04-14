@@ -1470,12 +1470,12 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
 
         self.puppetsTabs.clear()
 
-        general = actiontabs.PuppetTab(self.puppetsTabs, puppet)
-        general.valueChanged.connect(self.onActionTabValueChangePuppet)
-        self.puppetsTabs.addTab(general, puppetName)
-
         self.setCompanionSprite(self.puppetView, companionName)
         self.puppetView.animator.setAnimation( {"frames": [{"frame": puppet}]} )
+
+        general = actiontabs.PuppetTab(self.puppetsTabs, companion["editor"], puppet)
+        general.valueChanged.connect(self.onActionTabValueChangePuppet)
+        self.puppetsTabs.addTab(general, puppetName)
 
     def addCompanion(self, companionName):
         companionTree = QtWidgets.QTreeWidgetItem([companionName])
