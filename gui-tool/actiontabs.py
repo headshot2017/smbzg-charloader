@@ -337,11 +337,21 @@ class ActionTab_Frame(BaseActionTab):
         self.spinbox_w.valueChanged.connect(self.onChangeW)
         self.spinbox_h.valueChanged.connect(self.onChangeH)
 
+        self.checkSizeBounds()
+
         if self.frameSizesAreSet:
             differentValues = actionInfo[2] != jsonEditorRoot["defaultFrameSize"][0] or actionInfo[3] != jsonEditorRoot["defaultFrameSize"][1]
             self.checkbox_changeSize.setChecked(differentValues)
             self.checkbox_changeSize.stateChanged.connect(self.onCheckboxChangeSize)
             self.changeBehavior(not differentValues)
+
+    def checkSizeBounds(self):
+        w = self.jsonEditorRoot["imgW"] if self.actionInfo[2] == -1 else self.actionInfo[2]
+        h = self.jsonEditorRoot["imgH"] if self.actionInfo[3] == -1 else self.actionInfo[3]
+        self.lbl_warning.setVisible(
+            self.actionInfo[0] + w > self.jsonEditorRoot["imgW"] or
+            self.actionInfo[1] + h > self.jsonEditorRoot["imgH"]
+        )
 
     def changeBehavior(self, sizesLocked):
         singleSteps = [
@@ -369,6 +379,7 @@ class ActionTab_Frame(BaseActionTab):
             self.spinbox_x.setValue(value)
             self.spinbox_x.blockSignals(False)
         self.actionInfo[0] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
@@ -380,16 +391,19 @@ class ActionTab_Frame(BaseActionTab):
             self.spinbox_y.setValue(value)
             self.spinbox_y.blockSignals(False)
         self.actionInfo[1] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeW(self, value):
         self.actionInfo[2] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeH(self, value):
         self.actionInfo[3] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
@@ -864,24 +878,38 @@ class PuppetTab(BaseActionTab):
         self.spinbox_w.valueChanged.connect(self.onChangeW)
         self.spinbox_h.valueChanged.connect(self.onChangeH)
 
+        self.checkSizeBounds()
+
+    def checkSizeBounds(self):
+        w = self.jsonEditorRoot["imgW"] if self.actionInfo[2] == -1 else self.actionInfo[2]
+        h = self.jsonEditorRoot["imgH"] if self.actionInfo[3] == -1 else self.actionInfo[3]
+        self.lbl_warning.setVisible(
+            self.actionInfo[0] + w > self.jsonEditorRoot["imgW"] or
+            self.actionInfo[1] + h > self.jsonEditorRoot["imgH"]
+        )
+
     @QtCore.pyqtSlot(int)
     def onChangeX(self, value):
         self.actionInfo[0] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeY(self, value):
         self.actionInfo[1] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeW(self, value):
         self.actionInfo[2] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
     @QtCore.pyqtSlot(int)
     def onChangeH(self, value):
         self.actionInfo[3] = value
+        self.checkSizeBounds()
         self.valueChanged.emit()
 
 

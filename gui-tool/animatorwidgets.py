@@ -758,6 +758,8 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             view.animator.globalOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
             view.animator.globalScale = characterdata.jsonFile["general"]["scale"]["ingame"]
             view.reloadSprite("%s/sheet.png" % path)
+            characterdata.jsonFile["editor"]["imgW"] = view.animator.fullPixmap.size().width()
+            characterdata.jsonFile["editor"]["imgH"] = view.animator.fullPixmap.size().height()
         self.animatorView.animator.updatePuppetList(characterdata.jsonFile["puppets"])
 
 
@@ -785,7 +787,10 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
         if not self.currentFx: return
         path = gamepath.getCharacterPath(characterdata.name)
         fx = characterdata.jsonFile["effects"][self.currentFx]
+
         self.animatorView.reloadSprite("%s/effects/%s.png" % (path, fx["texture"] if "texture" in fx else ""))
+        fx["editor"]["imgW"] = self.animatorView.animator.fullPixmap.size().width()
+        fx["editor"]["imgH"] = self.animatorView.animator.fullPixmap.size().height()
 
     def populateGeneralTab(self, fxName):
         if not characterdata.jsonFile or fxName not in characterdata.jsonFile["effects"]:
@@ -1363,6 +1368,9 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         path = gamepath.getCharacterPath(characterdata.name)
 
         view.reloadSprite("%s/companions/%s/sheet.png" % (path, companionName))
+        companion["editor"]["imgW"] = view.animator.fullPixmap.size().width()
+        companion["editor"]["imgH"] = view.animator.fullPixmap.size().height()
+
         view.animator.globalOffset = companion.get("general", {}).get("offset", [0, 0])
         view.animator.globalScale = companion.get("general", {}).get("scale", 1)
         if view == self.animatorView:
@@ -1376,12 +1384,11 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             characterdata.companionJson[companionName]["editor"] = characterdata.defaultCompanion()["editor"]
 
         self.actionTabs.clear()
+        self.setCompanionSprite(self.animatorView, companionName)
 
         general = actiontabs.ActionTab_Companion(self.actionTabs, characterdata.companionJson[companionName]["editor"], companionName)
         general.valueChanged.connect(self.onActionTabValueChange)
         self.actionTabs.addTab(general, companionName)
-
-        self.setCompanionSprite(self.animatorView, companionName)
 
     def populateGeneralTab(self, companionName, animName):
         if not characterdata.companionJson or companionName not in characterdata.companionJson:
@@ -1395,15 +1402,14 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             companion["editor"] = characterdata.defaultCompanion()["editor"]
 
         anim = companion["anims"][animName]
+        self.setCompanionSprite(self.animatorView, companionName)
+        self.animatorView.animator.setAnimation(anim)
 
         self.actionTabs.clear()
 
         general = actiontabs.ActionTab_General(self.actionTabs, companion["editor"], anim)
         general.valueChanged.connect(self.onActionTabValueChange)
         self.actionTabs.addTab(general, animName)
-
-        self.setCompanionSprite(self.animatorView, companionName)
-        self.animatorView.animator.setAnimation(anim)
 
     def populateAnimTabs(self, companionName, animName, frameInd):
         if not characterdata.companionJson or companionName not in characterdata.companionJson:
@@ -1416,8 +1422,12 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         if "editor" not in companion:
             companion["editor"] = characterdata.defaultCompanion()["editor"]
 
+        self.setCompanionSprite(self.animatorView, companionName)
+        self.animatorView.animator.setAnimation(companion["anims"][animName])
+        self.animatorView.animator.setFrame(frameInd)
+
         actions = companion["anims"][animName]["frames"][frameInd]
-        
+
         self.actionTabs.clear()
         for action in actions:
             if action in actiontabs.actionTabsDict:
@@ -1425,10 +1435,6 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
                 widget.valueChanged.connect(self.onActionTabValueChange)
                 widget.setupForCharacter(companion)
                 self.actionTabs.addTab(widget, action)
-
-        self.setCompanionSprite(self.animatorView, companionName)
-        self.animatorView.animator.setAnimation(companion["anims"][animName])
-        self.animatorView.animator.setFrame(frameInd)
 
     def populatePuppetTab(self, companionName, puppetName):
         if not characterdata.companionJson or companionName not in characterdata.companionJson:
