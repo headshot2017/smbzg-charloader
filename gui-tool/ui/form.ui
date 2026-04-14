@@ -794,18 +794,24 @@ Create a new character or open an existing character from the File menu to get s
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>96</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
                     <property name="text">
-                     <string>Hue</string>
+                     <string>Hue: 1.0</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QSlider" name="slider_hue">
                     <property name="minimum">
-                     <number>-200</number>
+                     <number>-1000</number>
                     </property>
                     <property name="maximum">
-                     <number>200</number>
+                     <number>1000</number>
                     </property>
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
@@ -814,7 +820,7 @@ Create a new character or open an existing character from the File menu to get s
                      <enum>QSlider::TicksAbove</enum>
                     </property>
                     <property name="tickInterval">
-                     <number>20</number>
+                     <number>50</number>
                     </property>
                    </widget>
                   </item>
@@ -830,18 +836,24 @@ Create a new character or open an existing character from the File menu to get s
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>96</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
                     <property name="text">
-                     <string>Saturation</string>
+                     <string>Saturation: 1.0</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QSlider" name="slider_saturation">
                     <property name="minimum">
-                     <number>-200</number>
+                     <number>-1000</number>
                     </property>
                     <property name="maximum">
-                     <number>200</number>
+                     <number>1000</number>
                     </property>
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
@@ -850,7 +862,7 @@ Create a new character or open an existing character from the File menu to get s
                      <enum>QSlider::TicksAbove</enum>
                     </property>
                     <property name="tickInterval">
-                     <number>20</number>
+                     <number>50</number>
                     </property>
                    </widget>
                   </item>
@@ -866,18 +878,24 @@ Create a new character or open an existing character from the File menu to get s
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>96</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
                     <property name="text">
-                     <string>Contrast</string>
+                     <string>Contrast: 1.0</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QSlider" name="slider_contrast">
                     <property name="minimum">
-                     <number>-200</number>
+                     <number>-1000</number>
                     </property>
                     <property name="maximum">
-                     <number>200</number>
+                     <number>1000</number>
                     </property>
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
@@ -886,7 +904,7 @@ Create a new character or open an existing character from the File menu to get s
                      <enum>QSlider::TicksAbove</enum>
                     </property>
                     <property name="tickInterval">
-                     <number>20</number>
+                     <number>50</number>
                     </property>
                    </widget>
                   </item>
