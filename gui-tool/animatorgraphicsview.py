@@ -236,9 +236,14 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
                 hitbox["pos"] if "pos" in hitbox else [0, 0],
                 hitbox["scale"] if "scale" in hitbox else [0, 0],
             )
+            angle = hitbox["angle"] if "angle" in hitbox else 0
 
-            self.hitboxItem.setRect(pos[0], pos[1], scale[0], scale[1])
+            self.hitboxItem.resetTransform()
+            self.hitboxItem.setPos(self.graphicsView.sceneRect().width()/2 + scale[0]/2, self.graphicsView.sceneRect().height()/2 + scale[1]/2)
+            self.hitboxItem.moveBy(*pos)
+            self.hitboxItem.setRect(-scale[0]/2, -scale[1]/2, scale[0], scale[1])
             self.hitboxItem.setBrush(QtGui.QColor(255, 0, 0, 0 if not on else 128))
+            self.hitboxItem.setTransform(self.hitboxItem.transform().rotate(angle))
             self.hitboxItem.setVisible(True)
         else:
             self.hitboxItem.setVisible(False)
@@ -304,8 +309,17 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             ]
             posLerp, scaleLerp = calculateHitboxCoordinates(posLerp, scaleLerp)
 
-            self.hitboxItem.setRect(posLerp[0], posLerp[1], scaleLerp[0], scaleLerp[1])
-            self.hitboxItem.setBrush(QtGui.QColor(255, 0, 0, 0 if not on else 128))
+            angleLerp = lerp(
+                currAction["hitbox"]["angle"] if "angle" in currAction["hitbox"] else 0,
+                nextHitbox["angle"] if "angle" in nextHitbox else 0,
+                x
+            )
+
+            self.hitboxItem.resetTransform()
+            self.hitboxItem.setPos(self.graphicsView.sceneRect().width()/2 + scaleLerp[0]/2, self.graphicsView.sceneRect().height()/2 + scaleLerp[1]/2)
+            self.hitboxItem.moveBy(*posLerp)
+            self.hitboxItem.setRect(-scaleLerp[0]/2, -scaleLerp[1]/2, scaleLerp[0], scaleLerp[1])
+            self.hitboxItem.setTransform(self.hitboxItem.transform().rotate(angleLerp))
 
         # v1.6: Puppet animation
         if "puppets" in currAction:

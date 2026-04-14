@@ -437,13 +437,13 @@ class ActionTab_SetAnim(BaseActionTab):
         self.actionInfo = actionInfo
         self.action = action
 
-        anims = characterdata.jsonFile["anims"]
-        for anim in anims:
-            self.combobox_animslist.addItem(anim)
-            if anim == actionInfo:
-                self.combobox_animslist.setCurrentIndex(self.combobox_animslist.count()-1)
-
         self.combobox_animslist.currentTextChanged.connect(self.onChange)
+
+    def setupForCharacter(self, jsonRoot):
+        for anim in jsonRoot["anims"]:
+            self.combobox_animslist.addItem(anim)
+            if anim == self.actionInfo:
+                self.combobox_animslist.setCurrentIndex(self.combobox_animslist.count()-1)
 
     @QtCore.pyqtSlot(str)
     def onChange(self, newText):
@@ -641,12 +641,14 @@ class ActionTab_Hitbox(BaseActionTab):
         self.spinbox_offsetY.setValue(actionInfo["pos"][1] if "pos" in actionInfo else 0)
         self.spinbox_scaleX.setValue(actionInfo["scale"][0] if "scale" in actionInfo else 0)
         self.spinbox_scaleY.setValue(actionInfo["scale"][1] if "scale" in actionInfo else 0)
+        self.spinbox_angle.setValue(actionInfo["angle"] if "angle" in actionInfo else 0)
 
         self.checkbox_active.stateChanged.connect(self.onSetActive)
         self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
         self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
         self.spinbox_scaleX.valueChanged.connect(self.onChangeScaleX)
         self.spinbox_scaleY.valueChanged.connect(self.onChangeScaleY)
+        self.spinbox_angle.valueChanged.connect(self.onChangeAngle)
 
     @QtCore.pyqtSlot(int)
     def onSetActive(self, value):
@@ -671,6 +673,11 @@ class ActionTab_Hitbox(BaseActionTab):
     @QtCore.pyqtSlot(float)
     def onChangeScaleY(self, value):
         self.actionInfo["scale"][1] = value
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeAngle(self, value):
+        self.actionInfo["angle"] = value
         self.valueChanged.emit()
 
 

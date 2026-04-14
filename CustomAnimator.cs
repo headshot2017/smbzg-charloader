@@ -195,12 +195,14 @@ public class CustomAnimator : MonoBehaviour
                 m_Hitbox.IsActive = currAction.hitbox.on;
                 m_Hitbox.transform.localPosition = currAction.hitbox.pos;
                 m_Hitbox.transform.localScale = currAction.hitbox.scale;
+                m_Hitbox.transform.localEulerAngles = new Vector3(0, 0, -currAction.hitbox.angle);
             }
             if (m_HitboxProj != null)
             {
                 m_HitboxProj.IsActive = currAction.hitbox.on;
                 m_HitboxProj.transform.localPosition = currAction.hitbox.pos;
                 m_HitboxProj.transform.localScale = currAction.hitbox.scale;
+                m_HitboxProj.transform.localEulerAngles = new Vector3(0, 0, -currAction.hitbox.angle);
             }
         }
 
@@ -630,11 +632,13 @@ public class CustomAnimator : MonoBehaviour
             {
                 m_Hitbox.transform.localPosition = Vector3.Lerp(currAction.hitbox.pos, nextAction.hitbox.pos, lerp);
                 m_Hitbox.transform.localScale = Vector3.Lerp(currAction.hitbox.scale, nextAction.hitbox.scale, lerp);
+                m_Hitbox.transform.localEulerAngles = new Vector3(0, 0, -Mathf.Lerp(currAction.hitbox.angle, nextAction.hitbox.angle, lerp));
             }
             if (m_HitboxProj != null)
             {
                 m_HitboxProj.transform.localPosition = Vector3.Lerp(currAction.hitbox.pos, nextAction.hitbox.pos, lerp);
                 m_HitboxProj.transform.localScale = Vector3.Lerp(currAction.hitbox.scale, nextAction.hitbox.scale, lerp);
+                m_HitboxProj.transform.localEulerAngles = new Vector3(0, 0, -Mathf.Lerp(currAction.hitbox.angle, nextAction.hitbox.angle, lerp));
             }
         }
 

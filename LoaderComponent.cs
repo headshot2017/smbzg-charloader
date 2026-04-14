@@ -572,6 +572,8 @@ public class CharLoaderComponent : MonoBehaviour
                 action.hitbox.pos = new Vector2(hitboxObj["pos"][0], hitboxObj["pos"][1]);
             if (hitboxObj.Keys.Contains("scale"))
                 action.hitbox.scale = new Vector2(hitboxObj["scale"][0], hitboxObj["scale"][1]);
+            if (hitboxObj.Keys.Contains("angle"))
+                action.hitbox.angle = hitboxObj["angle"];
         }
 
         // v1.6: Puppet animation

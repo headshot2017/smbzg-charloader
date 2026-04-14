@@ -14,6 +14,7 @@ public class HitboxAction
     public bool on;
     public Vector2 pos;
     public Vector2 scale;
+    public float angle;
 }
 
 public class SoundAction
