@@ -51,6 +51,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
         self.currentLoopChanged.connect(self.onLoop)
 
         self.puppets = []
+        self.showInactivePuppets = False
 
     def updatePuppetList(self, puppetsDict):
         for puppet in self.puppets:
@@ -68,6 +69,12 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
             puppet.setOffset(-w/2, -h/2)
             puppet.setFlag(QtWidgets.QGraphicsItem.ItemNegativeZStacksBehindParent)
             self.puppets.append(puppet)
+
+    def setInactivePuppets(self, on):
+        self.showInactivePuppets = on
+        for puppet in self.puppets:
+            if puppet.opacity() > 0.5: continue
+            puppet.setOpacity(0.5 if on else 0)
 
     def clearSounds(self):
         for snd in self.playingSounds:
@@ -193,7 +200,7 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
 
                 puppet.resetTransform()
                 puppet.setPos(0, 0)
-                puppet.setOpacity(1 if puppetAction["on"] else 0.5)
+                puppet.setOpacity(1 if puppetAction["on"] else 0.5 if self.showInactivePuppets else 0)
                 puppet.setZValue(puppetAction["layer"] if "layer" in puppetAction else 0)
                 puppet.moveBy(*puppetOffset)
                 puppet.setTransform(puppet.transform().rotate(puppetAction["angle"] if "angle" in puppetAction else 0).scale(
@@ -205,14 +212,14 @@ class PixmapAnimator(QtCore.QAbstractAnimation):
                 if puppet in changed: continue
                 puppet.resetTransform()
                 puppet.setPos(0, 0)
-                puppet.setOpacity(0.5)
+                puppet.setOpacity(0.5 if self.showInactivePuppets else 0)
                 puppet.setZValue(-1000)
                 puppet.setRotation(0)
         else:
             for puppet in self.puppets:
                 puppet.resetTransform()
                 puppet.setPos(0, 0)
-                puppet.setOpacity(0.5)
+                puppet.setOpacity(0.5 if self.showInactivePuppets else 0)
                 puppet.setZValue(-1000)
                 puppet.setRotation(0)
 

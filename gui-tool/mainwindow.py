@@ -18,6 +18,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.actionOpen.triggered.connect(self.onActionOpen)
         self.actionSave.triggered.connect(self.onActionSave)
         self.actionSaveAs.triggered.connect(self.onActionSaveAs)
+        self.actionInactivePuppets.triggered.connect(self.onActionInactivePuppets)
         self.actionPrintJson.triggered.connect(self.onActionPrintJson)
         self.actionQuit.triggered.connect(self.onActionQuit)
 
@@ -450,6 +451,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         characterdata.name = charName
         characterdata.save()
         self.statusbar.showMessage("Saved character '%s'" % characterdata.name, 3000)
+
+    @QtCore.pyqtSlot(bool)
+    def onActionInactivePuppets(self, checked):
+        for tab in [self.tab_anims, self.tab_companions]:
+            tab.setInactivePuppets(checked)
 
     @QtCore.pyqtSlot()
     def onActionPrintJson(self):

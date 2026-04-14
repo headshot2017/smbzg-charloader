@@ -37,6 +37,9 @@ class BaseAnimatorWidget(QtWidgets.QWidget):
     def populateAnimTabs(self, animName, frameInd):
         pass
 
+    def setInactivePuppets(self, on):
+        self.animatorView.animator.setInactivePuppets(on)
+
 
     @QtCore.pyqtSlot()
     def onActionTabValueChange(self):
