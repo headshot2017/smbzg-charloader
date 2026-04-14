@@ -1599,7 +1599,6 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             if companionName in expanded:
                 companionTree.setExpanded(True)
                 for animName in expanded[companionName]:
-                    expanded[companionName][animName][0].setExpanded(True)
                     for k in expanded[companionName][animName]:
                         if not expanded[companionName][animName][k]: continue
                         expanded[companionName][animName][k].setExpanded(True)
