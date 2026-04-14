@@ -84,6 +84,10 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
         self.puppetsTree.itemDoubleClicked.connect(self.onPuppetTreeDoubleClick)
         self.puppetsTree.customContextMenuRequested.connect(self.onPuppetTreeContextMenu)
 
+        self.btn_zoomInP.clicked.connect(self.onZoomInPuppet)
+        self.btn_zoomOutP.clicked.connect(self.onZoomOutPuppet)
+        self.btn_zoomResetP.clicked.connect(self.onZoomResetPuppet)
+
         self.btn_reloadSprite.clicked.connect(self.onRefresh)
 
     def reset(self):
@@ -765,6 +769,18 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             characterdata.jsonFile["editor"]["imgH"] = view.animator.fullPixmap.size().height()
         self.animatorView.animator.updatePuppetList(characterdata.jsonFile["puppets"])
 
+    @QtCore.pyqtSlot()
+    def onZoomInPuppet(self):
+        self.puppetView.scale(1.25, 1.25)
+
+    @QtCore.pyqtSlot()
+    def onZoomOutPuppet(self):
+        self.puppetView.scale(0.8, 0.8)
+
+    @QtCore.pyqtSlot()
+    def onZoomResetPuppet(self):
+        self.puppetView.resetTransform()
+
 
 class EffectAnimatorWidget(BaseAnimatorWidget):
     def __init__(self):
@@ -1357,6 +1373,10 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
         self.puppetsTree.currentItemChanged.connect(self.onPuppetTreeChange)
         self.puppetsTree.itemDoubleClicked.connect(self.onPuppetTreeDoubleClick)
         self.puppetsTree.customContextMenuRequested.connect(self.onPuppetTreeContextMenu)
+
+        self.btn_zoomInP.clicked.connect(self.onZoomInPuppet)
+        self.btn_zoomOutP.clicked.connect(self.onZoomOutPuppet)
+        self.btn_zoomResetP.clicked.connect(self.onZoomResetPuppet)
 
         self.btn_reloadSprite.clicked.connect(self.onRefresh)
 
@@ -2235,3 +2255,15 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
     def onRefresh(self):
         self.animatorView.animator.refresh()
         self.puppetView.animator.refresh()
+
+    @QtCore.pyqtSlot()
+    def onZoomInPuppet(self):
+        self.puppetView.scale(1.25, 1.25)
+
+    @QtCore.pyqtSlot()
+    def onZoomOutPuppet(self):
+        self.puppetView.scale(0.8, 0.8)
+
+    @QtCore.pyqtSlot()
+    def onZoomResetPuppet(self):
+        self.puppetView.resetTransform()
