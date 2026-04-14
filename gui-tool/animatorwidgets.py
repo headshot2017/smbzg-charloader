@@ -326,10 +326,19 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
             actionRename = menu.addAction("Rename")
             actionDuplicate = menu.addAction("Duplicate")
             menu.addSeparator()
+            actionMoveUp = menu.addAction("Move up")
+            actionMoveDown = menu.addAction("Move down")
+            menu.addSeparator()
+
             actionRename.triggered.connect(self.onMenuActionRename)
             actionDuplicate.triggered.connect(self.onMenuActionDuplicateAnim)
+            actionMoveUp.triggered.connect(self.onMenuActionMoveUpAnim)
+            actionMoveDown.triggered.connect(self.onMenuActionMoveDownAnim)
+
             actionRename.setData(item)
             actionDuplicate.setData(item)
+            actionMoveUp.setData(item)
+            actionMoveDown.setData(item)
 
         elif item.itemLevel == 1: # frame
             actionCut = menu.addAction("Cut")
@@ -459,6 +468,42 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
                 newAnimsDict[newName] = copy.deepcopy(characterdata.jsonFile["anims"][anim])
 
         characterdata.jsonFile["anims"] = newAnimsDict
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveUpAnim(self):
+        item = self.sender().data()
+        animName = item.text(0)
+        keyList = [k for k in characterdata.jsonFile["anims"].keys()]
+        animInd = keyList.index(animName)
+        if animInd == 0: return
+
+        animKey = keyList.pop(animInd)
+        keyList.insert(animInd-1, animKey)
+
+        newAnimsDict = {}
+        for anim in keyList:
+            newAnimsDict[anim] = characterdata.jsonFile["anims"][anim]
+        characterdata.jsonFile["anims"] = newAnimsDict
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveDownAnim(self):
+        item = self.sender().data()
+        animName = item.text(0)
+        keyList = [k for k in characterdata.jsonFile["anims"].keys()]
+        animInd = keyList.index(animName)
+        if animInd >= len(keyList)-1: return
+
+        animKey = keyList.pop(animInd)
+        keyList.insert(animInd+1, animKey)
+
+        newAnimsDict = {}
+        for anim in keyList:
+            newAnimsDict[anim] = characterdata.jsonFile["anims"][anim]
+        characterdata.jsonFile["anims"] = newAnimsDict
+
         self.reloadTree()
 
     @QtCore.pyqtSlot()
@@ -955,10 +1000,19 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
             actionRename = menu.addAction("Rename")
             actionDuplicate = menu.addAction("Duplicate")
             menu.addSeparator()
+            actionMoveUp = menu.addAction("Move up")
+            actionMoveDown = menu.addAction("Move down")
+            menu.addSeparator()
+
             actionRename.triggered.connect(self.onMenuActionRename)
             actionDuplicate.triggered.connect(self.onMenuActionDuplicateAnim)
+            actionMoveUp.triggered.connect(self.onMenuActionMoveUpAnim)
+            actionMoveDown.triggered.connect(self.onMenuActionMoveDownAnim)
+
             actionRename.setData(item)
             actionDuplicate.setData(item)
+            actionMoveUp.setData(item)
+            actionMoveDown.setData(item)
 
         elif item.itemLevel == 1:
             actionCut = menu.addAction("Cut")
@@ -1048,6 +1102,42 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
                 newFxDict[newName] = copy.deepcopy(characterdata.jsonFile["effects"][fx])
 
         characterdata.jsonFile["effects"] = newFxDict
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveUpAnim(self):
+        item = self.sender().data()
+        fxName = item.text(0)
+        keyList = [k for k in characterdata.jsonFile["effects"].keys()]
+        fxInd = keyList.index(fxName)
+        if fxInd == 0: return
+
+        fxKey = keyList.pop(fxInd)
+        keyList.insert(fxInd-1, fxKey)
+
+        newFxDict = {}
+        for fx in keyList:
+            newFxDict[fx] = characterdata.jsonFile["effects"][fx]
+        characterdata.jsonFile["effects"] = newFxDict
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveDownAnim(self):
+        item = self.sender().data()
+        fxName = item.text(0)
+        keyList = [k for k in characterdata.jsonFile["effects"].keys()]
+        fxInd = keyList.index(fxName)
+        if fxInd >= len(keyList)-1: return
+
+        fxKey = keyList.pop(fxInd)
+        keyList.insert(fxInd+1, fxKey)
+
+        newFxDict = {}
+        for fx in keyList:
+            newFxDict[fx] = characterdata.jsonFile["effects"][fx]
+        characterdata.jsonFile["effects"] = newFxDict
+
         self.reloadTree()
 
     @QtCore.pyqtSlot()
@@ -1632,10 +1722,19 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
             actionRename = menu.addAction("Rename")
             actionDuplicate = menu.addAction("Duplicate")
             menu.addSeparator()
+            actionMoveUp = menu.addAction("Move up")
+            actionMoveDown = menu.addAction("Move down")
+            menu.addSeparator()
+
             actionRename.triggered.connect(self.onMenuActionRename)
             actionDuplicate.triggered.connect(self.onMenuActionDuplicateAnim)
+            actionMoveUp.triggered.connect(self.onMenuActionMoveUpAnim)
+            actionMoveDown.triggered.connect(self.onMenuActionMoveDownAnim)
+
             actionRename.setData(item)
             actionDuplicate.setData(item)
+            actionMoveUp.setData(item)
+            actionMoveDown.setData(item)
 
         elif item.itemLevel == 2:
             actionCut = menu.addAction("Cut")
@@ -1779,6 +1878,50 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
                 newAnimsDict[newName] = copy.deepcopy(companion["anims"][anim])
 
         companion["anims"] = newAnimsDict
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveUpAnim(self):
+        item = self.sender().data()
+        animName = item.text(0)
+        companionTree = item.parent()
+        companionName = companionTree.text(0)
+        companion = characterdata.companionJson[companionName]
+
+        keyList = [k for k in companion["anims"].keys()]
+        animInd = keyList.index(animName)
+        if animInd == 0: return
+
+        animKey = keyList.pop(animInd)
+        keyList.insert(animInd-1, animKey)
+
+        newAnimsDict = {}
+        for anim in keyList:
+            newAnimsDict[anim] = companion["anims"][anim]
+        companion["anims"] = newAnimsDict
+
+        self.reloadTree()
+
+    @QtCore.pyqtSlot()
+    def onMenuActionMoveDownAnim(self):
+        item = self.sender().data()
+        animName = item.text(0)
+        companionTree = item.parent()
+        companionName = companionTree.text(0)
+        companion = characterdata.companionJson[companionName]
+
+        keyList = [k for k in companion["anims"].keys()]
+        animInd = keyList.index(animName)
+        if animInd >= len(keyList)-1: return
+
+        animKey = keyList.pop(animInd)
+        keyList.insert(animInd+1, animKey)
+
+        newAnimsDict = {}
+        for anim in keyList:
+            newAnimsDict[anim] = companion["anims"][anim]
+        companion["anims"] = newAnimsDict
+
         self.reloadTree()
 
     @QtCore.pyqtSlot()
