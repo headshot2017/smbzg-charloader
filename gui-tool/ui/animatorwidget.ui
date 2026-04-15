@@ -118,7 +118,14 @@
           </layout>
          </item>
          <item>
-          <widget class="AnimatorGraphicsView" name="animatorView"/>
+          <widget class="AnimatorGraphicsView" name="animatorView">
+           <property name="verticalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -290,7 +297,14 @@
           </layout>
          </item>
          <item>
-          <widget class="AnimatorGraphicsView" name="puppetView"/>
+          <widget class="AnimatorGraphicsView" name="puppetView">
+           <property name="verticalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy">
+            <enum>Qt::ScrollBarAlwaysOff</enum>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
