@@ -179,7 +179,7 @@ The frame will fail to display ingame unless fixed.</string>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_6">
-     <item>
+     <item alignment="Qt::AlignBottom">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Coordinate presets</string>
