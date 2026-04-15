@@ -336,8 +336,12 @@ class ActionTab_Frame(BaseActionTab):
         self.spinbox_y.valueChanged.connect(self.onChangeY)
         self.spinbox_w.valueChanged.connect(self.onChangeW)
         self.spinbox_h.valueChanged.connect(self.onChangeH)
+        self.btn_loadPreset.clicked.connect(self.onLoadPreset)
+        self.btn_savePreset.clicked.connect(self.onSavePreset)
+        self.btn_deletePreset.clicked.connect(self.onDeletePreset)
 
         self.checkSizeBounds()
+        self.reloadPresets()
 
         if self.frameSizesAreSet:
             differentValues = actionInfo[2] != jsonEditorRoot["defaultFrameSize"][0] or actionInfo[3] != jsonEditorRoot["defaultFrameSize"][1]
@@ -352,6 +356,14 @@ class ActionTab_Frame(BaseActionTab):
             self.actionInfo[0] + w > self.jsonEditorRoot["imgW"] or
             self.actionInfo[1] + h > self.jsonEditorRoot["imgH"]
         )
+
+    def reloadPresets(self):
+        self.combobox_presets.clear()
+        if "framePresets" not in self.jsonEditorRoot:
+            self.jsonEditorRoot["framePresets"] = {}
+
+        for preset in self.jsonEditorRoot["framePresets"]:
+            self.combobox_presets.addItem(preset)
 
     def changeBehavior(self, sizesLocked):
         singleSteps = [
@@ -410,6 +422,45 @@ class ActionTab_Frame(BaseActionTab):
     def onCheckboxChangeSize(self, value):
         on = value > 0
         self.changeBehavior(not on)
+
+    @QtCore.pyqtSlot()
+    def onLoadPreset(self):
+        if not self.combobox_presets.count() or\
+           self.combobox_presets.currentText() not in self.jsonEditorRoot["framePresets"]:
+            return
+
+        preset = self.combobox_presets.currentText()
+        self.spinbox_x.setValue(self.jsonEditorRoot["framePresets"][preset][0])
+        self.spinbox_y.setValue(self.jsonEditorRoot["framePresets"][preset][1])
+        self.spinbox_w.setValue(self.jsonEditorRoot["framePresets"][preset][2])
+        self.spinbox_h.setValue(self.jsonEditorRoot["framePresets"][preset][3])
+
+    @QtCore.pyqtSlot()
+    def onSavePreset(self):
+        current = self.combobox_presets.currentText() if self.combobox_presets.count() else ""
+
+        name, ok = QtWidgets.QInputDialog.getText(self, "Save preset", "Enter a name for this coordinate preset", QtWidgets.QLineEdit.Normal, current)
+        if not ok or not name: return
+
+        self.jsonEditorRoot["framePresets"][name] = [
+            self.spinbox_x.value(),
+            self.spinbox_y.value(),
+            self.spinbox_w.value(),
+            self.spinbox_h.value()
+        ]
+
+        self.reloadPresets()
+
+    @QtCore.pyqtSlot()
+    def onDeletePreset(self):
+        if not self.combobox_presets.count() or\
+           self.combobox_presets.currentText() not in self.jsonEditorRoot["framePresets"]:
+            return
+
+        preset = self.combobox_presets.currentText()
+        del self.jsonEditorRoot["framePresets"][preset]
+
+        self.reloadPresets()
 
 
 class ActionTab_Delay(BaseActionTab):
