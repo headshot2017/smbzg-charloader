@@ -600,7 +600,7 @@ class ActionTab_Sound(BaseActionTab):
     def legacyActionSetup(self):
         # CharLoader v1.2: new SoundAction class
         newAction = characterdata.defaultAction("sound")
-        newAction.sounds = [self.actionInfo]
+        newAction["sounds"] = [self.actionInfo]
 
         self.actionInfo = newAction
         self.action["sound"] = self.actionInfo
