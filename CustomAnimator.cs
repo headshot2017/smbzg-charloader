@@ -536,6 +536,10 @@ public class CustomAnimator : MonoBehaviour
             {
                 if (m_Ended) Play(p.OnGround ? ASN_Hurt : p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
             }
+            else if (m_CurrentAnimation.hash == ASN_Hurt)
+            {
+                if (m_Ended && !p.OnGround) Play(p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
+            }
             else if (m_CurrentAnimation.hash == ASN_Hurt_AirUpwards || m_CurrentAnimation.hash == ASN_Hurt_AirDownwards)
             {
                 Play(p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
@@ -544,7 +548,7 @@ public class CustomAnimator : MonoBehaviour
             {
                 if (m_Ended) Play(p.OnGround ? ASN_Grounded : p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
             }
-            else if (m_CurrentAnimation.hash == ASN_Hurt || m_CurrentAnimation.hash == ASN_Grounded || m_CurrentAnimation.hash == ASN_GetUp)
+            else if (m_CurrentAnimation.hash == ASN_Grounded || m_CurrentAnimation.hash == ASN_GetUp)
             {
                 if (m_Ended)
                 {
