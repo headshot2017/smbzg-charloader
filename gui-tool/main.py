@@ -1,13 +1,13 @@
 from PyQt5 import QtWidgets
 from pygame import mixer
 
-import gamepath
+import game
 from mainwindow import GUIToolMainWindow
 
 app = QtWidgets.QApplication([])
 mixer.init()
 
-if not gamepath.init():
+if not game.init():
     quit()
 
 window = GUIToolMainWindow()

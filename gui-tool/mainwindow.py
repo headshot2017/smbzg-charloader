@@ -3,7 +3,7 @@ import webbrowser
 
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
-import gamepath
+import game
 import characterdata
 import commandwidget
 
@@ -99,7 +99,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             self.tabWidget.setTabEnabled(i, True)
 
     def loadCharacter(self, name):
-        if not os.path.exists("%s/character.json" % gamepath.getCharacterPath(name)):
+        if not os.path.exists("%s/character.json" % game.getCharacterPath(name)):
             return
 
         self.reset()
@@ -198,11 +198,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.tab_anims.onRefresh()
 
     def refreshPortrait(self):
-        portrait = "%s/portrait.png" % gamepath.getCharacterPath(characterdata.name)
+        portrait = "%s/portrait.png" % game.getCharacterPath(characterdata.name)
         self.lbl_portrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else "images/default_portrait.png"))
 
     def refreshBattlePortrait(self):
-        portrait = "%s/battleportrait.png" % gamepath.getCharacterPath(characterdata.name)
+        portrait = "%s/battleportrait.png" % game.getCharacterPath(characterdata.name)
         self.lbl_battlePortrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else "images/default_portrait.png"))
 
     def addCommand(self, commandInJson):
@@ -331,7 +331,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def onOpenFolder(self):
-        webbrowser.open(gamepath.getCharacterPath(characterdata.name))
+        webbrowser.open(game.getCharacterPath(characterdata.name))
 
     @QtCore.pyqtSlot()
     def onAddCommand(self):
@@ -371,7 +371,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         charName, ok = QtWidgets.QInputDialog.getText(self, "New character", "Enter the character's folder name.\n\nThis name will also be used for the character's internal name in SMBZ-G.")
         if not ok: return
 
-        path = gamepath.getCharacterPath(charName)
+        path = game.getCharacterPath(charName)
 
         if os.path.exists(path) and os.path.exists(path+"/character.json"):
             result = QtWidgets.QMessageBox.warning(self, "Warning",
@@ -424,7 +424,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def onActionOpen(self):
-        fileName, type = QtWidgets.QFileDialog.getOpenFileName(self, "Open character.json", gamepath.customCharsPath, "JSON (*.json)")
+        fileName, type = QtWidgets.QFileDialog.getOpenFileName(self, "Open character.json", game.customCharsPath, "JSON (*.json)")
         if not fileName: return
 
         charName = os.path.basename(os.path.dirname(fileName))

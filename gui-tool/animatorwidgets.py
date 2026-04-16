@@ -3,7 +3,7 @@ import copy
 
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
-import gamepath
+import game
 import characterdata
 import actiontabs
 import frameClipboard
@@ -759,7 +759,7 @@ class CharacterAnimatorWidget(BaseAnimatorWidget):
 
     @QtCore.pyqtSlot()
     def onRefresh(self):
-        path = gamepath.getCharacterPath(characterdata.name)
+        path = game.getCharacterPath(characterdata.name)
 
         for view in [self.animatorView, self.puppetView]:
             view.animator.globalOffset = characterdata.jsonFile["general"]["offset"]["ingame"]
@@ -804,7 +804,7 @@ class EffectAnimatorWidget(BaseAnimatorWidget):
 
     def refreshFx(self):
         if not self.currentFx: return
-        path = gamepath.getCharacterPath(characterdata.name)
+        path = game.getCharacterPath(characterdata.name)
         fx = characterdata.jsonFile["effects"][self.currentFx]
 
         self.animatorView.reloadSprite("%s/effects/%s.png" % (path, fx["texture"] if "texture" in fx else ""))
@@ -1388,7 +1388,7 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
 
     def setCompanionSprite(self, view, companionName):
         companion = characterdata.companionJson[companionName]
-        path = gamepath.getCharacterPath(characterdata.name)
+        path = game.getCharacterPath(characterdata.name)
 
         view.reloadSprite("%s/companions/%s/sheet.png" % (path, companionName))
         companion["editor"]["imgW"] = view.animator.fullPixmap.size().width()

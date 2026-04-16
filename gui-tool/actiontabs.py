@@ -4,7 +4,7 @@ import webbrowser
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
 import characterdata
-import gamepath
+import game
 
 
 class BaseActionTab(QtWidgets.QWidget):
@@ -181,7 +181,7 @@ class ActionTab_GeneralEffect(BaseActionTab):
 
     @QtCore.pyqtSlot()
     def onOpenEffectsFolder(self):
-        path = gamepath.getCharacterPath(characterdata.name)
+        path = game.getCharacterPath(characterdata.name)
         webbrowser.open("%s/effects" % path)
 
     @QtCore.pyqtSlot()
@@ -262,7 +262,7 @@ class ActionTab_Companion(BaseActionTab):
 
     @QtCore.pyqtSlot()
     def onOpenCompanionFolder(self):
-        path = gamepath.getCharacterPath(characterdata.name)
+        path = game.getCharacterPath(characterdata.name)
         webbrowser.open("%s/companions/%s" % (path, self.companionName))
 
     @QtCore.pyqtSlot(float)

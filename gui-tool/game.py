@@ -1,14 +1,16 @@
 import os
 
+import clr
 from PyQt5 import QtWidgets
 
 
+assembly = None
 smbzgPath = ""
 customCharsPath = ""
 
 
 def init():
-    global smbzgPath, customCharsPath
+    global assembly, smbzgPath, customCharsPath
 
     if os.path.exists("smbzg-path.txt"):
         smbzgPath = open("smbzg-path.txt").read()
@@ -22,10 +24,15 @@ def init():
         open("smbzg-path.txt", "w").write(smbzgPath)
 
     customCharsPath = "%s/SMBZ-G_Data/StreamingAssets/CustomChars" % smbzgPath
+
+    assembly = clr.AddReference("%s/SMBZ-G_Data/Managed/Assembly-CSharp" % smbzgPath)
+    if not assembly:
+        return False
+
     return True
 
 def getCharacterPath(name):
-    return "%s/SMBZ-G_Data/StreamingAssets/CustomChars/%s" % (smbzgPath, name)
+    return "%s/%s" % (customCharsPath, name)
 
 def askGamePath():
     fileName, type = QtWidgets.QFileDialog.getOpenFileName(None, "Find SMBZ-G.exe", ".", "SMBZ-G.exe")

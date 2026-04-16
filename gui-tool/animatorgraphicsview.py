@@ -2,7 +2,6 @@ import random
 
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
-import gamepath
 import characterdata
 import easing
 

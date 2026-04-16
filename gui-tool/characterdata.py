@@ -5,7 +5,7 @@ import copy
 
 from pygame import mixer
 
-import gamepath
+import game
 
 
 name = ""
@@ -162,12 +162,12 @@ def defaultCompanion():
     }
 
 def createCompanionDir(companionName):
-    path = gamepath.getCharacterPath(name)
+    path = game.getCharacterPath(name)
     companionPath = "%s/companions/%s" % (path, companionName)
     if not os.path.exists(companionPath): os.makedirs(companionPath)
 
 def deleteCompanion(companionName):
-    path = gamepath.getCharacterPath(name)
+    path = game.getCharacterPath(name)
     companionPath = "%s/companions/%s" % (path, companionName)
 
     if os.path.exists(companionPath): shutil.rmtree(companionPath)
@@ -176,7 +176,7 @@ def deleteCompanion(companionName):
 def reloadEffects():
     global effects
 
-    path = gamepath.getCharacterPath(name)
+    path = game.getCharacterPath(name)
     effects = os.listdir("%s/effects" % path) if os.path.exists("%s/effects" % path) else []
 
 def reset(defaultName=""):
@@ -192,7 +192,7 @@ def load(charName):
 
     reset()
 
-    path = gamepath.getCharacterPath(charName)
+    path = game.getCharacterPath(charName)
 
     name = charName
     jsonFile = json.load(open("%s/character.json" % path))
@@ -216,7 +216,7 @@ def save():
     if not name:
         return False
 
-    path = gamepath.getCharacterPath(name)
+    path = game.getCharacterPath(name)
     json.dump(jsonFile, open("%s/character.json" % path, "w"), indent=2)
 
     for companion in companionJson:
