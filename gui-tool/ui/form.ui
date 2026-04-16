@@ -145,9 +145,6 @@ Create a new character or open an existing character from the File menu to get s
                 <property name="pixmap">
                  <pixmap>../images/default_portrait.png</pixmap>
                 </property>
-                <property name="scaledContents">
-                 <bool>false</bool>
-                </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
                 </property>
@@ -213,13 +210,24 @@ Create a new character or open an existing character from the File menu to get s
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="toolTip">
+                 <string>To use a custom platform, place &quot;platform.png&quot; in the custom character's folder.
+Image must be 80x32.
+See images/platform_template.png for an example.</string>
+                </property>
                 <property name="text">
                  <string>Character selection platform</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="combobox_platform"/>
+               <widget class="QComboBox" name="combobox_platform">
+                <property name="toolTip">
+                 <string>To use a custom platform, place &quot;platform.png&quot; in the custom character's folder.
+Image must be 80x32.
+See images/platform_template.png for an example.</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -276,6 +284,36 @@ Create a new character or open an existing character from the File menu to get s
               </item>
               <item>
                <widget class="QComboBox" name="combobox_battlePortraitFilter">
+                <item>
+                 <property name="text">
+                  <string>Point</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Bilinear</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Trilinear</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_16">
+              <item alignment="Qt::AlignHCenter">
+               <widget class="QLabel" name="label_15">
+                <property name="text">
+                 <string>platform.png texture filter</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="combobox_platformFilter">
                 <item>
                  <property name="text">
                   <string>Point</string>

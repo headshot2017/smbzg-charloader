@@ -80,6 +80,10 @@ public class CharacterCompanion
 
     // v1.6
     public List<Sprite> puppets;
+
+    // v1.10.0
+    public bool isForm;
+    public Sprite platform;
 }
 
 public class CustomCharacter

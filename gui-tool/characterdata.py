@@ -165,6 +165,8 @@ def createCompanionDir(companionName):
     path = game.getCharacterPath(name)
     companionPath = "%s/companions/%s" % (path, companionName)
     if not os.path.exists(companionPath): os.makedirs(companionPath)
+    open(companionPath+"/portrait.png", "wb").write(open("images/default_portrait_unbalanced.png", "rb").read())
+    open(companionPath+"/battleportrait.png", "wb").write(open("images/default_battleportrait.png", "rb").read())
 
 def deleteCompanion(companionName):
     path = game.getCharacterPath(name)
@@ -212,6 +214,11 @@ def load(charName):
 
     return jsonFile
 
+def saveCompanion(companion):
+    companionPath = "%s/companions/%s" % (game.getCharacterPath(name), companion)
+    if not os.path.exists(companionPath): os.makedirs(companionPath)
+    json.dump(companionJson[companion], open("%s/companion.json" % companionPath, "w"), indent=2)
+
 def save():
     if not name:
         return False
@@ -220,8 +227,6 @@ def save():
     json.dump(jsonFile, open("%s/character.json" % path, "w"), indent=2)
 
     for companion in companionJson:
-        companionPath = "%s/companions/%s" % (path, companion)
-        if not os.path.exists(companionPath): os.makedirs(companionPath)
-        json.dump(companionJson[companion], open("%s/companion.json" % companionPath, "w"), indent=2)
+        saveCompanion(companion)
 
     return True

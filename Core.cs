@@ -882,11 +882,24 @@ namespace CharLoader
                     __instance.SelectedCharacterDisplay.gameObject.GetComponentInChildren<Image>().color = new Color(1f, 1f, 1f, 0.5f);
                     __instance.Label_SelectedCharacter.color = new Color(1f, 1f, 1f, 0.5f);
                     __instance.Label_SelectedCharacter.text = BattleCache.Character_GetDisplayName(characterData.Character);
-                    __instance.CharacterPlatform.Play(characterData.Platform.ToString());
+
+                    if ((int)characterData.Platform == 1000)
+                    {
+                        __instance.CharacterPlatform.enabled = false;
+                        __instance.CharacterPlatform.gameObject.GetComponentInChildren<Image>().sprite = cc.rootCharacter.platform;
+                    }
+                    else
+                    {
+                        __instance.CharacterPlatform.enabled = true;
+                        __instance.CharacterPlatform.Play(characterData.Platform.ToString());
+                    }
+
+                    __instance.GetType().GetField("shouldResetFormList", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(__instance, true);
 
                     return false;
                 }
 
+                __instance.CharacterPlatform.enabled = true;
                 return true;
             }
         }
@@ -918,9 +931,24 @@ namespace CharLoader
                     c.m_OriginalAnimator = imageObj.GetComponent<Animator>();
                     c.IgnoreColorAction = true;
                     c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.Find("Image").gameObject, cc.charSelectOffset, cc.charSelectScale);
+                    break;
                 }
 
                 return true;
+            }
+
+            private static void Postfix(UI_Participant __instance, CharacterData_SO characterData)
+            {
+                foreach (CustomCharacter cc in customCharacters)
+                {
+                    if (cc.characterData != characterData) continue;
+
+                    if ((int)characterData.Platform == 1000)
+                    {
+                        __instance.CharacterPlatform.enabled = false;
+                        __instance.CharacterPlatform.gameObject.GetComponentInChildren<Image>().sprite = cc.rootCharacter.platform;
+                    }
+                }
             }
         }
 

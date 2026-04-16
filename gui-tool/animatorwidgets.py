@@ -1696,12 +1696,15 @@ class CompanionAnimatorWidget(BaseAnimatorWidget):
                     "Would you like to add all base character animation entries to this companion?\n" + 
                     "\n" +
                     "If you're making a transformation for the base character, click Yes\n" +
-                    "If you're making an NPC, click No",
+                    "If you're making an NPC or projectile, click No",
                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
                 )
 
                 if result == QtWidgets.QMessageBox.Yes:
                     self.addNecessaryAnimations(companionTree)
+                    characterdata.companionJson[name]["general"]["isForm"] = True
+
+                characterdata.saveCompanion(name)
 
                 self.populateCompanionTab(name)
                 QtWidgets.QMessageBox.information(self, "Done", "Companion '%s' created.\nYou must add a sprite sheet image in the companion folder, named 'sheet.png'." % name)

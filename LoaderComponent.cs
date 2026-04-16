@@ -62,6 +62,13 @@ public class CharLoaderComponent : MonoBehaviour
             texture.filterMode = (general.Keys.Contains("battlePortraitFilter")) ? filterModes[general["battlePortraitFilter"]] : FilterMode.Point;
             cc.battlePortrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
 
+            if (File.Exists($"{path}/platform.png"))
+            {
+                yield return TextureDownload($"{path}/platform.png");
+                texture.filterMode = (general.Keys.Contains("platformFilter")) ? filterModes[general["platformFilter"]] : FilterMode.Point;
+                cc.rootCharacter.platform = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
+            }
+
             cc.sounds = new Dictionary<string, AudioClip>();
             if (Directory.Exists($"{path}/sounds"))
             {
@@ -176,7 +183,11 @@ public class CharLoaderComponent : MonoBehaviour
             if (general.Keys.Contains("unbalanced"))
                 Data.IsUnbalanced = general["unbalanced"];
 
-            if (general.Keys.Contains("platform"))
+            if (cc.rootCharacter.platform)
+            {
+                Data.Platform = (BattleCache.PlatformEnum)1000;
+            }
+            else if (general.Keys.Contains("platform"))
             {
                 int platform = general["platform"];
                 Data.Platform = (BattleCache.PlatformEnum)platform;
@@ -342,6 +353,15 @@ public class CharLoaderComponent : MonoBehaviour
                     yield return TextureDownload($"{companionPath}/sheet.png");
                     texture.filterMode = (companionGeneral.Keys.Contains("sheetFilter")) ? filterModes[companionGeneral["sheetFilter"]] : FilterMode.Point;
                     companion.sheet = texture;
+
+                    if (File.Exists($"{companionPath}/platform.png"))
+                    {
+                        yield return TextureDownload($"{companionPath}/platform.png");
+                        texture.filterMode = (companionGeneral.Keys.Contains("platformFilter")) ? filterModes[companionGeneral["platformFilter"]] : FilterMode.Point;
+                        companion.platform = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
+                    }
+
+                    companion.isForm = companionGeneral.Keys.Contains("isForm") && companionGeneral["isForm"];
 
                     companion.prefab = GameObject.Instantiate(CharPrefab);
                     companion.prefab.name = companionName;

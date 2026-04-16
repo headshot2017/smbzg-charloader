@@ -240,25 +240,52 @@ class ActionTab_Companion(BaseActionTab):
 
         self.companionName = companionName
         self.companion = characterdata.companionJson[companionName]
+        path = game.getCharacterPath(characterdata.name)
 
+        self.lbl_portrait.setImages("%s/companions/%s/portrait.png" % (path, self.companionName), "images/default_portrait_unbalanced.png")
+        self.lbl_battlePortrait.setImages("%s/companions/%s/battleportrait.png" % (path, self.companionName), "images/default_portrait_unbalanced.png")
+        for platform in game.assembly.GetType("BattleCache").GetMember("PlatformEnum")[0].GetEnumNames():
+            self.combobox_platform.addItem(platform)
+
+
+        # JSON values
+
+        # General tab
+        self.combobox_sheetFilter.setCurrentIndex(self.companion.get("general", {}).get("sheetFilter", 0))
         self.spinbox_offsetX.setValue(self.companion.get("general", {}).get("offset", [0, 0])[0])
         self.spinbox_offsetY.setValue(self.companion.get("general", {}).get("offset", [0, 0])[1])
         self.spinbox_scale.setValue(self.companion.get("general", {}).get("scale", 0.4))
-        self.combobox_sheetFilter.setCurrentIndex(self.companion.get("general", {}).get("sheetFilter", 0))
         self.spinbox_defaultW.setValue(jsonEditorRoot["defaultFrameSize"][0] if "defaultFrameSize" in jsonEditorRoot else 0)
         self.spinbox_defaultH.setValue(jsonEditorRoot["defaultFrameSize"][1] if "defaultFrameSize" in jsonEditorRoot else 0)
         self.spinbox_spacingX.setValue(jsonEditorRoot["spriteSpacing"][0] if "spriteSpacing" in jsonEditorRoot else 0)
         self.spinbox_spacingY.setValue(jsonEditorRoot["spriteSpacing"][1] if "spriteSpacing" in jsonEditorRoot else 0)
 
+        # Transformation tab
+        self.checkbox_isForm.setChecked(self.companion.get("general", {}).get("isForm", False))
+        self.lineEdit_displayName.setText(self.companion.get("general", {}).get("displayName", ""))
+        self.combobox_platform.setCurrentIndex(self.companion.get("general", {}).get("platform", 0))
+        self.combobox_battlePortraitFilter.setCurrentIndex(self.companion.get("general", {}).get("battlePortraitFilter", 0))
+        self.combobox_platformFilter.setCurrentIndex(self.companion.get("general", {}).get("platformFilter", 0))
+
+        # Qt signals
+
+        # General tab
         self.btn_openFolder.clicked.connect(self.onOpenCompanionFolder)
+        self.combobox_sheetFilter.currentIndexChanged.connect(self.onSheetFilterChanged)
         self.spinbox_offsetX.valueChanged.connect(self.onChangeOffsetX)
         self.spinbox_offsetY.valueChanged.connect(self.onChangeOffsetY)
         self.spinbox_scale.valueChanged.connect(self.onChangeScale)
-        self.combobox_sheetFilter.currentIndexChanged.connect(self.onSheetFilterChanged)
         self.spinbox_defaultW.valueChanged.connect(self.onDefaultWChanged)
         self.spinbox_defaultH.valueChanged.connect(self.onDefaultHChanged)
         self.spinbox_spacingX.valueChanged.connect(self.onSpacingXChanged)
         self.spinbox_spacingY.valueChanged.connect(self.onSpacingYChanged)
+
+        # Transformation tab
+        self.checkbox_isForm.stateChanged.connect(self.onChangeIsForm)
+        self.lineEdit_displayName.textChanged.connect(self.onDisplayNameChanged)
+        self.combobox_platform.currentIndexChanged.connect(self.onPlatformChanged)
+        self.combobox_battlePortraitFilter.currentIndexChanged.connect(self.onBattlePortraitFilterChanged)
+        self.combobox_platformFilter.currentIndexChanged.connect(self.onPlatformFilterChanged)
 
     @QtCore.pyqtSlot()
     def onOpenCompanionFolder(self):
@@ -310,6 +337,33 @@ class ActionTab_Companion(BaseActionTab):
     def onSpacingYChanged(self, value):
         self.jsonEditorRoot["spriteSpacing"][1] = value
         self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onChangeIsForm(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        self.companion["general"]["isForm"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(str)
+    def onDisplayNameChanged(self, text):
+        if "general" not in self.companion: self.companion["general"] = {}
+        self.companion["general"]["displayName"] = text
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(int)
+    def onPlatformChanged(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        self.companion["general"]["platform"] = value
+
+    @QtCore.pyqtSlot(int)
+    def onBattlePortraitFilterChanged(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        self.companion["general"]["battlePortraitFilter"] = value
+
+    @QtCore.pyqtSlot(int)
+    def onPlatformFilterChanged(self, value):
+        if "general" not in self.companion: self.companion["general"] = {}
+        self.companion["general"]["platformFilter"] = value
 
 
 class ActionTab_Frame(BaseActionTab):

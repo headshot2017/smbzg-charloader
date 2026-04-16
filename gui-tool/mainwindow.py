@@ -22,12 +22,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.actionPrintJson.triggered.connect(self.onActionPrintJson)
         self.actionQuit.triggered.connect(self.onActionQuit)
 
-        self.lbl_portrait.clicked.connect(self.onPortraitClicked)
-        self.lbl_battlePortrait.clicked.connect(self.onPortraitClicked)
         self.lineEdit_displayName.textChanged.connect(self.onDisplayNameChanged)
         self.combobox_platform.currentIndexChanged.connect(self.onPlatformChanged)
         self.combobox_sheetFilter.currentIndexChanged.connect(self.onSheetFilterChanged)
         self.combobox_battlePortraitFilter.currentIndexChanged.connect(self.onBattlePortraitFilterChanged)
+        self.combobox_platformFilter.currentIndexChanged.connect(self.onPlatformFilterChanged)
         self.checkbox_unbalanced.stateChanged.connect(self.onUnbalancedChanged)
         self.spinbox_scale_charselect.valueChanged.connect(self.onScaleCharSelectChanged)
         self.spinbox_scale_results.valueChanged.connect(self.onScaleResultsChanged)
@@ -63,12 +62,11 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     def reset(self, charName=""):
         characterdata.reset(charName)
 
-        self.refreshPortrait()
-        self.refreshBattlePortrait()
         self.lineEdit_displayName.clear()
         self.combobox_platform.setCurrentIndex(0)
         self.combobox_sheetFilter.setCurrentIndex(0)
         self.combobox_battlePortraitFilter.setCurrentIndex(0)
+        self.combobox_platformFilter.setCurrentIndex(0)
         self.checkbox_unbalanced.setChecked(False)
         self.spinbox_scale_charselect.setValue(characterdata.jsonFile["general"]["scale"]["charSelect"])
         self.spinbox_scale_results.setValue(characterdata.jsonFile["general"]["scale"]["results"])
@@ -109,9 +107,6 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
 
         jsonFile = characterdata.load(name)
 
-        self.refreshPortrait()
-        self.refreshBattlePortrait()
-
         # v1.6: Puppet animation
         if "puppets" not in jsonFile:
             jsonFile["puppets"] = {}
@@ -143,6 +138,8 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
                 self.combobox_sheetFilter.setCurrentIndex(general["sheetFilter"])
             if "battlePortraitFilter" in general:
                 self.combobox_battlePortraitFilter.setCurrentIndex(general["battlePortraitFilter"])
+            if "platformFilter" in general:
+                self.combobox_platformFilter.setCurrentIndex(general["platformFilter"])
             if "scale" in general:
                 scale = general["scale"]
                 if "charSelect" in scale:
@@ -198,15 +195,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             for command in commandList:
                 cmdWidget = self.addCommand(command)
 
+        self.lbl_portrait.setImages("%s/portrait.png" % game.getCharacterPath(characterdata.name))
+        self.lbl_battlePortrait.setImages("%s/battleportrait.png" % game.getCharacterPath(characterdata.name))
+
         self.tab_anims.onRefresh()
-
-    def refreshPortrait(self):
-        portrait = "%s/portrait.png" % game.getCharacterPath(characterdata.name)
-        self.lbl_portrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else "images/default_portrait.png"))
-
-    def refreshBattlePortrait(self):
-        portrait = "%s/battleportrait.png" % game.getCharacterPath(characterdata.name)
-        self.lbl_battlePortrait.setPixmap(QtGui.QPixmap(portrait if os.path.exists(portrait) else "images/default_portrait.png"))
 
     def addCommand(self, commandInJson):
         cmdWidget = commandwidget.AttackCommandWidget(self, commandInJson)
@@ -217,11 +209,6 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         self.cmdlist_scrollContents.layout().addWidget(cmdWidget)
         return cmdWidget
 
-
-    @QtCore.pyqtSlot(QtWidgets.QLabel)
-    def onPortraitClicked(self, label):
-        if label == self.lbl_portrait: self.refreshPortrait()
-        if label == self.lbl_battlePortrait: self.refreshBattlePortrait()
 
     @QtCore.pyqtSlot(str)
     def onDisplayNameChanged(self, text):
@@ -238,6 +225,10 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot(int)
     def onBattlePortraitFilterChanged(self, value):
         characterdata.jsonFile["general"]["battlePortraitFilter"] = value
+
+    @QtCore.pyqtSlot(int)
+    def onPlatformFilterChanged(self, value):
+        characterdata.jsonFile["general"]["platformFilter"] = value
 
     @QtCore.pyqtSlot(int)
     def onUnbalancedChanged(self, value):
@@ -410,6 +401,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         open(path+"/portrait.png", "wb").write(open("images/default_portrait.png", "rb").read())
         open(path+"/battleportrait.png", "wb").write(open("images/default_battleportrait.png", "rb").read())
 
+        self.lbl_portrait.setImages(path+"/portrait.png")
+        self.lbl_battlePortrait.setImages(path+"/battleportrait.png")
+
         characterdata.save()
 
         QtWidgets.QMessageBox.information(self, "Done",
@@ -420,6 +414,7 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
             "* OPTIONAL: Add custom sounds to the 'sounds' directory: .wav, .ogg and .mp3 files are accepted\n" +
             "* OPTIONAL: Add custom music to the 'music' directory: .wav, .ogg and .mp3 files are accepted\n" +
             "* OPTIONAL: Add custom particle images to the 'effects' directory: .png only\n" +
+            "* OPTIONAL: Add a custom platform for the character select screen as 'platform.png' (see images/platform_template.png)\n" +
             "* OPTIONAL: Add other sprites (such as inventory icons) to the 'icons' directory: .png only"
         )
 
