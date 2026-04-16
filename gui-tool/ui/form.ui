@@ -219,33 +219,7 @@ Create a new character or open an existing character from the File menu to get s
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="combobox_platform">
-                <item>
-                 <property name="text">
-                  <string>Super Mario World</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Doomship</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Yoshi's Island</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Goomba</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>Underground Maze</string>
-                 </property>
-                </item>
-               </widget>
+               <widget class="QComboBox" name="combobox_platform"/>
               </item>
              </layout>
             </item>

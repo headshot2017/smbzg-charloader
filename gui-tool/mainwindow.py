@@ -57,6 +57,9 @@ class GUIToolMainWindow(QtWidgets.QMainWindow):
         for i in range(1, self.tabWidget.count()):
             self.tabWidget.setTabEnabled(i, False)
 
+        for platform in game.assembly.GetType("BattleCache").GetMember("PlatformEnum")[0].GetEnumNames():
+            self.combobox_platform.addItem(platform)
+
     def reset(self, charName=""):
         characterdata.reset(charName)
 
