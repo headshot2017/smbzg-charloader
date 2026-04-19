@@ -663,6 +663,27 @@ public class CharLoaderComponent : MonoBehaviour
 
         action.callCustomQueue = actionVar.Keys.Contains("callCustomQueue");
 
+        // v1.10.0
+        if (actionVar.Keys.Contains("reinitHitbox")) action.reinitHitbox = true;
+        if (actionVar.Keys.Contains("comboLink")) action.comboLink = true;
+        if (actionVar.Keys.Contains("queueCinematics")) action.queueCinematics = true;
+        if (actionVar.Keys.Contains("velocityX"))
+        {
+            action.velocityX = new VelocityAction
+            {
+                vel = actionVar["velocityX"]["velocity"],
+                relative = actionVar["velocityX"]["relative"],
+            };
+        }
+        if (actionVar.Keys.Contains("velocityY"))
+        {
+            action.velocityY = new VelocityAction
+            {
+                vel = actionVar["velocityY"]["velocity"],
+                relative = actionVar["velocityY"]["relative"],
+            };
+        }
+
         action.delay = (actionVar.Keys.Contains("delay")) ? (float)actionVar["delay"] : 0;
 
         return action;

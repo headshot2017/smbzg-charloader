@@ -939,6 +939,85 @@ class ActionTab_Interpolation(BaseActionTab):
         self.valueChanged.emit()
 
 
+class ActionTab_ReinitHitbox(BaseActionTab):
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
+        uic.loadUi("ui/actiontab_reinitHitbox.ui", self)
+
+        self.actionInfo = actionInfo
+        self.action = action
+
+
+class ActionTab_ComboLink(BaseActionTab):
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
+        uic.loadUi("ui/actiontab_comboLink.ui", self)
+
+        self.actionInfo = actionInfo
+        self.action = action
+
+
+class ActionTab_QueueCinematics(BaseActionTab):
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
+        uic.loadUi("ui/actiontab_queueCinematics.ui", self)
+
+        self.actionInfo = actionInfo
+        self.action = action
+
+
+class ActionTab_VelocityX(BaseActionTab):
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
+        uic.loadUi("ui/actiontab_velocity.ui", self)
+
+        self.actionInfo = actionInfo
+        self.action = action
+
+        self.lbl_velocity.setText("X velocity")
+        self.checkbox_relative.setChecked(actionInfo["relative"])
+        self.spinbox_velocity.setValue(actionInfo["velocity"])
+
+        self.checkbox_relative.stateChanged.connect(self.onRelativeChanged)
+        self.spinbox_velocity.valueChanged.connect(self.onChangeVelocity)
+
+    @QtCore.pyqtSlot(int)
+    def onRelativeChanged(self, value):
+        self.actionInfo["relative"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeVelocity(self, value):
+        self.actionInfo["velocity"] = value
+        self.valueChanged.emit()
+
+
+class ActionTab_VelocityY(BaseActionTab):
+    def __init__(self, parent, jsonEditorRoot, actionInfo, action):
+        super().__init__(parent, jsonEditorRoot)
+        uic.loadUi("ui/actiontab_velocity.ui", self)
+
+        self.actionInfo = actionInfo
+        self.action = action
+
+        self.lbl_velocity.setText("Y velocity")
+        self.checkbox_relative.setChecked(actionInfo["relative"])
+        self.spinbox_velocity.setValue(actionInfo["velocity"])
+
+        self.checkbox_relative.stateChanged.connect(self.onRelativeChanged)
+        self.spinbox_velocity.valueChanged.connect(self.onChangeVelocity)
+
+    @QtCore.pyqtSlot(int)
+    def onRelativeChanged(self, value):
+        self.actionInfo["relative"] = value > 0
+        self.valueChanged.emit()
+
+    @QtCore.pyqtSlot(float)
+    def onChangeVelocity(self, value):
+        self.actionInfo["velocity"] = value
+        self.valueChanged.emit()
+
+
 class ActionDialog(QtWidgets.QDialog):
     def __init__(self, parent):
         super().__init__(parent)
@@ -1037,5 +1116,10 @@ actionTabsDict = {
     "hitbox": ActionTab_Hitbox,
     "callCustomQueue": ActionTab_CustomQueue,
     "puppets": ActionTab_Puppets,
-    "interpolation": ActionTab_Interpolation
+    "interpolation": ActionTab_Interpolation,
+    "reinitHitbox": ActionTab_ReinitHitbox,
+    "comboLink": ActionTab_ComboLink,
+    "queueCinematics": ActionTab_QueueCinematics,
+    "velocityX": ActionTab_VelocityX,
+    "velocityY": ActionTab_VelocityY
 }

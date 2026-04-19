@@ -35,6 +35,12 @@ public class PuppetAction
     public float angle;
 };
 
+public class VelocityAction
+{
+    public bool relative;
+    public float vel;
+}
+
 public class AnimAction
 {
     public Sprite frame = null;
@@ -49,6 +55,13 @@ public class AnimAction
     public bool callCustomQueue;
     public ActionInterpType interpolation;
     public float delay;
+
+    // v1.10.0
+    public bool reinitHitbox;
+    public bool comboLink;
+    public bool queueCinematics;
+    public VelocityAction velocityX = null;
+    public VelocityAction velocityY = null;
 }
 
 public class CustomAnimation

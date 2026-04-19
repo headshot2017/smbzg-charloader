@@ -26,7 +26,12 @@ __defaultaction = {
     "hitbox": {"on": False, "pos": [0, 0], "scale": [1, 1]},
     "callCustomQueue": True,
     "puppets": {},
-    "interpolation": 0
+    "interpolation": 0,
+    "reinitHitbox": True,
+    "comboLink": True,
+    "queueCinematics": True,
+    "velocityX": {"relative": False, "velocity": 0},
+    "velocityY": {"relative": False, "velocity": 0},
 }
 
 def defaultAction(name):

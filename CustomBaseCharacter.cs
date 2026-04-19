@@ -431,6 +431,7 @@ public class CustomBaseCharacter : BaseCharacter
         Comp_Animator.enabled = false;
         Comp_CustomAnimator.SetAnimList(cc.rootCharacter.animations, transform.Find("SpriteRenderer").gameObject, cc.rootCharacter.offset, cc.rootCharacter.scale, base.HitBox_0);
         Comp_CustomAnimator.IgnoreColorAction = true;
+        Comp_CustomAnimator.m_Character = this;
         Comp_CustomAnimator.m_GetUpTimer = cc.getUpTimer;
 
         if (cc.sounds.ContainsKey("jump")) SoundEffect_Jump = cc.sounds["jump"];

@@ -55,6 +55,7 @@ public class CustomAnimator : MonoBehaviour
     public bool IgnoreColorAction = false;
     public bool m_Ended { get; private set; }
     public int m_Frame { get; private set; }
+    public CustomBaseCharacter m_Character = null;
 
     // some Comp_Animator properties
     public class Properties
@@ -206,8 +207,20 @@ public class CustomAnimator : MonoBehaviour
             }
         }
 
+        if (currAction.reinitHitbox)
+        {
+            if (m_Hitbox != null) m_Hitbox.ReinitializeID();
+            if (m_HitboxProj != null) m_HitboxProj.ReinitializeID();
+        }
+
         if (m_CurrentAttack != null)
         {
+            if (currAction.queueCinematics && m_Character != null && m_CurrentAttack.CinematicEffects != null && m_CurrentAttack.CinematicEffects.Count > 0)
+            {
+                m_CurrentAttack.IsCinematicsQueued = true;
+                m_Character.Update_PreparedAttackCinematics();
+            }
+
             if (currAction.callCustomQueue && m_CurrentAttack.OnCustomQueue != null && m_CurrentAttack.CustomQueueCallCount < m_CurrentAttack.CustomQueueCallLimit)
                 m_CurrentAttack.ExecuteCustomQueue();
 
@@ -244,6 +257,27 @@ public class CustomAnimator : MonoBehaviour
                 puppetChild.transform.localScale = new Vector3(puppetAction.scale.x, puppetAction.scale.y, 1);
                 puppetChild.transform.localEulerAngles = new Vector3(0, 0, -puppetAction.angle);
             }
+        }
+
+        // v1.10.0
+        if (m_Character)
+        {
+            if (currAction.velocityX != null)
+            {
+                m_Character.SetVelocity(
+                    (currAction.velocityX.relative ? m_Character.GetVelocity().x : 0) + (currAction.velocityX.vel * m_Character.FaceDir),
+                    m_Character.GetVelocity().y
+                );
+            }
+            if (currAction.velocityY != null)
+            {
+                m_Character.SetVelocity(
+                    m_Character.GetVelocity().x,
+                    (currAction.velocityY.relative ? m_Character.GetVelocity().y : 0) + (currAction.velocityY.vel * m_Character.FaceDir)
+                );
+            }
+            if (currAction.comboLink)
+                m_Character.IsComboLinkAvailable = true;
         }
 
         if (currAction.sound != null && currAction.sound.sounds.Count > 0)
