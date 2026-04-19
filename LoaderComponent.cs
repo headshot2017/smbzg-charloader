@@ -1,9 +1,11 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 using MelonLoader;
 using TinyJSON;
 using System.Collections;
 using System.Reflection;
+using SMBZG.CharacterSelect;
 
 public class CharLoaderComponent : MonoBehaviour
 {
@@ -148,13 +150,47 @@ public class CharLoaderComponent : MonoBehaviour
             }
 
             CustomCharacterData_SO Data = ScriptableObject.CreateInstance<CustomCharacterData_SO>();
-            Data.Prefab_SpecialCharacterSettingsUI = BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI;
             Data.Character = (BattleCache.CharacterEnum)(1000 + CharLoader.Core.customCharacters.Count);
             Data.name = $"[CharacterData] {cc.internalName}";
             Data.DittoHue = BattleCache.ins.CharacterData_Mario.DittoHue;
             Data.DittoSaturation = BattleCache.ins.CharacterData_Mario.DittoSaturation;
             Data.DittoContrast = BattleCache.ins.CharacterData_Mario.DittoContrast;
             Data.Sprite_CharacterIcon = cc.portrait;
+
+
+            // Additional settings UI
+            Data.Prefab_SpecialCharacterSettingsUI = GameObject.Instantiate(BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI);
+            Data.Prefab_SpecialCharacterSettingsUI.name = $"UI_CharacterSettings_{cc.internalName}";
+
+            // Setup CharacterSetting_Custom
+            CharacterSetting setting = Data.Prefab_SpecialCharacterSettingsUI.GetComponent<CharacterSetting>();
+            Toggle oldToggle = setting.Toggle_UseAlternateColor;
+            TMPro.TextMeshProUGUI oldLabel = setting.Text_UnbalancedLabel;
+
+            GameObject.Destroy(setting);
+            setting = Data.Prefab_SpecialCharacterSettingsUI.AddComponent<CharacterSetting_Custom>();
+            setting.Toggle_UseAlternateColor = oldToggle;
+            setting.Text_UnbalancedLabel = oldLabel;
+
+            Transform list = Data.Prefab_SpecialCharacterSettingsUI.transform.Find("VerticalList");
+
+            // Alternate colors editor
+            GameObject editColors = GameObject.Instantiate(list.Find("AlternateColor").gameObject, list);
+            TMPro.TextMeshProUGUI text = editColors.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            Toggle toggle = editColors.GetComponentInChildren<Toggle>();
+            ButtonFunctions functions = editColors.GetComponentInChildren<ButtonFunctions>();
+            editColors.name = "EditAltColors";
+            text.text = "View alt. colors";
+            toggle.gameObject.name = "EditAltColors Toggle";
+
+            // Add options from JSON
+
+
+            // End
+
+            GameObject.DontDestroyOnLoad(Data.Prefab_SpecialCharacterSettingsUI);
+            Data.Prefab_SpecialCharacterSettingsUI.SetActive(false);
+
 
             if (general.Keys.Contains("colors"))
             {

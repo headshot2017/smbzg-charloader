@@ -1,10 +1,11 @@
-﻿using MelonLoader;
+﻿using HarmonyLib;
+using MelonLoader;
 using SMBZG;
 using SMBZG.CharacterSelect;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using HarmonyLib;
 
 [assembly: MelonInfo(typeof(CharLoader.Core), "CharLoader", "1.10.0", "Headshotnoby/headshot2017", null)]
 [assembly: MelonGame("Jonathan Miller aka Zethros", "SMBZ-G")]
@@ -67,6 +68,11 @@ namespace CharLoader
         public static List<CharacterData_SO> ArcadeModeLineupDisabledDefault;
         public static int LineupSelectedOn;
         public static int LineupSelectedOff;
+        public static string editingHSCname = "";
+        public static HueSaturationContrastAdjustment editingHSC = null;
+        public static Sprite UISprite;
+        public static TMPro.TMP_FontAsset LiberationSans;
+        public static TMPro.TMP_FontAsset SuperMario256;
 
         public string LastErrorMsg;
         public float BoxColorTimer;
@@ -166,6 +172,22 @@ namespace CharLoader
             GameObject.Destroy(originalBro);
             GameObject.Destroy(original);
 
+            editingHSC = null;
+            Sprite[] sprites = Resources.FindObjectsOfTypeAll<Sprite>();
+            foreach (Sprite sprite in sprites)
+            {
+                if (sprite.name == "UISprite")
+                    UISprite = sprite;
+            }
+
+            TMPro.TMP_FontAsset[] fonts = Resources.FindObjectsOfTypeAll<TMPro.TMP_FontAsset>();
+            foreach (TMPro.TMP_FontAsset font in fonts)
+            {
+                if (font.name == "LiberationSans SDF")
+                    LiberationSans = font;
+                else if (font.name == "SuperMario256 SDF")
+                    SuperMario256 = font;
+            }
 
             LoadCustomCharList();
         }
@@ -186,6 +208,16 @@ namespace CharLoader
             LastErrorMsg = msg;
             BoxColorTimer = 1f;
             BoxShowTimer = 5f;
+        }
+
+        public void ShowColorEditor(UI_Participant participantUI)
+        {
+            LoggerInstance.Msg($"show editor for {participantUI.name}");
+            CharacterData_SO character = (CharacterData_SO)participantUI.GetType().GetField("SelectedCharacter", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(participantUI);
+
+            LoggerInstance.Msg($"set it");
+            editingHSCname = BattleCache.Character_GetDisplayName(character.Character);
+            editingHSC = participantUI.SelectedCharacterDisplayHue;
         }
 
         public override void OnGUI()
@@ -282,6 +314,31 @@ namespace CharLoader
 
                 GUI.EndGroup();
             }
+
+            if (editingHSC && SceneManager.GetActiveScene().name == SceneConstants.CharacterSelect)
+            {
+                int x = Screen.width - Screen.width/4 - 32;
+                int y = Screen.height/2 - Screen.height/10;
+                int w = Screen.width/4;
+                int h = Screen.height/5;
+
+                GUI.BeginGroup(new Rect(x, y, w, h));
+                GUI.Box(new Rect(0, 0, w, h), $"{editingHSCname} alternate colors");
+
+                if (GUI.Button(new Rect(w-24-4, 4, 24, 24), "X"))
+                    editingHSC = null;
+
+                editingHSC.Hue = GUI.HorizontalSlider(new Rect(w/2-16, (h/3)*0.5f, w/2, h/3), editingHSC.Hue, -10f, 10f);
+                GUI.Label(new Rect(8, (h/3)*0.5f, w/2-16, h/3), $"Hue: {editingHSC.Hue:0.00}");
+
+                editingHSC.Saturation = GUI.HorizontalSlider(new Rect(w/2-16, (h/3)*1.5f, w/2, h/3), editingHSC.Saturation, -10f, 10f);
+                GUI.Label(new Rect(8, (h/3)*1.5f, w/2-16, h/3), $"Saturation: {editingHSC.Saturation:0.00}");
+
+                editingHSC.Contrast = GUI.HorizontalSlider(new Rect(w/2-16, (h/3)*2.5f, w/2, h/3), editingHSC.Contrast, -10f, 10f);
+                GUI.Label(new Rect(8, (h/3)*2.5f, w/2-16, h/3), $"Contrast: {editingHSC.Contrast:0.00}");
+
+                GUI.EndGroup();
+            }
         }
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
@@ -311,25 +368,6 @@ namespace CharLoader
         {
             // Setup additional UIs
 
-            Sprite uisprite = null;
-            Sprite[] sprites = Resources.FindObjectsOfTypeAll<Sprite>();
-            foreach (Sprite sprite in sprites)
-            {
-                if (sprite.name == "UISprite")
-                    uisprite = sprite;
-            }
-
-            TMPro.TMP_FontAsset fnt = null;
-            TMPro.TMP_FontAsset[] fonts = Resources.FindObjectsOfTypeAll<TMPro.TMP_FontAsset>();
-            foreach (TMPro.TMP_FontAsset font in fonts)
-            {
-                if (font.name == "LiberationSans SDF")
-                {
-                    fnt = font;
-                    break;
-                }
-            }
-
             // Part 1: GameObjects
             Transform AcradeSettings = CharacterSelectAcradeScript.ins.Page_ArcadeSettings.transform;
             Transform root = AcradeSettings.Find("VBox_Settings");
@@ -348,7 +386,7 @@ namespace CharLoader
             TMPro.TextMeshProUGUI text = BattleCustomCharsLabelObj.AddComponent<TMPro.TextMeshProUGUI>();
             Button btn = BattleCustomCharsObj.AddComponent<Button>();
 
-            img.sprite = uisprite;
+            img.sprite = UISprite;
             img.type = Image.Type.Sliced;
             btn.image = img;
             text.text = "Customize lineup";
@@ -356,7 +394,7 @@ namespace CharLoader
             text.fontSize = 24;
             text.fontStyle = TMPro.FontStyles.Normal;
             text.horizontalAlignment = TMPro.HorizontalAlignmentOptions.Center;
-            text.font = fnt;
+            text.font = LiberationSans;
 
             //btn.onClick.RemoveAllListeners();
             btn.onClick.AddListener(OnCustomizeLineupClicked);
@@ -366,13 +404,19 @@ namespace CharLoader
             // put Customize button above Default Settings and Back buttons
             BattleCustomCharsObj.transform.SetSiblingIndex(BattleCustomCharsObj.transform.GetSiblingIndex() - 2);
 
-            // disable the Semi Super Mecha Sonic checkbox?
-            // but if this is disabled and players do not have the unlockable character,
-            // they can never earn it...
-            /*
-            Toggle SemiSuperToggle = root.Find("SemiSuperToggle").Find("Toggle_SemiSuperToggle").GetComponent<Toggle>();
-            SemiSuperToggle.interactable = false;
-            */
+            // set navigation actions for the button and the two others
+            Selectable prevItem = root.GetChild(BattleCustomCharsObj.transform.GetSiblingIndex()-1).GetComponentInChildren<Selectable>();
+            Selectable nextItem = root.GetChild(BattleCustomCharsObj.transform.GetSiblingIndex()+1).GetComponentInChildren<Selectable>();
+            Navigation nav = btn.navigation;
+            Navigation prevNav = prevItem.navigation;
+            Navigation nextNav = nextItem.navigation;
+            prevNav.selectOnDown = nextNav.selectOnUp = btn;
+            nav.mode = Navigation.Mode.Explicit;
+            nav.selectOnUp = prevItem;
+            nav.selectOnDown = nextItem;
+            btn.navigation = nav;
+            prevItem.navigation = prevNav;
+            nextItem.navigation = nextNav;
         }
 
         void OnCustomizeLineupClicked()
@@ -386,18 +430,6 @@ namespace CharLoader
             root.SetActive(!on);
             SetupLineup = on;
             LineupSelectedOn = LineupSelectedOff = -1;
-
-            // when clicking the Customize Lineup button, this puts it in the unity UI input module component,
-            // so when you press D to, for example, add a character to the battle, it also triggers the Customize Lineup button from earlier.
-            // this code will remove this button from any ZIG_PlayerInput(s) so that the D key can be pressed safely.
-            foreach (ZIG_PlayerInput i in GameObject.FindObjectsOfType<ZIG_PlayerInput>())
-            {
-                var module = i.EventSystem;
-                if (!module)
-                    continue;
-
-                module.SetSelectedGameObject(null);
-            }
         }
 
         public void ResetArcadeLineup()
@@ -943,12 +975,25 @@ namespace CharLoader
                 {
                     if (cc.characterData != characterData) continue;
 
+                    CharacterSetting AdditionalSettings = (CharacterSetting)__instance.GetType().GetField("AdditionalSettings", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(__instance);
+                    AdditionalSettings.gameObject.SetActive(true);
                     if ((int)characterData.Platform == 1000)
                     {
                         __instance.CharacterPlatform.enabled = false;
                         __instance.CharacterPlatform.gameObject.GetComponentInChildren<Image>().sprite = cc.rootCharacter.platform;
                     }
                 }
+            }
+        }
+
+        [HarmonyPatch(typeof(CharacterSetting), "Setup", new Type[] { typeof(UI_Participant) })]
+        private static class CharacterSettingSetupPatch
+        {
+            private static void Postfix(CharacterSetting __instance, UI_Participant participantUI)
+            {
+                if (__instance.GetType() != typeof(CharacterSetting_Custom)) return;
+
+                ((CharacterSetting_Custom)__instance).SetupCustom(participantUI);
             }
         }
 
