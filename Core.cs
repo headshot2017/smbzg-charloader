@@ -212,10 +212,7 @@ namespace CharLoader
 
         public void ShowColorEditor(UI_Participant participantUI)
         {
-            LoggerInstance.Msg($"show editor for {participantUI.name}");
             CharacterData_SO character = (CharacterData_SO)participantUI.GetType().GetField("SelectedCharacter", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(participantUI);
-
-            LoggerInstance.Msg($"set it");
             editingHSCname = BattleCache.Character_GetDisplayName(character.Character);
             editingHSC = participantUI.SelectedCharacterDisplayHue;
         }
