@@ -317,9 +317,9 @@ namespace CharLoader
 
             if (editingHSC && SceneManager.GetActiveScene().name == SceneConstants.CharacterSelect)
             {
-                int x = Screen.width - Screen.width/4 - 32;
+                int x = Screen.width - Screen.width/3 - 32;
                 int y = Screen.height/2 - Screen.height/10;
-                int w = Screen.width/4;
+                int w = Screen.width/3;
                 int h = Screen.height/5;
 
                 GUI.BeginGroup(new Rect(x, y, w, h));
@@ -328,14 +328,14 @@ namespace CharLoader
                 if (GUI.Button(new Rect(w-24-4, 4, 24, 24), "X"))
                     editingHSC = null;
 
-                editingHSC.Hue = GUI.HorizontalSlider(new Rect(w/2-16, (h/3)*0.5f, w/2, h/3), editingHSC.Hue, -10f, 10f);
-                GUI.Label(new Rect(8, (h/3)*0.5f, w/2-16, h/3), $"Hue: {editingHSC.Hue:0.00}");
+                editingHSC.Hue = GUI.HorizontalSlider(new Rect(w/4, (h/3)*0.5f, w-w/4, h/3), editingHSC.Hue, -10f, 10f);
+                GUI.Label(new Rect(8, (h/3)*0.5f, w/4, h/3), $"Hue: {editingHSC.Hue:0.00}");
 
-                editingHSC.Saturation = GUI.HorizontalSlider(new Rect(w/2-16, (h/3)*1.5f, w/2, h/3), editingHSC.Saturation, -10f, 10f);
-                GUI.Label(new Rect(8, (h/3)*1.5f, w/2-16, h/3), $"Saturation: {editingHSC.Saturation:0.00}");
+                editingHSC.Saturation = GUI.HorizontalSlider(new Rect(w/4, (h/3)*1.5f, w-w/4, h/3), editingHSC.Saturation, -10f, 10f);
+                GUI.Label(new Rect(8, (h/3)*1.5f, w/4, h/3), $"Saturation: {editingHSC.Saturation:0.00}");
 
-                editingHSC.Contrast = GUI.HorizontalSlider(new Rect(w/2-16, (h/3)*2.5f, w/2, h/3), editingHSC.Contrast, -10f, 10f);
-                GUI.Label(new Rect(8, (h/3)*2.5f, w/2-16, h/3), $"Contrast: {editingHSC.Contrast:0.00}");
+                editingHSC.Contrast = GUI.HorizontalSlider(new Rect(w/4, (h/3)*2.5f, w-w/4, h/3), editingHSC.Contrast, -10f, 10f);
+                GUI.Label(new Rect(8, (h/3)*2.5f, w/4, h/3), $"Contrast: {editingHSC.Contrast:0.00}");
 
                 GUI.EndGroup();
             }
