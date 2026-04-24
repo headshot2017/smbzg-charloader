@@ -228,4 +228,35 @@ public static class SMBZGlobals
 
     public static float GroundPositionY =>
         (float)typeof(BattleBackgroundManager).GetField("GroundPositionY", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(BackgroundManager);
+
+    // v1.10.1
+    public static EffectSprite.AnchorObjectModeEnum GetEffectAnchorObjectMode(EffectSprite effect)
+    {
+        return (EffectSprite.AnchorObjectModeEnum)typeof(EffectSprite).GetField("AnchorObjectMode", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(effect);
+    }
+
+    public static void SetEffectAnchorObjectMode(EffectSprite effect, EffectSprite.AnchorObjectModeEnum mode)
+    {
+        typeof(EffectSprite).GetField("AnchorObjectMode", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(effect, mode);
+    }
+
+    public static bool GetARS_IsFleeingTarget(CharacterControl control)
+    {
+        return (bool)typeof(CharacterControl).GetProperty("ARS_IsFleeingTarget", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(control);
+    }
+
+    public static bool GetARS_IsApproachingTarget(CharacterControl control)
+    {
+        return (bool)typeof(CharacterControl).GetProperty("ARS_IsApproachingTarget", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(control);
+    }
+
+    public static bool GetIsUsingAlternateColors(CharacterControl control)
+    {
+        return (bool)typeof(CharacterControl).GetField("IsUsingAlternateColors", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(control);
+    }
+
+    public static bool GetIsStandaloneTransformation(CharacterControl control)
+    {
+        return (bool)typeof(CharacterControl).GetField("IsStandaloneTransformation", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(control);
+    }
 }
