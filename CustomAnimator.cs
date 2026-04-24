@@ -634,7 +634,7 @@ public class CustomAnimator : MonoBehaviour
         {
             if (p.hspeed < 5)
                 Play(ASN_Walk);
-            else if (p.hspeed < 20)
+            else if (p.hspeed < 19.5f)
                 Play(ASN_Run);
             else
                 Play(ASN_Sprint);
