@@ -632,7 +632,7 @@ public class CustomAnimator : MonoBehaviour
 
         if (p.InputingLeft || p.InputingRight)
         {
-            if (p.hspeed < 5)
+            if (p.hspeed < 4.5f)
                 Play(ASN_Walk);
             else if (p.hspeed < 19.5f)
                 Play(ASN_Run);
