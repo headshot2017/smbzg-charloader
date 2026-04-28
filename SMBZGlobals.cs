@@ -46,12 +46,12 @@ public static class SMBZGlobals
 
     public static bool GetIsNPC(BaseCharacter character)
     {
-        return (bool)character.GetType().GetField("IsNPC", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+        return character != null && (bool)character.GetType().GetField("IsNPC", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
     }
 
     public static bool GetIsCPU(BaseCharacter character)
     {
-        return (bool)character.GetType().GetProperty("IsCPUControlled", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
+        return character != null && (bool)character.GetType().GetProperty("IsCPUControlled", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(character);
     }
 
     public static float GetHitStun(BaseCharacter character)
