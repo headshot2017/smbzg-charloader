@@ -146,12 +146,12 @@ public class CustomAnimator : MonoBehaviour
 
         AnimAction currAction = m_CurrentAnimation.actions[m_Frame];
 
-        while ((m_Time += Time.deltaTime) > currAction.delay)
+        while ((m_Time += Mathf.Min(currAction.delay, Time.deltaTime)) >= currAction.delay)
         {
             if (currAction.delay <= 0)
                 m_Time = currAction.delay - Time.deltaTime;
             else
-                m_Time -= currAction.delay;
+                m_Time -= Mathf.Max(currAction.delay, Time.deltaTime);
 
             if (m_CurrentAnimation.loops < 0 || m_Loops < m_CurrentAnimation.loops)
             {
