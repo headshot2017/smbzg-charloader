@@ -153,6 +153,7 @@ public class CustomAnimator : MonoBehaviour
             else
                 m_Time -= Mathf.Max(currAction.delay, Time.deltaTime);
 
+            int lastFrame = m_Frame;
             if (m_CurrentAnimation.loops < 0 || m_Loops < m_CurrentAnimation.loops)
             {
                 m_Frame = (m_Frame + 1) % m_CurrentAnimation.actions.Count;
@@ -164,8 +165,9 @@ public class CustomAnimator : MonoBehaviour
                 m_Ended = true;
 
             currAction = m_CurrentAnimation.actions[m_Frame];
+            if (currAction.delay <= 0) m_Time = 0;
 
-            if (OnFrameChange()) return;
+            if (OnFrameChange() || lastFrame == m_Frame || m_CurrentAnimation.length == 0) return;
         }
 
         m_LastProperties = m_CurrentProperties;
