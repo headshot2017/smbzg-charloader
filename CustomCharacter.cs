@@ -72,6 +72,8 @@ public class CustomAnimation
     public Vector2 offset;
     public bool interpolate;
     public List<AnimAction> actions;
+
+    public float length;
 }
 
 public class CustomEffectEntry

@@ -292,6 +292,7 @@ public class CharLoaderComponent : MonoBehaviour
                         }
                     }
 
+                    customAnim.length += action.delay;
                     customAnim.actions.Add(action);
                 }
 
@@ -361,6 +362,7 @@ public class CharLoaderComponent : MonoBehaviour
                 {
                     AnimAction action = ParseAction(actionVar, customEffect.texture, cc.sounds, null);
 
+                    customAnim.length += action.delay;
                     customAnim.actions.Add(action);
                 }
 
@@ -446,6 +448,7 @@ public class CharLoaderComponent : MonoBehaviour
                                 }
                             }
 
+                            customAnim.length += action.delay;
                             customAnim.actions.Add(action);
                         }
 
