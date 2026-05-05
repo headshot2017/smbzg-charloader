@@ -10,6 +10,7 @@ using SMBZG.CharacterSelect;
 public class CharLoaderComponent : MonoBehaviour
 {
     public Texture2D texture;
+    public bool Loading { get; private set; }
 
     string CurrCharacterLoading;
 
@@ -20,6 +21,8 @@ public class CharLoaderComponent : MonoBehaviour
 
     IEnumerator Load()
     {
+        Loading = true;
+
         if (!Directory.Exists($"{Application.streamingAssetsPath}/CustomChars"))
             Directory.CreateDirectory($"{Application.streamingAssetsPath}/CustomChars");
 
@@ -495,20 +498,6 @@ public class CharLoaderComponent : MonoBehaviour
             CharLoader.Core.customCharacters.Add(cc);
             CharLoader.Core.s_CharLoadCallbackHandler?.Invoke(cc);
 
-            List<CharacterSkinDataStore> CharacterSkinDataList = 
-                (List<CharacterSkinDataStore>)typeof(CharacterSkinManager).GetField("CharacterSkinDataList", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(CharacterSkinManager.ins);
-
-            CharacterSkinDataStore characterSkinDataStore = CharacterSkinDataList.FirstOrDefault((CharacterSkinDataStore c) => c.InternalCharacterName == cc.internalName);
-            if (characterSkinDataStore == null)
-            {
-                characterSkinDataStore = new CharacterSkinDataStore(cc.internalName);
-                if (characterSkinDataStore.Character == BattleCache.CharacterEnum.UNSET)
-                    throw new Exception($"CharLoader mod: Character Skin Loader unable to find character enum for internal name \"{cc.internalName}\"");
-
-                characterSkinDataStore.SkinList.Add(new CharacterSkinDataStore.Skin("Default", $"{path}/sheet.png"));
-                CharacterSkinDataList.Add(characterSkinDataStore);
-            }
-
             FormsListManager.CharacterFormsDictionary[Data.Character] = new List<string>() { cc.internalName };
             SaveData.Data.unlockedCharacters[Data.Character] = true;
 
@@ -519,6 +508,8 @@ public class CharLoaderComponent : MonoBehaviour
             Debug.Log($"Loaded custom character \"{cc.rootCharacter.name}\"");
         }
 
+        Loading = false;
+        CharacterSkinManager.ins.RefreshCharacterSkinDataFromFile();
         Destroy(gameObject);
     }
 

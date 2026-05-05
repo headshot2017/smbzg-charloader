@@ -73,6 +73,7 @@ namespace CharLoader
         public static Sprite UISprite;
         public static TMPro.TMP_FontAsset LiberationSans;
         public static TMPro.TMP_FontAsset SuperMario256;
+        public static bool EarlyInit;
 
         public string LastErrorMsg;
         public float BoxColorTimer;
@@ -86,6 +87,7 @@ namespace CharLoader
             Preferences_General.SetFilePath("UserData/CharLoader.cfg");
 
             LoggerInstance.Msg("Initialized.");
+            EarlyInit = true;
         }
 
         public override void OnLateInitializeMelon()
@@ -340,6 +342,8 @@ namespace CharLoader
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
+            if (buildIndex == 0)
+                typeof(CharacterSkinManager).GetProperty("IsLoading", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(CharacterSkinManager.ins, true);
             if (buildIndex == 8)
                 SetupCharSelectArcade();
         }
@@ -356,9 +360,10 @@ namespace CharLoader
 
         void LoadCustomCharList()
         {
-            GameObject obj = new GameObject("CharLoader");
+            Melon<Core>.Logger.Msg($"create obj");
+            EarlyInit = false;
+            GameObject obj = new GameObject("CharLoader", typeof(CharLoaderComponent));
             GameObject.DontDestroyOnLoad(obj);
-            CharLoaderComponent dl = obj.AddComponent<CharLoaderComponent>();
         }
 
         void SetupCharSelectArcade()
@@ -471,6 +476,47 @@ namespace CharLoader
                     Portrait.isUnlockable = false;
                     PortraitImg.sprite = cc.portrait;
                     __instance.CharacterPortraitList.Add(Portrait);
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(CharacterSkinManager), "RefreshCharacterSkinDataFromFile")]
+        private static class SkinLoaderPatch
+        {
+            private static bool Prefix()
+            {
+                if (Core.EarlyInit) return false;
+
+                GameObject obj = GameObject.Find("CharLoader");
+                if (obj == null)
+                    return true;
+
+                CharLoaderComponent comp = obj.GetComponent<CharLoaderComponent>();
+                return !comp.Loading;
+            }
+        }
+
+        [HarmonyPatch(typeof(CharacterSkinManager), "RefreshCharacterSkinDataFromFile_Work", MethodType.Enumerator)]
+        private static class SkinLoaderWorkPatch
+        {
+            private static void Postfix()
+            {
+                if (CharacterSkinManager.ins.IsLoading) return;
+
+                foreach (CustomCharacter cc in Core.customCharacters)
+                {
+                    List<CharacterSkinDataStore> CharacterSkinDataList =
+                        (List<CharacterSkinDataStore>)typeof(CharacterSkinManager).GetField("CharacterSkinDataList", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(CharacterSkinManager.ins);
+
+                    CharacterSkinDataStore characterSkinDataStore = CharacterSkinDataList.FirstOrDefault((CharacterSkinDataStore c) => c.InternalCharacterName == cc.internalName);
+                    if (characterSkinDataStore == null)
+                    {
+                        characterSkinDataStore = new CharacterSkinDataStore(cc.internalName);
+                        if (characterSkinDataStore.Character == BattleCache.CharacterEnum.UNSET)
+                            throw new Exception($"CharLoader mod: Character Skin Loader unable to find character enum for internal name \"{cc.internalName}\"");
+                        CharacterSkinDataList.Add(characterSkinDataStore);
+                    }
+                    characterSkinDataStore.SkinList.Insert(0, new CharacterSkinDataStore.Skin("Default", $"{Application.streamingAssetsPath}/CustomChars/{cc.internalName}/sheet.png"));
                 }
             }
         }
