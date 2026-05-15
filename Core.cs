@@ -950,7 +950,6 @@ namespace CharLoader
 
                     CustomAnimator c = imageObj.GetComponent<CustomAnimator>();
                     if (!c) c = imageObj.AddComponent<CustomAnimator>();
-                    c.IgnoreColorAction = true;
                     c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.Find("Image").gameObject, cc.charSelectOffset, cc.charSelectScale);
                     c.Play(Animator.StringToHash("IdleCharSelect"), true);
 
@@ -1004,7 +1003,6 @@ namespace CharLoader
                     CustomAnimator c = imageObj.GetComponent<CustomAnimator>();
                     if (!c) c = imageObj.AddComponent<CustomAnimator>();
                     c.m_OriginalAnimator = imageObj.GetComponent<Animator>();
-                    c.IgnoreColorAction = true;
                     c.SetAnimList(cc.rootCharacter.animations, imageObj.transform.Find("Image").gameObject, cc.charSelectOffset, cc.charSelectScale);
                     break;
                 }
@@ -1096,7 +1094,6 @@ namespace CharLoader
                     __instance.Animator_CharacterImage.enabled = false;
                     GameObject imageObj = __instance.gameObject.transform.Find("Image_Character").gameObject;
                     CustomAnimator anim = imageObj.AddComponent<CustomAnimator>();
-                    anim.IgnoreColorAction = true;
                     anim.SetAnimList(cc.rootCharacter.animations, imageObj, cc.resultsOffset, cc.resultsScale);
                     return;
                 }

@@ -52,7 +52,6 @@ public class CustomAnimator : MonoBehaviour
     float m_Time;
     int m_Loops;
     public bool IgnoreIngameSprite = false;
-    public bool IgnoreColorAction = false;
     public bool m_Ended { get; private set; }
     public int m_Frame { get; private set; }
     public CustomBaseCharacter m_Character = null;
@@ -183,13 +182,12 @@ public class CustomAnimator : MonoBehaviour
 
         AnimAction currAction = m_CurrentAnimation.actions[m_Frame];
 
-        if (m_CurrentProperties != null && m_CurrentProperties.HitStun <= 0)
-            SetColor(currAction.color);
+        if (currAction.frame != null)
+            SetSprite(currAction.frame);
         SetScale();
         SetOffset();
         SetAngle();
-        if (currAction.frame != null)
-            SetSprite(currAction.frame);
+        SetColor(currAction.color);
 
         if (currAction.hitbox != null)
         {
@@ -435,10 +433,8 @@ public class CustomAnimator : MonoBehaviour
 
     public void SetColor(Color color)
     {
-        if (IgnoreColorAction) return;
-
-        if (m_CompImage) m_CompImage.color = color;
-        if (m_CompSpriteRenderer) m_CompSpriteRenderer.color = color;
+        if (m_CompImage) m_CompImage.material.color = color;
+        if (m_CompSpriteRenderer) m_CompSpriteRenderer.material.color = color;
     }
 
     public void SetScale()
@@ -736,8 +732,7 @@ public class CustomAnimator : MonoBehaviour
             t.localScale = scaleLerp;
             t.sizeDelta = new Vector2(m_CurrentAnimation.actions[0].frame.rect.width * m_GlobalScale, m_CurrentAnimation.actions[0].frame.rect.height * m_GlobalScale);
 
-            if (!IgnoreColorAction && m_CurrentProperties != null && m_CurrentProperties.HitStun <= 0)
-                m_CompImage.color = colorLerp;
+            m_CompImage.material.color = colorLerp;
         }
         if (m_CompSpriteRenderer)
         {
@@ -747,8 +742,7 @@ public class CustomAnimator : MonoBehaviour
             t.localEulerAngles = new Vector3(0, 0, -angleLerp);
             t.localScale = scaleLerp;
 
-            if (!IgnoreColorAction && m_CurrentProperties != null && m_CurrentProperties.HitStun <= 0)
-                m_CompSpriteRenderer.color = colorLerp;
+            m_CompSpriteRenderer.material.color = colorLerp;
         }
     }
 }
