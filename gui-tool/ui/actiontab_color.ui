@@ -41,14 +41,6 @@
      </item>
     </layout>
    </item>
-   <item>
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>NOTE: The color action only works with custom effects (in the Effects tab).
-It will not change the color blend on characters.</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
