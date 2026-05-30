@@ -55,6 +55,7 @@ public class CustomAnimator : MonoBehaviour
     public bool m_Ended { get; private set; }
     public int m_Frame { get; private set; }
     public CustomBaseCharacter m_Character = null;
+    public int m_LastIngameSprite;
 
     // some Comp_Animator properties
     public class Properties
@@ -104,6 +105,7 @@ public class CustomAnimator : MonoBehaviour
         m_GetUpTimer = 0;
         m_CurrentProperties = new Properties();
         m_LastProperties = new Properties();
+        m_LastIngameSprite = ASN_Idle;
 
         m_OriginalAnimator = GetComponent<Animator>();
         if (m_Animations == null || m_CurrentAnimation == null)
@@ -559,6 +561,7 @@ public class CustomAnimator : MonoBehaviour
         }
 
         Properties p = m_CurrentProperties;
+        int WantedAnim = m_LastIngameSprite;
 
         if (p.HitStun > 0)
         {
@@ -566,39 +569,43 @@ public class CustomAnimator : MonoBehaviour
 
             if (m_CurrentAnimation.hash == ASN_Hit)
             {
-                if (m_Ended) Play(p.OnGround ? ASN_Hurt : p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
+                if (m_Ended) WantedAnim = (p.OnGround ? ASN_Hurt : p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
             }
             else if (m_CurrentAnimation.hash == ASN_Hurt)
             {
-                if (m_Ended && !p.OnGround) Play(p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
+                if (m_Ended && !p.OnGround) WantedAnim = (p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
             }
             else if (m_CurrentAnimation.hash == ASN_Hurt_AirUpwards || m_CurrentAnimation.hash == ASN_Hurt_AirDownwards)
             {
-                Play(p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
+                WantedAnim = (p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
             }
             else if (m_CurrentAnimation.hash == ASN_Tumble)
             {
-                if (m_Ended) Play(p.OnGround ? ASN_Grounded : p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
+                if (m_Ended) WantedAnim = (p.OnGround ? ASN_Grounded : p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
             }
             else if (m_CurrentAnimation.hash == ASN_Grounded || m_CurrentAnimation.hash == ASN_GetUp)
             {
                 if (m_Ended)
                 {
                     if (!p.OnGround)
-                        Play(p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
+                        WantedAnim = (p.vspeed > 0 ? ASN_Hurt_AirUpwards : ASN_Hurt_AirDownwards);
                     else
-                        Play(p.HitStun <= m_GetUpTimer ? ASN_GetUp : ASN_Grounded);
+                        WantedAnim = (p.HitStun <= m_GetUpTimer ? ASN_GetUp : ASN_Grounded);
                 }
             }
             else
-                Play(ASN_Hit);
+                WantedAnim = (ASN_Hit);
+
+            if (m_LastIngameSprite != WantedAnim) Play(WantedAnim);
+            m_LastIngameSprite = WantedAnim;
 
             return;
         }
 
         if (p.BlockStun > 0)
         {
-            Play(ASN_Block);
+            if (m_LastIngameSprite != ASN_Block) Play(ASN_Block);
+            m_LastIngameSprite = ASN_Block;
             return;
         }
 
@@ -606,41 +613,50 @@ public class CustomAnimator : MonoBehaviour
 
         if (p.Guarding)
         {
-            Play(ASN_Guard);
+            if (m_LastIngameSprite != ASN_Guard) Play(ASN_Guard);
+            m_LastIngameSprite = ASN_Guard;
             return;
         }
 
         if (p.Bursting)
         {
-            Play(ASN_Bursting);
+            if (m_LastIngameSprite != ASN_Bursting) Play(ASN_Bursting);
+            m_LastIngameSprite = ASN_Bursting;
             return;
         }
 
         if (p.PreparingJump)
         {
-            Play(ASN_PreJump);
+            if (m_LastIngameSprite != ASN_PreJump) Play(ASN_PreJump);
+            m_LastIngameSprite = ASN_PreJump;
             return;
         }
 
         if (!p.OnGround)
         {
-            Play(p.vspeed > 0 ? ASN_Jump : ASN_Fall);
+            WantedAnim = (p.vspeed > 0 ? ASN_Jump : ASN_Fall);
+            if (m_LastIngameSprite != WantedAnim) Play(WantedAnim);
+            m_LastIngameSprite = WantedAnim;
             return;
         }
 
         if (p.InputingLeft || p.InputingRight)
         {
-            if (p.hspeed < 5.5f)
-                Play(ASN_Walk);
-            else if (p.hspeed < 19.5f)
-                Play(ASN_Run);
+            float hspeed = Mathf.Abs(p.hspeed);
+            if (hspeed < 5.5f)
+                WantedAnim = (ASN_Walk);
+            else if (hspeed < 19.5f)
+                WantedAnim = (ASN_Run);
             else
-                Play(ASN_Sprint);
+                WantedAnim = (ASN_Sprint);
         }
         else if (p.hspeed != 0)
-            Play(ASN_Slide);
+            WantedAnim = (ASN_Slide);
         else
-            Play(m_CurrentProperties.Intensity < 50 ? ASN_Idle : ASN_IdleB);
+            WantedAnim = (m_CurrentProperties.Intensity < 50 ? ASN_Idle : ASN_IdleB);
+
+        if (m_LastIngameSprite != WantedAnim) Play(WantedAnim);
+        m_LastIngameSprite = WantedAnim;
     }
 
     void InterpolateFrames()

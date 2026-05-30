@@ -467,8 +467,8 @@ public class CustomBaseCharacter : BaseCharacter
 
         bool MovementRushIntro = IsMovementRushing && SMBZGlobals.BattleState == BattleController.BattleStateENUM.Normal;
 
-        Comp_CustomAnimator.m_CurrentProperties.hspeed = Comp_Animator.GetFloat("hspeed");
-        Comp_CustomAnimator.m_CurrentProperties.vspeed = Comp_Animator.GetFloat("vspeed");
+        Comp_CustomAnimator.m_CurrentProperties.hspeed = Comp_Rigidbody2D.velocity.x;
+        Comp_CustomAnimator.m_CurrentProperties.vspeed = Comp_Rigidbody2D.velocity.y;
         Comp_CustomAnimator.m_CurrentProperties.HitStun = Comp_Animator.GetFloat("HitStun");
         Comp_CustomAnimator.m_CurrentProperties.BlockStun = (float)GetField("BlockStun");
         Comp_CustomAnimator.m_CurrentProperties.Intensity = Comp_Animator.GetFloat("Intensity");
@@ -724,6 +724,7 @@ public class CustomBaseCharacter : BaseCharacter
             };
         }
         Comp_CustomAnimator.Play(AttackToPrepare.AnimationNameHash, AttackToPrepare);
+        Comp_CustomAnimator.m_LastIngameSprite = AttackToPrepare.AnimationNameHash;
     }
 
     public override void Hurt(TakeDamageRequest request)
