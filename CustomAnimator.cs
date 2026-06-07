@@ -53,7 +53,20 @@ public class CustomAnimator : MonoBehaviour
     int m_Loops;
     public bool IgnoreIngameSprite = false;
     public bool m_Ended { get; private set; }
-    public int m_Frame { get; private set; }
+    int _frame;
+    public int m_Frame
+    {
+        get
+        {
+            return _frame;
+        }
+        set
+        {
+            _frame = value;
+            m_Time = 0;
+            OnFrameChange();
+        }
+    }
     public CustomBaseCharacter m_Character = null;
     public int m_LastIngameSprite;
 
@@ -176,6 +189,8 @@ public class CustomAnimator : MonoBehaviour
 
     bool OnFrameChange()
     {
+        if (m_CurrentAnimation == null) return true;
+
         if (m_CurrentAnimation.actions.Count <= 0)
         {
             m_Ended = true;
