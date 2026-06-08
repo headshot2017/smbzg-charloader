@@ -130,7 +130,7 @@ public class CustomAnimator : MonoBehaviour
             m_Playing = false;
             m_Ended = false;
             m_Time = 0;
-            m_Frame = 0;
+            _frame = 0;
         }
     }
 
@@ -404,7 +404,7 @@ public class CustomAnimator : MonoBehaviour
         ClearSounds();
 
         m_Time = 0;
-        m_Frame = 0;
+        _frame = 0;
         m_Loops = 0;
         m_Playing = true;
         m_Ended = false;
@@ -433,7 +433,7 @@ public class CustomAnimator : MonoBehaviour
         ClearSounds();
 
         m_Time = 0;
-        m_Frame = 0;
+        _frame = 0;
         m_Loops = 0;
         m_Playing = true;
         m_Ended = false;
@@ -528,7 +528,7 @@ public class CustomAnimator : MonoBehaviour
         m_CurrentAnimation = m_Animations[animHash];
         m_OriginalAnimator.enabled = false;
         m_Time = 0;
-        m_Frame = 0;
+        _frame = 0;
         m_Loops = 0;
         m_Playing = true;
         m_Ended = false;
