@@ -532,7 +532,6 @@ public class CustomAnimator : MonoBehaviour
         m_Loops = 0;
         m_Playing = true;
         m_Ended = false;
-        m_CurrentAttack = null;
         if (m_Hitbox != null) m_Hitbox.IsActive = false;
         if (m_HitboxProj != null) m_HitboxProj.IsActive = false;
         OnFrameChange();
@@ -542,6 +541,7 @@ public class CustomAnimator : MonoBehaviour
     // Function kept here to maintain compatibility.
     public bool Play(string animName)
     {
+        m_CurrentAttack = null;
         return Play(Animator.StringToHash(animName));
     }
 
@@ -552,8 +552,8 @@ public class CustomAnimator : MonoBehaviour
 
     public bool Play(int animHash, AttackBundle attack)
     {
-        if (!Play(animHash, true)) return false;
         m_CurrentAttack = attack;
+        if (!Play(animHash, true)) return false;
         if (attack != null && attack.OnAnimationStart != null && !attack.OnAnimationStart_HasExecuted)
         {
             attack.OnAnimationStart();
