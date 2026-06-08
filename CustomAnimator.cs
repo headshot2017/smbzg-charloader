@@ -167,14 +167,14 @@ public class CustomAnimator : MonoBehaviour
             else
                 m_Time -= Mathf.Max(currAction.delay, Time.deltaTime);
 
-            int lastFrame = m_Frame;
+            int lastFrame = _frame;
             if (m_CurrentAnimation.loops < 0 || m_Loops < m_CurrentAnimation.loops)
             {
-                m_Frame = (m_Frame + 1) % m_CurrentAnimation.actions.Count;
-                if (m_Frame == 0) m_Loops++;
+                _frame = (_frame + 1) % m_CurrentAnimation.actions.Count;
+                if (_frame == 0) m_Loops++;
             }
-            else if (m_Frame < m_CurrentAnimation.actions.Count - 1)
-                m_Frame++;
+            else if (_frame < m_CurrentAnimation.actions.Count - 1)
+                _frame++;
             else
                 m_Ended = true;
 
