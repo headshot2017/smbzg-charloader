@@ -290,7 +290,7 @@ public class CustomAnimator : MonoBehaviour
             {
                 m_Character.SetVelocity(
                     m_Character.GetVelocity().x,
-                    (currAction.velocityY.relative ? m_Character.GetVelocity().y : 0) + (currAction.velocityY.vel * m_Character.FaceDir)
+                    (currAction.velocityY.relative ? m_Character.GetVelocity().y : 0) + (currAction.velocityY.vel)
                 );
             }
             if (currAction.comboLink)
