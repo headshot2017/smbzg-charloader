@@ -568,6 +568,16 @@ public class CustomAnimator : MonoBehaviour
         return true;
     }
 
+    public bool IsCurrentAnimation(string name)
+    {
+        return m_CurrentAnimation != null && m_CurrentAnimation.hash == Animator.StringToHash(name);
+    }
+
+    public bool IsCurrentAnimation(int hash)
+    {
+        return m_CurrentAnimation != null && m_CurrentAnimation.hash == hash;
+    }
+
     void HandleIngameSprite()
     {
         if (IgnoreIngameSprite || !m_CompSpriteRenderer || (m_CurrentAnimation != null && m_CurrentAnimation.hash == ASN_Land && !m_Ended)) return;
