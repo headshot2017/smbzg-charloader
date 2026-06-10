@@ -6,6 +6,7 @@ public enum ActionInterpType
     In,
     Out,
     InOut,
+    Off,
     MAX
 };
 

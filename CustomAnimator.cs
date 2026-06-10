@@ -24,12 +24,18 @@ public class InterpHelper
         return x < 0.5f ? 2 * x * x : 1 - Mathf.Pow(-2 * x + 2, 2) / 2;
     }
 
+    public static float Off(float x)
+    {
+        return 0;
+    }
+
     public static Dictionary<ActionInterpType, Func<float, float>> Dict = new Dictionary<ActionInterpType, Func<float, float>>
     {
         {ActionInterpType.Linear, Linear},
         {ActionInterpType.In, In},
         {ActionInterpType.Out, Out},
         {ActionInterpType.InOut, InOut},
+        {ActionInterpType.Off, Off},
     };
 };
 
@@ -679,7 +685,7 @@ public class CustomAnimator : MonoBehaviour
         if (m_CurrentAnimation == null || !m_CurrentAnimation.interpolate) return;
 
         AnimAction currAction = m_CurrentAnimation.actions[m_Frame];
-        if (currAction.delay <= 0) return;
+        if (currAction.delay <= 0 || currAction.interpolation == ActionInterpType.Off) return;
 
         float lerp = m_Time / currAction.delay;
         if (currAction.interpolation >= 0 && currAction.interpolation <= ActionInterpType.MAX)
