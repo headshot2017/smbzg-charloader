@@ -107,6 +107,7 @@ public class CharLoaderComponent : MonoBehaviour
                     string musicPath = _musicName.Replace('\\', '/');
                     string musicName = Path.GetFileNameWithoutExtension(musicPath);
                     Melon<CharLoader.Core>.Logger.Msg($"Load music {musicName}");
+                    Debug.Log($"CharLoader: Load music {musicName}");
 
                     UnityWebRequest www = null;
                     DownloadHandlerAudioClip handler = null;
@@ -505,10 +506,14 @@ public class CharLoaderComponent : MonoBehaviour
             Melon<CharLoader.Core>.Instance.ResetArcadeLineup();
 
             Melon<CharLoader.Core>.Logger.Msg($"Loaded custom character \"{cc.rootCharacter.name}\"");
-            Debug.Log($"Loaded custom character \"{cc.rootCharacter.name}\"");
+            Debug.Log($"CharLoader: Loaded custom character \"{cc.rootCharacter.name}\"");
         }
 
         Loading = false;
+
+        Melon<CharLoader.Core>.Logger.Msg($"Loading complete with {CharLoader.Core.customCharacters.Count} custom characters");
+        Debug.Log($"CharLoader: Loading complete with {CharLoader.Core.customCharacters.Count} custom characters");
+
         CharacterSkinManager.ins.RefreshCharacterSkinDataFromFile();
         Destroy(gameObject);
     }
@@ -525,7 +530,7 @@ public class CharLoaderComponent : MonoBehaviour
             catch(Exception e)
             {
                 Melon<CharLoader.Core>.Logger.Msg($"Failed to load: {url}\n{e}");
-                Debug.Log($"[CharLoader] Failed to load: {url}");
+                Debug.Log($"CharLoader: Failed to load: {url}");
                 texture = Texture2D.blackTexture;
             }
         }
@@ -561,6 +566,7 @@ public class CharLoaderComponent : MonoBehaviour
             {
                 // don't divide by zero, warn the user too
                 Melon<CharLoader.Core>.Logger.Msg($"WARNING: {CurrCharacterLoading} has a 'frame' action with height = zero! ({x}, {y}, {w}, {h})");
+                Debug.Log($"CharLoader: WARNING: {CurrCharacterLoading} has a 'frame' action with height = zero! ({x}, {y}, {w}, {h})");
                 h = texture.height;
             }
 
@@ -738,6 +744,7 @@ public class CharLoaderComponent : MonoBehaviour
             {
                 // don't divide by zero, warn the user too
                 Melon<CharLoader.Core>.Logger.Msg($"WARNING: puppet '{name}' in {CurrCharacterLoading} has height zero! ({x}, {y}, {w}, {h})");
+                Debug.Log($"CharLoader: WARNING: puppet '{name}' in {CurrCharacterLoading} has height zero! ({x}, {y}, {w}, {h})");
                 h = companion.sheet.height;
             }
 
