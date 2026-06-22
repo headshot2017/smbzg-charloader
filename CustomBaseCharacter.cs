@@ -707,6 +707,8 @@ public class CustomBaseCharacter : BaseCharacter
         {
             AttackToPrepare.OnAnimationEnd = delegate
             {
+                if (AttackToPrepare.AnimationNameHash == ASN_MR_Strike_Approach)
+                    return; // dirty workaround
                 CurrentAttackData = null;
                 SetPlayerState((!IsNPC && PursueData != null) ? PlayerStateENUM.Pursuing : PlayerStateENUM.Idle);
                 if (IsNPC) return;
