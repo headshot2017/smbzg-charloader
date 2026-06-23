@@ -703,27 +703,28 @@ public class CustomBaseCharacter : BaseCharacter
     public override void PrepareAnAttack(AttackBundle AttackToPrepare, float MinimumPrepTime = 0)
     {
         base.PrepareAnAttack(AttackToPrepare, MinimumPrepTime);
-        if (AttackToPrepare.OnAnimationEnd == null)
+        if (SMBZGlobals.BattleState == BattleController.BattleStateENUM.Normal)
         {
-            AttackToPrepare.OnAnimationEnd = delegate
+            if (AttackToPrepare.OnAnimationEnd == null)
             {
-                if (AttackToPrepare.AnimationNameHash == ASN_MR_Strike_Approach)
-                    return; // dirty workaround
-                CurrentAttackData = null;
-                SetPlayerState((!IsNPC && PursueData != null) ? PlayerStateENUM.Pursuing : PlayerStateENUM.Idle);
-                if (IsNPC) return;
-                ComboSwingCounter = 0;
-                IsComboLinkAvailable = false;
-            };
-        }
-        if (AttackToPrepare.OnInterrupt == null)
-        {
-            AttackToPrepare.OnInterrupt = delegate
+                AttackToPrepare.OnAnimationEnd = delegate
+                {
+                    CurrentAttackData = null;
+                    SetPlayerState((!IsNPC && PursueData != null) ? PlayerStateENUM.Pursuing : PlayerStateENUM.Idle);
+                    if (IsNPC) return;
+                    ComboSwingCounter = 0;
+                    IsComboLinkAvailable = false;
+                };
+            }
+            if (AttackToPrepare.OnInterrupt == null)
             {
-                if (IsNPC) return;
-                ComboSwingCounter = 0;
-                IsComboLinkAvailable = false;
-            };
+                AttackToPrepare.OnInterrupt = delegate
+                {
+                    if (IsNPC) return;
+                    ComboSwingCounter = 0;
+                    IsComboLinkAvailable = false;
+                };
+            }
         }
         Comp_CustomAnimator.Play(AttackToPrepare.AnimationNameHash, AttackToPrepare);
         Comp_CustomAnimator.m_LastIngameSprite = AttackToPrepare.AnimationNameHash;
