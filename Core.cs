@@ -1105,6 +1105,11 @@ namespace CharLoader
             private static bool Prefix(Animator __instance, string stateName)
             {
                 // surely there's a more performant way of doing this...
+
+                string[] customState = stateName.Split('_');
+                if (int.TryParse(customState[0], out int _))
+                    stateName = customState[1];
+
                 CustomAnimator c = __instance.gameObject.GetComponent<CustomAnimator>();
                 if (!c) { return true; }
                 if (!c.Play(stateName))

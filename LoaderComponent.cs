@@ -14,9 +14,496 @@ public class CharLoaderComponent : MonoBehaviour
 
     string CurrCharacterLoading;
 
+    Dictionary<string, Coroutine> charCoros;
+
     void Start()
     {
+        charCoros = [];
         StartCoroutine(Load());
+    }
+
+    bool IsValid(string path)
+    {
+        return File.Exists($"{path}/character.json");
+    }
+
+    IEnumerator LoadCharacter(string path)
+    {
+        string charName = Path.GetFileName(path);
+
+        ProxyObject json = JSON.Load(File.ReadAllText($"{path}/character.json")) as ProxyObject;
+        CustomCharacter cc = new CustomCharacter();
+
+        ProxyObject general = json["general"] as ProxyObject;
+
+        CurrCharacterLoading = charName;
+        cc.internalName = charName;
+        cc.charSelectScale = general["scale"]["charSelect"];
+        cc.resultsScale = general["scale"]["results"];
+        cc.charSelectOffset = new Vector2(general["offset"]["charSelect"][0], general["offset"]["charSelect"][1]);
+        cc.resultsOffset = new Vector2(general["offset"]["results"][0], general["offset"]["results"][1]);
+
+        cc.rootCharacter = new CharacterCompanion()
+        {
+            name = general["displayName"],
+            scale = general["scale"]["ingame"],
+            offset = new Vector2(general["offset"]["ingame"][0], general["offset"]["ingame"][1]),
+        };
+
+        FilterMode[] filterModes = new FilterMode[]
+        {
+                FilterMode.Point,
+                FilterMode.Bilinear,
+                FilterMode.Trilinear,
+        };
+
+        yield return TextureDownload($"{path}/sheet.png");
+        texture.filterMode = (general.Keys.Contains("sheetFilter")) ? filterModes[general["sheetFilter"]] : FilterMode.Point;
+        cc.rootCharacter.sheet = texture;
+
+        yield return TextureDownload($"{path}/portrait.png");
+        cc.portrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, 0), 50);
+
+        yield return TextureDownload($"{path}/battleportrait.png");
+        texture.filterMode = (general.Keys.Contains("battlePortraitFilter")) ? filterModes[general["battlePortraitFilter"]] : FilterMode.Point;
+        cc.battlePortrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
+
+        if (File.Exists($"{path}/platform.png"))
+        {
+            yield return TextureDownload($"{path}/platform.png");
+            texture.filterMode = (general.Keys.Contains("platformFilter")) ? filterModes[general["platformFilter"]] : FilterMode.Point;
+            cc.rootCharacter.platform = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
+        }
+
+        cc.sounds = new Dictionary<string, AudioClip>();
+        if (Directory.Exists($"{path}/sounds"))
+        {
+            foreach (string _soundName in Directory.GetFiles($"{path}/sounds"))
+            {
+                string soundPath = _soundName.Replace('\\', '/');
+                string soundName = Path.GetFileNameWithoutExtension(soundPath);
+                UnityWebRequest www = null;
+                if (File.Exists($"{path}/sounds/{soundName}.wav"))
+                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.wav", AudioType.WAV);
+                else if (File.Exists($"{path}/sounds/{soundName}.ogg"))
+                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.OGGVORBIS);
+                else if (File.Exists($"{path}/sounds/{soundName}.mp3"))
+                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.mp3", AudioType.MPEG);
+
+                if (www != null)
+                {
+                    yield return www.SendWebRequest();
+
+                    cc.sounds[soundName] = DownloadHandlerAudioClip.GetContent(www);
+                }
+            }
+        }
+
+        cc.music = new Dictionary<string, AudioClip>();
+        if (Directory.Exists($"{path}/music"))
+        {
+            foreach (string _musicName in Directory.GetFiles($"{path}/music"))
+            {
+                string musicPath = _musicName.Replace('\\', '/');
+                string musicName = Path.GetFileNameWithoutExtension(musicPath);
+                Melon<CharLoader.Core>.Logger.Msg($"Load music {musicName}");
+                Debug.Log($"CharLoader: Load music {musicName}");
+
+                UnityWebRequest www = null;
+                DownloadHandlerAudioClip handler = null;
+
+                if (File.Exists($"{path}/music/{musicName}.wav"))
+                {
+                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.wav", AudioType.WAV);
+                    handler = new DownloadHandlerAudioClip(string.Empty, AudioType.WAV);
+                }
+                else if (File.Exists($"{path}/music/{musicName}.ogg"))
+                {
+                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.ogg", AudioType.OGGVORBIS);
+                    handler = new DownloadHandlerAudioClip(string.Empty, AudioType.OGGVORBIS);
+                }
+                else if (File.Exists($"{path}/music/{musicName}.mp3"))
+                {
+                    www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.mp3", AudioType.MPEG);
+                    handler = new DownloadHandlerAudioClip(string.Empty, AudioType.MPEG);
+                }
+
+                if (www != null)
+                {
+                    handler.streamAudio = true;
+                    www.downloadHandler = handler;
+                    yield return www.SendWebRequest();
+                    cc.music[musicName] = handler.audioClip;
+                }
+            }
+        }
+
+        cc.icons = new Dictionary<string, Sprite>();
+        if (Directory.Exists($"{path}/icons"))
+        {
+            foreach (string _iconName in Directory.GetFiles($"{path}/icons"))
+            {
+                string iconPath = _iconName.Replace('\\', '/');
+                string iconName = Path.GetFileNameWithoutExtension(iconPath);
+
+                yield return TextureDownload($"{path}/icons/{iconName}.png");
+                texture.filterMode = FilterMode.Point;
+                cc.icons[iconName] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
+            }
+        }
+
+        CustomCharacterData_SO Data = ScriptableObject.CreateInstance<CustomCharacterData_SO>();
+        Data.name = $"[CharacterData] {cc.internalName}";
+        Data.DittoHue = BattleCache.ins.CharacterData_Mario.DittoHue;
+        Data.DittoSaturation = BattleCache.ins.CharacterData_Mario.DittoSaturation;
+        Data.DittoContrast = BattleCache.ins.CharacterData_Mario.DittoContrast;
+        Data.Sprite_CharacterIcon = cc.portrait;
+
+
+        // Additional settings UI
+        Data.Prefab_SpecialCharacterSettingsUI = GameObject.Instantiate(BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI);
+        Data.Prefab_SpecialCharacterSettingsUI.name = $"UI_CharacterSettings_{cc.internalName}";
+
+        // Setup CharacterSetting_Custom
+        CharacterSetting setting = Data.Prefab_SpecialCharacterSettingsUI.GetComponent<CharacterSetting>();
+        Toggle oldToggle = setting.Toggle_UseAlternateColor;
+        TMPro.TextMeshProUGUI oldLabel = setting.Text_UnbalancedLabel;
+
+        GameObject.Destroy(setting);
+        setting = Data.Prefab_SpecialCharacterSettingsUI.AddComponent<CharacterSetting_Custom>();
+        setting.Toggle_UseAlternateColor = oldToggle;
+        setting.Text_UnbalancedLabel = oldLabel;
+
+        Transform list = Data.Prefab_SpecialCharacterSettingsUI.transform.Find("VerticalList");
+
+        // Alternate colors editor
+        GameObject editColors = GameObject.Instantiate(list.Find("AlternateColor").gameObject, list);
+        TMPro.TextMeshProUGUI text = editColors.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+        Toggle toggle = editColors.GetComponentInChildren<Toggle>();
+        ButtonFunctions functions = editColors.GetComponentInChildren<ButtonFunctions>();
+        editColors.name = "EditAltColors";
+        text.text = "View alt. colors";
+        toggle.gameObject.name = "EditAltColors Toggle";
+
+        // Add options from JSON
+
+
+        // End
+
+        GameObject.DontDestroyOnLoad(Data.Prefab_SpecialCharacterSettingsUI);
+        Data.Prefab_SpecialCharacterSettingsUI.SetActive(false);
+
+
+        if (general.Keys.Contains("colors"))
+        {
+            ProxyObject colors = general["colors"] as ProxyObject;
+            if (colors.Keys.Contains("primary"))
+                Data.PrimaryColor = new Color(
+                    colors["primary"][0] / 255f,
+                    colors["primary"][1] / 255f,
+                    colors["primary"][2] / 255f
+                );
+            if (colors.Keys.Contains("secondary"))
+                Data.SecondaryColor = new Color(
+                    colors["secondary"][0] / 255f,
+                    colors["secondary"][1] / 255f,
+                    colors["secondary"][2] / 255f
+                );
+
+            if (colors.Keys.Contains("alternateColors"))
+            {
+                Data.DittoHue = colors["alternateColors"][0];
+                Data.DittoSaturation = colors["alternateColors"][1];
+                Data.DittoContrast = colors["alternateColors"][2];
+            }
+        }
+
+        if (general.Keys.Contains("unbalanced"))
+            Data.IsUnbalanced = general["unbalanced"];
+
+        if (cc.rootCharacter.platform)
+        {
+            Data.Platform = (BattleCache.PlatformEnum)1000;
+        }
+        else if (general.Keys.Contains("platform"))
+        {
+            int platform = general["platform"];
+            Data.Platform = (BattleCache.PlatformEnum)platform;
+        }
+
+        cc.characterData = Data;
+
+        GameObject CharPrefab = GameObject.Instantiate(BattleCache.ins.CharacterData_Sonic.Prefab_BattleGameObject);
+        CharPrefab.name = cc.internalName;
+        CharPrefab.SetActive(false);
+        CharPrefab.AddComponent<CustomAnimator>();
+        SonicControl old = CharPrefab.GetComponent<SonicControl>();
+        CustomBaseCharacter baseChar = CharPrefab.AddComponent<CustomBaseCharacter>();
+        baseChar.Comp_Hurtbox = old.Comp_Hurtbox;
+        baseChar.CharacterData = cc.characterData;
+        GameObject.Destroy(old);
+        GameObject.DontDestroyOnLoad(CharPrefab);
+
+        cc.rootCharacter.prefab = CharPrefab;
+        Data.Prefab_BattleGameObject = CharPrefab;
+
+        cc.getUpTimer = 0;
+
+        // v1.6: Puppet animation
+        SetupPuppets(cc.rootCharacter, json);
+
+        Variant animsRoot = json["anims"];
+        cc.rootCharacter.animations = new Dictionary<int, CustomAnimation>();
+        foreach (var pair in animsRoot as ProxyObject)
+        {
+            ProxyObject animObject = pair.Value as ProxyObject;
+            CustomAnimation customAnim = new CustomAnimation();
+
+            string name = pair.Key;
+
+            customAnim.actions = new List<AnimAction>();
+            customAnim.hash = Animator.StringToHash(name);
+            customAnim.loops = animObject.Keys.Contains("loops") ? animObject["loops"] : -1;
+            customAnim.interpolate = animObject.Keys.Contains("interpolate") ? animObject["interpolate"] : true;
+            if (animObject.Keys.Contains("scale")) customAnim.scale = new Vector2(animObject["scale"][0], animObject["scale"][1]);
+            if (animObject.Keys.Contains("offset")) customAnim.offset = new Vector2(animObject["offset"][0], animObject["offset"][1]);
+            bool isGetUp = (pair.Key == "GetUp");
+
+            Variant animList = animObject["frames"];
+            foreach (ProxyObject actionVar in animList as ProxyArray)
+            {
+                AnimAction action = ParseAction(actionVar, cc.rootCharacter.sheet, cc.sounds, cc.rootCharacter.puppets);
+
+                if (isGetUp)
+                    cc.getUpTimer += action.delay;
+
+                bool hitboxOff = (
+                    action.hitbox != null &&
+                    !action.hitbox.on &&
+                    action.hitbox.pos == Vector2.zero &&
+                    action.hitbox.scale == Vector2.zero
+                );
+
+                if (hitboxOff && customAnim.actions.Count > 0)
+                {
+                    AnimAction lastAction = customAnim.actions[customAnim.actions.Count - 1];
+                    if (lastAction.hitbox != null)
+                    {
+                        action.hitbox.pos = lastAction.hitbox.pos;
+                        action.hitbox.scale = lastAction.hitbox.scale;
+                    }
+                }
+
+                customAnim.length += action.delay;
+                customAnim.actions.Add(action);
+            }
+
+            cc.rootCharacter.animations[customAnim.hash] = customAnim;
+        }
+
+        // v1.6: New "PreJump" animation
+        if (!cc.rootCharacter.animations.ContainsKey(CustomAnimator.ASN_PreJump) &&
+            cc.rootCharacter.animations.ContainsKey(CustomAnimator.ASN_Land) &&
+            cc.rootCharacter.animations[CustomAnimator.ASN_Land].actions.Count > 0)
+        {
+            CustomAnimation customAnim = new CustomAnimation();
+            CustomAnimation baseAnim = cc.rootCharacter.animations[CustomAnimator.ASN_Land];
+
+            customAnim.actions = new List<AnimAction>();
+            customAnim.hash = CustomAnimator.ASN_PreJump;
+            customAnim.loops = -1;
+            customAnim.interpolate = true;
+            customAnim.scale = baseAnim.scale;
+            customAnim.offset = baseAnim.offset;
+            customAnim.actions.Add(baseAnim.actions[0]);
+
+            cc.rootCharacter.animations[CustomAnimator.ASN_PreJump] = customAnim;
+        }
+
+        // v1.6: New "IdleCharSelect" animation
+        if (!cc.rootCharacter.animations.ContainsKey(Animator.StringToHash("IdleCharSelect")) ||
+            cc.rootCharacter.animations[Animator.StringToHash("IdleCharSelect")].actions.Count == 0)
+        {
+            CustomAnimation customAnim = new CustomAnimation();
+            CustomAnimation baseAnim = cc.rootCharacter.animations[CustomAnimator.ASN_Idle];
+
+            customAnim.hash = Animator.StringToHash("IdleCharSelect");
+            customAnim.loops = -1;
+            customAnim.interpolate = true;
+            customAnim.scale = baseAnim.scale;
+            customAnim.offset = baseAnim.offset;
+            customAnim.actions = baseAnim.actions;
+
+            cc.rootCharacter.animations[Animator.StringToHash("IdleCharSelect")] = customAnim;
+        }
+
+        Variant effectsRoot = json["effects"];
+        cc.effects = new Dictionary<string, CustomEffectEntry>();
+        foreach (var pair in effectsRoot as ProxyObject)
+        {
+            ProxyObject effectObject = pair.Value as ProxyObject;
+
+            CustomEffectEntry customEffect = new CustomEffectEntry();
+            yield return TextureDownload($"{path}/effects/{effectObject["texture"]}.png");
+            texture.filterMode = effectObject.Keys.Contains("filter") ? filterModes[effectObject["filter"]] : FilterMode.Bilinear;
+            customEffect.texture = texture;
+
+            CustomAnimation customAnim = new CustomAnimation();
+            customAnim.actions = new List<AnimAction>();
+            customAnim.hash = Animator.StringToHash(pair.Key);
+            customAnim.loops = effectObject.Keys.Contains("loops") ? effectObject["loops"] : 0;
+            customAnim.interpolate = effectObject.Keys.Contains("interpolate") ? effectObject["interpolate"] : true;
+            if (effectObject.Keys.Contains("scale")) customAnim.scale = new Vector2(effectObject["scale"][0], effectObject["scale"][1]);
+            if (effectObject.Keys.Contains("offset")) customAnim.offset = new Vector2(effectObject["offset"][0], effectObject["offset"][1]);
+
+            Variant animList = effectObject["frames"];
+            foreach (ProxyObject actionVar in animList as ProxyArray)
+            {
+                AnimAction action = ParseAction(actionVar, customEffect.texture, cc.sounds, null);
+
+                customAnim.length += action.delay;
+                customAnim.actions.Add(action);
+            }
+
+            customEffect.anim = customAnim;
+            cc.effects[pair.Key] = customEffect;
+        }
+
+        cc.companions = new Dictionary<string, CharacterCompanion>();
+        if (Directory.Exists($"{path}/companions"))
+        {
+            string[] companions = Directory.GetDirectories($"{path}/companions");
+            foreach (string _companionName in companions)
+            {
+                string companionPath = _companionName.Replace('\\', '/');
+                string companionName = Path.GetFileName(companionPath);
+
+                ProxyObject companionJson = JSON.Load(File.ReadAllText($"{companionPath}/companion.json")) as ProxyObject;
+                ProxyObject companionGeneral = companionJson["general"] as ProxyObject;
+
+                CharacterCompanion companion = new CharacterCompanion();
+                companion.name = companionName;
+
+                companion.scale = companionGeneral["scale"];
+                companion.offset = new Vector2(companionGeneral["offset"][0], companionGeneral["offset"][1]);
+
+                yield return TextureDownload($"{companionPath}/sheet.png");
+                texture.filterMode = (companionGeneral.Keys.Contains("sheetFilter")) ? filterModes[companionGeneral["sheetFilter"]] : FilterMode.Point;
+                companion.sheet = texture;
+
+                if (File.Exists($"{companionPath}/platform.png"))
+                {
+                    yield return TextureDownload($"{companionPath}/platform.png");
+                    texture.filterMode = (companionGeneral.Keys.Contains("platformFilter")) ? filterModes[companionGeneral["platformFilter"]] : FilterMode.Point;
+                    companion.platform = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
+                }
+
+                companion.isForm = companionGeneral.Keys.Contains("isForm") && companionGeneral["isForm"];
+
+                companion.prefab = GameObject.Instantiate(CharPrefab);
+                companion.prefab.name = companionName;
+                companion.prefab.SetActive(false);
+                GameObject.Destroy(companion.prefab.GetComponent<SonicControl>());
+                GameObject.DontDestroyOnLoad(companion.prefab);
+
+                // v1.6: Puppet animation
+                SetupPuppets(companion, companionJson);
+
+                companion.animations = new Dictionary<int, CustomAnimation>();
+                Variant cAnimsRoot = companionJson["anims"];
+                foreach (var pair in cAnimsRoot as ProxyObject)
+                {
+                    ProxyObject animObject = pair.Value as ProxyObject;
+                    CustomAnimation customAnim = new CustomAnimation();
+
+                    string name = pair.Key;
+
+                    customAnim.actions = new List<AnimAction>();
+                    customAnim.hash = Animator.StringToHash(name);
+                    customAnim.loops = animObject.Keys.Contains("loops") ? animObject["loops"] : -1;
+                    customAnim.interpolate = animObject.Keys.Contains("interpolate") ? animObject["interpolate"] : true;
+                    if (animObject.Keys.Contains("scale")) customAnim.scale = new Vector2(animObject["scale"][0], animObject["scale"][1]);
+                    if (animObject.Keys.Contains("offset")) customAnim.offset = new Vector2(animObject["offset"][0], animObject["offset"][1]);
+
+                    Variant animList = animObject["frames"];
+                    foreach (ProxyObject actionVar in animList as ProxyArray)
+                    {
+                        AnimAction action = ParseAction(actionVar, companion.sheet, cc.sounds, companion.puppets);
+
+                        bool hitboxOff = (
+                            action.hitbox != null &&
+                            !action.hitbox.on &&
+                            action.hitbox.pos == Vector2.zero &&
+                            action.hitbox.scale == Vector2.zero
+                        );
+
+                        if (hitboxOff && customAnim.actions.Count > 0)
+                        {
+                            AnimAction lastAction = customAnim.actions[customAnim.actions.Count - 1];
+                            if (lastAction.hitbox != null)
+                            {
+                                action.hitbox.pos = lastAction.hitbox.pos;
+                                action.hitbox.scale = lastAction.hitbox.scale;
+                            }
+                        }
+
+                        customAnim.length += action.delay;
+                        customAnim.actions.Add(action);
+                    }
+
+                    companion.animations[customAnim.hash] = customAnim;
+                }
+
+                cc.companions[companion.name] = companion;
+
+                // v1.6: New "PreJump" animation
+                if (!cc.companions[companion.name].animations.ContainsKey(CustomAnimator.ASN_PreJump) &&
+                    cc.companions[companion.name].animations.ContainsKey(CustomAnimator.ASN_Land) &&
+                    cc.companions[companion.name].animations[CustomAnimator.ASN_Land].actions.Count > 0)
+                {
+                    CustomAnimation customAnim = new CustomAnimation();
+                    CustomAnimation baseAnim = cc.companions[companion.name].animations[CustomAnimator.ASN_Land];
+
+                    customAnim.actions = new List<AnimAction>();
+                    customAnim.hash = CustomAnimator.ASN_PreJump;
+                    customAnim.loops = -1;
+                    customAnim.interpolate = true;
+                    customAnim.scale = baseAnim.scale;
+                    customAnim.offset = baseAnim.offset;
+                    customAnim.actions.Add(baseAnim.actions[0]);
+
+                    cc.companions[companion.name].animations[CustomAnimator.ASN_PreJump] = customAnim;
+                }
+            }
+        }
+
+        Variant cmdListRoot = json["commandList"];
+        cc.commandList = new CommandListModel()
+        {
+            CharacterName = cc.rootCharacter.name
+        };
+        foreach (ProxyObject command in cmdListRoot as ProxyArray)
+        {
+            CommandListRecordModel commandRecord = new CommandListRecordModel();
+            commandRecord.Title = command["title"];
+            if (command.Keys.Contains("subtitle")) commandRecord.Subtitle = command["subtitle"];
+            if (command.Keys.Contains("additionalInfo")) commandRecord.AdditionalInfo = command["additionalInfo"];
+            if (command.Keys.Contains("imageList")) commandRecord.CommandImageList = ParseCommandImages(command["imageList"]);
+            if (command.Keys.Contains("featureList")) commandRecord.FeatureImageList = ParseCommandImages(command["featureList"]);
+            cc.commandList.RecordList.Add(commandRecord);
+        }
+
+        CharLoader.Core.customCharacters.Add(cc);
+        CharLoader.Core.s_CharLoadCallbackHandler?.Invoke(cc);
+
+        Melon<CharLoader.Core>.Instance.ResetArcadeLineup();
+
+        while (!charCoros.ContainsKey(path))
+            yield return null;
+        charCoros.Remove(path);
+
+        Melon<CharLoader.Core>.Logger.Msg($"Loaded custom character \"{cc.rootCharacter.name}\"");
+        Debug.Log($"CharLoader: Loaded custom character \"{cc.rootCharacter.name}\"");
     }
 
     IEnumerator Load()
@@ -30,483 +517,24 @@ public class CharLoaderComponent : MonoBehaviour
         foreach (string _charName in chars)
         {
             string path = _charName.Replace('\\', '/');
-            string charName = Path.GetFileName(path);
-
-            ProxyObject json = JSON.Load(File.ReadAllText($"{path}/character.json")) as ProxyObject;
-            CustomCharacter cc = new CustomCharacter();
-
-            ProxyObject general = json["general"] as ProxyObject;
-
-            CurrCharacterLoading = charName;
-            cc.internalName = charName;
-            cc.charSelectScale = general["scale"]["charSelect"];
-            cc.resultsScale = general["scale"]["results"];
-            cc.charSelectOffset = new Vector2(general["offset"]["charSelect"][0], general["offset"]["charSelect"][1]);
-            cc.resultsOffset = new Vector2(general["offset"]["results"][0], general["offset"]["results"][1]);
-
-            cc.rootCharacter = new CharacterCompanion();
-            cc.rootCharacter.name = general["displayName"];
-            cc.rootCharacter.scale = general["scale"]["ingame"];
-            cc.rootCharacter.offset = new Vector2(general["offset"]["ingame"][0], general["offset"]["ingame"][1]);
-
-            FilterMode[] filterModes = new FilterMode[]
-            {
-                FilterMode.Point,
-                FilterMode.Bilinear,
-                FilterMode.Trilinear,
-            };
-
-            yield return TextureDownload($"{path}/sheet.png");
-            texture.filterMode = (general.Keys.Contains("sheetFilter")) ? filterModes[general["sheetFilter"]] : FilterMode.Point;
-            cc.rootCharacter.sheet = texture;
-
-            yield return TextureDownload($"{path}/portrait.png");
-            cc.portrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, 0), 50);
-
-            yield return TextureDownload($"{path}/battleportrait.png");
-            texture.filterMode = (general.Keys.Contains("battlePortraitFilter")) ? filterModes[general["battlePortraitFilter"]] : FilterMode.Point;
-            cc.battlePortrait = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
-
-            if (File.Exists($"{path}/platform.png"))
-            {
-                yield return TextureDownload($"{path}/platform.png");
-                texture.filterMode = (general.Keys.Contains("platformFilter")) ? filterModes[general["platformFilter"]] : FilterMode.Point;
-                cc.rootCharacter.platform = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
-            }
-
-            cc.sounds = new Dictionary<string, AudioClip>();
-            if (Directory.Exists($"{path}/sounds"))
-            {
-                foreach (string _soundName in Directory.GetFiles($"{path}/sounds"))
-                {
-                    string soundPath = _soundName.Replace('\\', '/');
-                    string soundName = Path.GetFileNameWithoutExtension(soundPath);
-                    UnityWebRequest www = null;
-                    if (File.Exists($"{path}/sounds/{soundName}.wav"))
-                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.wav", AudioType.WAV);
-                    else if (File.Exists($"{path}/sounds/{soundName}.ogg"))
-                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.ogg", AudioType.OGGVORBIS);
-                    else if (File.Exists($"{path}/sounds/{soundName}.mp3"))
-                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/sounds/{soundName}.mp3", AudioType.MPEG);
-
-                    if (www != null)
-                    {
-                        www.SendWebRequest();
-                        while (!www.isDone) ;
-
-                        cc.sounds[soundName] = DownloadHandlerAudioClip.GetContent(www);
-                    }
-                }
-            }
-
-            cc.music = new Dictionary<string, AudioClip>();
-            if (Directory.Exists($"{path}/music"))
-            {
-                foreach (string _musicName in Directory.GetFiles($"{path}/music"))
-                {
-                    string musicPath = _musicName.Replace('\\', '/');
-                    string musicName = Path.GetFileNameWithoutExtension(musicPath);
-                    Melon<CharLoader.Core>.Logger.Msg($"Load music {musicName}");
-                    Debug.Log($"CharLoader: Load music {musicName}");
-
-                    UnityWebRequest www = null;
-                    DownloadHandlerAudioClip handler = null;
-
-                    if (File.Exists($"{path}/music/{musicName}.wav"))
-                    {
-                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.wav", AudioType.WAV);
-                        handler = new DownloadHandlerAudioClip(string.Empty, AudioType.WAV);
-                    }
-                    else if (File.Exists($"{path}/music/{musicName}.ogg"))
-                    {
-                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.ogg", AudioType.OGGVORBIS);
-                        handler = new DownloadHandlerAudioClip(string.Empty, AudioType.OGGVORBIS);
-                    }
-                    else if (File.Exists($"{path}/music/{musicName}.mp3"))
-                    {
-                        www = UnityWebRequestMultimedia.GetAudioClip($"file:///{path}/music/{musicName}.mp3", AudioType.MPEG);
-                        handler = new DownloadHandlerAudioClip(string.Empty, AudioType.MPEG);
-                    }
-
-                    if (www != null)
-                    {
-                        handler.streamAudio = true;
-                        www.downloadHandler = handler;
-                        www.SendWebRequest();
-                        yield return www;
-                        cc.music[musicName] = handler.audioClip;
-                    }
-                }
-            }
-
-            cc.icons = new Dictionary<string, Sprite>();
-            if (Directory.Exists($"{path}/icons"))
-            {
-                foreach (string _iconName in Directory.GetFiles($"{path}/icons"))
-                {
-                    string iconPath = _iconName.Replace('\\', '/');
-                    string iconName = Path.GetFileNameWithoutExtension(iconPath);
-
-                    yield return TextureDownload($"{path}/icons/{iconName}.png");
-                    texture.filterMode = FilterMode.Point;
-                    cc.icons[iconName] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
-                }
-            }
-
-            CustomCharacterData_SO Data = ScriptableObject.CreateInstance<CustomCharacterData_SO>();
-            Data.Character = (BattleCache.CharacterEnum)(1000 + CharLoader.Core.customCharacters.Count);
-            Data.name = $"[CharacterData] {cc.internalName}";
-            Data.DittoHue = BattleCache.ins.CharacterData_Mario.DittoHue;
-            Data.DittoSaturation = BattleCache.ins.CharacterData_Mario.DittoSaturation;
-            Data.DittoContrast = BattleCache.ins.CharacterData_Mario.DittoContrast;
-            Data.Sprite_CharacterIcon = cc.portrait;
-
-
-            // Additional settings UI
-            Data.Prefab_SpecialCharacterSettingsUI = GameObject.Instantiate(BattleCache.ins.CharacterData_Sonic.Prefab_SpecialCharacterSettingsUI);
-            Data.Prefab_SpecialCharacterSettingsUI.name = $"UI_CharacterSettings_{cc.internalName}";
-
-            // Setup CharacterSetting_Custom
-            CharacterSetting setting = Data.Prefab_SpecialCharacterSettingsUI.GetComponent<CharacterSetting>();
-            Toggle oldToggle = setting.Toggle_UseAlternateColor;
-            TMPro.TextMeshProUGUI oldLabel = setting.Text_UnbalancedLabel;
-
-            GameObject.Destroy(setting);
-            setting = Data.Prefab_SpecialCharacterSettingsUI.AddComponent<CharacterSetting_Custom>();
-            setting.Toggle_UseAlternateColor = oldToggle;
-            setting.Text_UnbalancedLabel = oldLabel;
-
-            Transform list = Data.Prefab_SpecialCharacterSettingsUI.transform.Find("VerticalList");
-
-            // Alternate colors editor
-            GameObject editColors = GameObject.Instantiate(list.Find("AlternateColor").gameObject, list);
-            TMPro.TextMeshProUGUI text = editColors.GetComponentInChildren<TMPro.TextMeshProUGUI>();
-            Toggle toggle = editColors.GetComponentInChildren<Toggle>();
-            ButtonFunctions functions = editColors.GetComponentInChildren<ButtonFunctions>();
-            editColors.name = "EditAltColors";
-            text.text = "View alt. colors";
-            toggle.gameObject.name = "EditAltColors Toggle";
-
-            // Add options from JSON
-
-
-            // End
-
-            GameObject.DontDestroyOnLoad(Data.Prefab_SpecialCharacterSettingsUI);
-            Data.Prefab_SpecialCharacterSettingsUI.SetActive(false);
-
-
-            if (general.Keys.Contains("colors"))
-            {
-                ProxyObject colors = general["colors"] as ProxyObject;
-                if (colors.Keys.Contains("primary"))
-                    Data.PrimaryColor = new Color(
-                        colors["primary"][0] / 255f,
-                        colors["primary"][1] / 255f,
-                        colors["primary"][2] / 255f
-                    );
-                if (colors.Keys.Contains("secondary"))
-                    Data.SecondaryColor = new Color(
-                        colors["secondary"][0] / 255f,
-                        colors["secondary"][1] / 255f,
-                        colors["secondary"][2] / 255f
-                    );
-
-                if (colors.Keys.Contains("alternateColors"))
-                {
-                    Data.DittoHue = colors["alternateColors"][0];
-                    Data.DittoSaturation = colors["alternateColors"][1];
-                    Data.DittoContrast = colors["alternateColors"][2];
-                }
-            }
-
-            if (general.Keys.Contains("unbalanced"))
-                Data.IsUnbalanced = general["unbalanced"];
-
-            if (cc.rootCharacter.platform)
-            {
-                Data.Platform = (BattleCache.PlatformEnum)1000;
-            }
-            else if (general.Keys.Contains("platform"))
-            {
-                int platform = general["platform"];
-                Data.Platform = (BattleCache.PlatformEnum)platform;
-            }
-
-            cc.characterData = Data;
-
-            GameObject CharPrefab = GameObject.Instantiate(BattleCache.ins.CharacterData_Sonic.Prefab_BattleGameObject);
-            CharPrefab.name = cc.internalName;
-            CharPrefab.SetActive(false);
-            CharPrefab.AddComponent<CustomAnimator>();
-            SonicControl old = CharPrefab.GetComponent<SonicControl>();
-            CustomBaseCharacter baseChar = CharPrefab.AddComponent<CustomBaseCharacter>();
-            baseChar.Comp_Hurtbox = old.Comp_Hurtbox;
-            baseChar.CharacterData = cc.characterData;
-            GameObject.Destroy(old);
-            GameObject.DontDestroyOnLoad(CharPrefab);
-
-            cc.rootCharacter.prefab = CharPrefab;
-            Data.Prefab_BattleGameObject = CharPrefab;
-
-            cc.getUpTimer = 0;
-
-            // v1.6: Puppet animation
-            SetupPuppets(cc.rootCharacter, json);
-
-            Variant animsRoot = json["anims"];
-            cc.rootCharacter.animations = new Dictionary<int, CustomAnimation>();
-            foreach (var pair in animsRoot as ProxyObject)
-            {
-                ProxyObject animObject = pair.Value as ProxyObject;
-                CustomAnimation customAnim = new CustomAnimation();
-
-                string name = pair.Key;
-
-                customAnim.actions = new List<AnimAction>();
-                customAnim.hash = Animator.StringToHash(name);
-                customAnim.loops = animObject.Keys.Contains("loops") ? animObject["loops"] : -1;
-                customAnim.interpolate = animObject.Keys.Contains("interpolate") ? animObject["interpolate"] : true;
-                if (animObject.Keys.Contains("scale")) customAnim.scale = new Vector2(animObject["scale"][0], animObject["scale"][1]);
-                if (animObject.Keys.Contains("offset")) customAnim.offset = new Vector2(animObject["offset"][0], animObject["offset"][1]);
-                bool isGetUp = (pair.Key == "GetUp");
-
-                Variant animList = animObject["frames"];
-                foreach (ProxyObject actionVar in animList as ProxyArray)
-                {
-                    AnimAction action = ParseAction(actionVar, cc.rootCharacter.sheet, cc.sounds, cc.rootCharacter.puppets);
-
-                    if (isGetUp)
-                        cc.getUpTimer += action.delay;
-
-                    bool hitboxOff = (
-                        action.hitbox != null &&
-                        !action.hitbox.on &&
-                        action.hitbox.pos == Vector2.zero &&
-                        action.hitbox.scale == Vector2.zero
-                    );
-
-                    if (hitboxOff && customAnim.actions.Count > 0)
-                    {
-                        AnimAction lastAction = customAnim.actions[customAnim.actions.Count - 1];
-                        if (lastAction.hitbox != null)
-                        {
-                            action.hitbox.pos = lastAction.hitbox.pos;
-                            action.hitbox.scale = lastAction.hitbox.scale;
-                        }
-                    }
-
-                    customAnim.length += action.delay;
-                    customAnim.actions.Add(action);
-                }
-
-                int alternateHash = Animator.StringToHash($"{Data.Character}_{pair.Key}");
-
-                cc.rootCharacter.animations[customAnim.hash] = customAnim;
-                cc.rootCharacter.animations[alternateHash] = customAnim;
-            }
-
-            // v1.6: New "PreJump" animation
-            if (!cc.rootCharacter.animations.ContainsKey(CustomAnimator.ASN_PreJump) &&
-                cc.rootCharacter.animations.ContainsKey(CustomAnimator.ASN_Land) &&
-                cc.rootCharacter.animations[CustomAnimator.ASN_Land].actions.Count > 0)
-            {
-                CustomAnimation customAnim = new CustomAnimation();
-                CustomAnimation baseAnim = cc.rootCharacter.animations[CustomAnimator.ASN_Land];
-
-                customAnim.actions = new List<AnimAction>();
-                customAnim.hash = CustomAnimator.ASN_PreJump;
-                customAnim.loops = -1;
-                customAnim.interpolate = true;
-                customAnim.scale = baseAnim.scale;
-                customAnim.offset = baseAnim.offset;
-                customAnim.actions.Add(baseAnim.actions[0]);
-
-                cc.rootCharacter.animations[CustomAnimator.ASN_PreJump] = customAnim;
-            }
-
-            // v1.6: New "IdleCharSelect" animation
-            if (!cc.rootCharacter.animations.ContainsKey(Animator.StringToHash("IdleCharSelect")) ||
-                cc.rootCharacter.animations[Animator.StringToHash("IdleCharSelect")].actions.Count == 0)
-            {
-                CustomAnimation customAnim = new CustomAnimation();
-                CustomAnimation baseAnim = cc.rootCharacter.animations[CustomAnimator.ASN_Idle];
-
-                customAnim.hash = Animator.StringToHash("IdleCharSelect");
-                customAnim.loops = -1;
-                customAnim.interpolate = true;
-                customAnim.scale = baseAnim.scale;
-                customAnim.offset = baseAnim.offset;
-                customAnim.actions = baseAnim.actions;
-
-                cc.rootCharacter.animations[Animator.StringToHash("IdleCharSelect")] = customAnim;
-            }
-
-            Variant effectsRoot = json["effects"];
-            cc.effects = new Dictionary<string, CustomEffectEntry>();
-            foreach (var pair in effectsRoot as ProxyObject)
-            {
-                ProxyObject effectObject = pair.Value as ProxyObject;
-
-                CustomEffectEntry customEffect = new CustomEffectEntry();
-                yield return TextureDownload($"{path}/effects/{effectObject["texture"]}.png");
-                texture.filterMode = effectObject.Keys.Contains("filter") ? filterModes[effectObject["filter"]] : FilterMode.Bilinear;
-                customEffect.texture = texture;
-
-                CustomAnimation customAnim = new CustomAnimation();
-                customAnim.actions = new List<AnimAction>();
-                customAnim.hash = Animator.StringToHash(pair.Key);
-                customAnim.loops = effectObject.Keys.Contains("loops") ? effectObject["loops"] : 0;
-                customAnim.interpolate = effectObject.Keys.Contains("interpolate") ? effectObject["interpolate"] : true;
-                if (effectObject.Keys.Contains("scale")) customAnim.scale = new Vector2(effectObject["scale"][0], effectObject["scale"][1]);
-                if (effectObject.Keys.Contains("offset")) customAnim.offset = new Vector2(effectObject["offset"][0], effectObject["offset"][1]);
-
-                Variant animList = effectObject["frames"];
-                foreach (ProxyObject actionVar in animList as ProxyArray)
-                {
-                    AnimAction action = ParseAction(actionVar, customEffect.texture, cc.sounds, null);
-
-                    customAnim.length += action.delay;
-                    customAnim.actions.Add(action);
-                }
-
-                customEffect.anim = customAnim;
-                cc.effects[pair.Key] = customEffect;
-            }
-
-            cc.companions = new Dictionary<string, CharacterCompanion>();
-            if (Directory.Exists($"{path}/companions"))
-            {
-                string[] companions = Directory.GetDirectories($"{path}/companions");
-                foreach (string _companionName in companions)
-                {
-                    string companionPath = _companionName.Replace('\\', '/');
-                    string companionName = Path.GetFileName(companionPath);
-
-                    ProxyObject companionJson = JSON.Load(File.ReadAllText($"{companionPath}/companion.json")) as ProxyObject;
-                    ProxyObject companionGeneral = companionJson["general"] as ProxyObject;
-
-                    CharacterCompanion companion = new CharacterCompanion();
-                    companion.name = companionName;
-
-                    companion.scale = companionGeneral["scale"];
-                    companion.offset = new Vector2(companionGeneral["offset"][0], companionGeneral["offset"][1]);
-
-                    yield return TextureDownload($"{companionPath}/sheet.png");
-                    texture.filterMode = (companionGeneral.Keys.Contains("sheetFilter")) ? filterModes[companionGeneral["sheetFilter"]] : FilterMode.Point;
-                    companion.sheet = texture;
-
-                    if (File.Exists($"{companionPath}/platform.png"))
-                    {
-                        yield return TextureDownload($"{companionPath}/platform.png");
-                        texture.filterMode = (companionGeneral.Keys.Contains("platformFilter")) ? filterModes[companionGeneral["platformFilter"]] : FilterMode.Point;
-                        companion.platform = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(.5f, .5f), 50);
-                    }
-
-                    companion.isForm = companionGeneral.Keys.Contains("isForm") && companionGeneral["isForm"];
-
-                    companion.prefab = GameObject.Instantiate(CharPrefab);
-                    companion.prefab.name = companionName;
-                    companion.prefab.SetActive(false);
-                    GameObject.Destroy(companion.prefab.GetComponent<SonicControl>());
-                    GameObject.DontDestroyOnLoad(companion.prefab);
-
-                    // v1.6: Puppet animation
-                    SetupPuppets(companion, companionJson);
-
-                    companion.animations = new Dictionary<int, CustomAnimation>();
-                    Variant cAnimsRoot = companionJson["anims"];
-                    foreach (var pair in cAnimsRoot as ProxyObject)
-                    {
-                        ProxyObject animObject = pair.Value as ProxyObject;
-                        CustomAnimation customAnim = new CustomAnimation();
-
-                        string name = pair.Key;
-
-                        customAnim.actions = new List<AnimAction>();
-                        customAnim.hash = Animator.StringToHash(name);
-                        customAnim.loops = animObject.Keys.Contains("loops") ? animObject["loops"] : -1;
-                        customAnim.interpolate = animObject.Keys.Contains("interpolate") ? animObject["interpolate"] : true;
-                        if (animObject.Keys.Contains("scale")) customAnim.scale = new Vector2(animObject["scale"][0], animObject["scale"][1]);
-                        if (animObject.Keys.Contains("offset")) customAnim.offset = new Vector2(animObject["offset"][0], animObject["offset"][1]);
-
-                        Variant animList = animObject["frames"];
-                        foreach (ProxyObject actionVar in animList as ProxyArray)
-                        {
-                            AnimAction action = ParseAction(actionVar, companion.sheet, cc.sounds, companion.puppets);
-
-                            bool hitboxOff = (
-                                action.hitbox != null &&
-                                !action.hitbox.on &&
-                                action.hitbox.pos == Vector2.zero &&
-                                action.hitbox.scale == Vector2.zero
-                            );
-
-                            if (hitboxOff && customAnim.actions.Count > 0)
-                            {
-                                AnimAction lastAction = customAnim.actions[customAnim.actions.Count - 1];
-                                if (lastAction.hitbox != null)
-                                {
-                                    action.hitbox.pos = lastAction.hitbox.pos;
-                                    action.hitbox.scale = lastAction.hitbox.scale;
-                                }
-                            }
-
-                            customAnim.length += action.delay;
-                            customAnim.actions.Add(action);
-                        }
-
-                        companion.animations[customAnim.hash] = customAnim;
-                    }
-
-                    cc.companions[companion.name] = companion;
-
-                    // v1.6: New "PreJump" animation
-                    if (!cc.companions[companion.name].animations.ContainsKey(CustomAnimator.ASN_PreJump) &&
-                        cc.companions[companion.name].animations.ContainsKey(CustomAnimator.ASN_Land) &&
-                        cc.companions[companion.name].animations[CustomAnimator.ASN_Land].actions.Count > 0)
-                    {
-                        CustomAnimation customAnim = new CustomAnimation();
-                        CustomAnimation baseAnim = cc.companions[companion.name].animations[CustomAnimator.ASN_Land];
-
-                        customAnim.actions = new List<AnimAction>();
-                        customAnim.hash = CustomAnimator.ASN_PreJump;
-                        customAnim.loops = -1;
-                        customAnim.interpolate = true;
-                        customAnim.scale = baseAnim.scale;
-                        customAnim.offset = baseAnim.offset;
-                        customAnim.actions.Add(baseAnim.actions[0]);
-
-                        cc.companions[companion.name].animations[CustomAnimator.ASN_PreJump] = customAnim;
-                    }
-                }
-            }
-
-            Variant cmdListRoot = json["commandList"];
-            cc.commandList = new CommandListModel();
-            cc.commandList.CharacterName = cc.rootCharacter.name;
-            foreach (ProxyObject command in cmdListRoot as ProxyArray)
-            {
-                CommandListRecordModel commandRecord = new CommandListRecordModel();
-                commandRecord.Title = command["title"];
-                if (command.Keys.Contains("subtitle")) commandRecord.Subtitle = command["subtitle"];
-                if (command.Keys.Contains("additionalInfo")) commandRecord.AdditionalInfo = command["additionalInfo"];
-                if (command.Keys.Contains("imageList")) commandRecord.CommandImageList = ParseCommandImages(command["imageList"]);
-                if (command.Keys.Contains("featureList")) commandRecord.FeatureImageList = ParseCommandImages(command["featureList"]);
-                cc.commandList.RecordList.Add(commandRecord);
-            }
-
-            CharLoader.Core.customCharacters.Add(cc);
-            CharLoader.Core.s_CharLoadCallbackHandler?.Invoke(cc);
-
-            FormsListManager.CharacterFormsDictionary[Data.Character] = new List<string>() { cc.internalName };
-            SaveData.Data.unlockedCharacters[Data.Character] = true;
-
-            CharLoader.Core.ArcadeModeLineupDisabledDefault.Add(Data);
-            Melon<CharLoader.Core>.Instance.ResetArcadeLineup();
-
-            Melon<CharLoader.Core>.Logger.Msg($"Loaded custom character \"{cc.rootCharacter.name}\"");
-            Debug.Log($"CharLoader: Loaded custom character \"{cc.rootCharacter.name}\"");
+            if (!IsValid(path)) continue;
+
+            charCoros[path] = StartCoroutine(LoadCharacter(path));
+        }
+
+        while (charCoros.Count > 0)
+            yield return null;
+
+        CharLoader.Core.customCharacters.Sort((s1, s2) => s1.internalName.CompareTo(s2.internalName));
+        
+        for (int i = 0; i < CharLoader.Core.customCharacters.Count; i++)
+        {
+            CustomCharacter cc = CharLoader.Core.customCharacters[i];
+            cc.characterData.Character = (BattleCache.CharacterEnum)(1000 + i);
+
+            CharLoader.Core.ArcadeModeLineupDisabledDefault.Add(cc.characterData);
+            FormsListManager.CharacterFormsDictionary[cc.characterData.Character] = new List<string>() { cc.internalName };
+            SaveData.Data.unlockedCharacters[cc.characterData.Character] = true;
         }
 
         Loading = false;
@@ -516,6 +544,7 @@ public class CharLoaderComponent : MonoBehaviour
 
         CharacterSkinManager.ins.RefreshCharacterSkinDataFromFile();
         Destroy(gameObject);
+        yield return null;
     }
 
     IEnumerator TextureDownload(string url)
