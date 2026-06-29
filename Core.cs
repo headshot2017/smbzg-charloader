@@ -360,7 +360,6 @@ namespace CharLoader
 
         void LoadCustomCharList()
         {
-            Melon<Core>.Logger.Msg($"create obj");
             EarlyInit = false;
             GameObject obj = new GameObject("CharLoader", typeof(CharLoaderComponent));
             GameObject.DontDestroyOnLoad(obj);
