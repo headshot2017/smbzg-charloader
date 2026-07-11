@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net472</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -31,7 +31,10 @@
 			<HintPath>C:\Users\juanp\Desktop\juegos\smbz-g 1.182\SMBZ-G_Data\Managed\MyBox.dll</HintPath>
 		</Reference>
 		<Reference Include="TinyJSON">
-		  <HintPath>..\..\..\smbz-g 1.14\UserLibs\TinyJSON.dll</HintPath>
+			<HintPath>..\..\UserLibs\TinyJSON.dll</HintPath>
+		</Reference>
+		<Reference Include="SMBZModsMenu">
+		  <HintPath>..\..\Mods\SMBZModsMenu.dll</HintPath>
 		</Reference>
 		<Reference Include="Unity.2D.PixelPerfect">
 			<HintPath>C:\Users\juanp\Desktop\juegos\smbz-g 1.182\SMBZ-G_Data\Managed\Unity.2D.PixelPerfect.dll</HintPath>

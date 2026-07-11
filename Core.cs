@@ -73,12 +73,12 @@ namespace CharLoader
         public static Sprite UISprite;
         public static TMPro.TMP_FontAsset LiberationSans;
         public static TMPro.TMP_FontAsset SuperMario256;
-        public static bool EarlyInit;
 
         public string LastErrorMsg;
         public float BoxColorTimer;
         public float BoxShowTimer;
         public bool SetupLineup;
+        public bool Loaded;
 
 
         public override void OnInitializeMelon()
@@ -87,11 +87,20 @@ namespace CharLoader
             Preferences_General.SetFilePath("UserData/CharLoader.cfg");
 
             LoggerInstance.Msg("Initialized.");
-            EarlyInit = true;
+            Loaded = false;
         }
 
         public override void OnLateInitializeMelon()
         {
+            SMBZModsMenu.Core.BeforeSkins.Add(() => Loaded);
+            SMBZModsMenu.Core.ModEntries.Add(new()
+            {
+                info = Info,
+                reloadFunction = LoadCustomCharList,
+                updateLocation = SMBZModsMenu.ModUpdateLocation.Github,
+                updateRepo = "headshot2017/smbzg-charloader"
+            });
+
             Application.logMessageReceived += LogHandler;
 
             ArcadeModeLineupDefault = [.. BattleCache.ins.GetAcradeModeCharacterLineup()];
@@ -342,8 +351,6 @@ namespace CharLoader
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)
         {
-            if (buildIndex == 0)
-                typeof(CharacterSkinManager).GetProperty("IsLoading", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).SetValue(CharacterSkinManager.ins, true);
             if (buildIndex == 8)
                 SetupCharSelectArcade();
         }
@@ -360,7 +367,9 @@ namespace CharLoader
 
         void LoadCustomCharList()
         {
-            EarlyInit = false;
+            if (GameObject.Find("CharLoader") != null) return;
+
+            Loaded = false;
             GameObject obj = new GameObject("CharLoader", typeof(CharLoaderComponent));
             GameObject.DontDestroyOnLoad(obj);
         }
@@ -479,22 +488,7 @@ namespace CharLoader
             }
         }
 
-        [HarmonyPatch(typeof(CharacterSkinManager), "RefreshCharacterSkinDataFromFile")]
-        private static class SkinLoaderPatch
-        {
-            private static bool Prefix()
-            {
-                if (Core.EarlyInit) return false;
-
-                GameObject obj = GameObject.Find("CharLoader");
-                if (obj == null)
-                    return true;
-
-                CharLoaderComponent comp = obj.GetComponent<CharLoaderComponent>();
-                return !comp.Loading;
-            }
-        }
-
+        // patch that adds default skins for custom characters
         [HarmonyPatch(typeof(CharacterSkinManager), "RefreshCharacterSkinDataFromFile_Work", MethodType.Enumerator)]
         private static class SkinLoaderWorkPatch
         {

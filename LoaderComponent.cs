@@ -509,6 +509,7 @@ public class CharLoaderComponent : MonoBehaviour
     IEnumerator Load()
     {
         Loading = true;
+        CharLoader.Core.customCharacters.Clear();
 
         if (!Directory.Exists($"{Application.streamingAssetsPath}/CustomChars"))
             Directory.CreateDirectory($"{Application.streamingAssetsPath}/CustomChars");
@@ -542,7 +543,8 @@ public class CharLoaderComponent : MonoBehaviour
         Melon<CharLoader.Core>.Logger.Msg($"Loading complete with {CharLoader.Core.customCharacters.Count} custom characters");
         Debug.Log($"CharLoader: Loading complete with {CharLoader.Core.customCharacters.Count} custom characters");
 
-        CharacterSkinManager.ins.RefreshCharacterSkinDataFromFile();
+        Melon<CharLoader.Core>.Instance.Loaded = true;
+
         Destroy(gameObject);
         yield return null;
     }
