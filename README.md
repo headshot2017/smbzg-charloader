@@ -29,7 +29,7 @@ Requires [MelonLoader](https://github.com/LavaGang/MelonLoader/releases)
 ```
 
 * **effects:** Assortment of png files that can be used as custom particle effects with CustomEffectSprite.
-* **icons:** Folder containing asortment of png files that can be used for miscellaneous things, such as inventory icons.
+* **icons:** Folder containing assortment of png files that can be used for miscellaneous things, such as inventory icons.
 * **companions:** Extra "characters" that can be used as projectiles, NPCs or transformations for the base character.
 * **sounds:** Folder containing sound files.
   * Special sound effects:
@@ -68,6 +68,7 @@ If you wish, you can take the code for this custom character mod as reference: [
 * All of the base game's characters now use a "CustomCharacterData_SO" class instead of the default CharacterData_SO. This new class allows you to add extra information in an "ExtraData" dictionary field, which can be used by custom characters.
   * Example on accessing them: `((CustomCharacterData_SO)BattleCache.ins.CharacterData_Mario).ExtraData["Something"] = true;`
 
-## Third-party libraries
+## Dependency libraries
 
+* [SMBZModsMenu](https://github.com/headshot2017/smbzg-modsmenu)
 * [TinyJSON](https://github.com/pbhogan/TinyJSON)
