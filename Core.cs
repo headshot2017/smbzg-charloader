@@ -61,7 +61,10 @@ namespace CharLoader
         }
 
 
-        public static MelonPreferences_Category Preferences_General;
+        public static MelonPreferences_Category Preferences_CharacterSelect;
+        public static MelonPreferences_Entry<int> MaxCharactersInOneRow;
+        public static MelonPreferences_Entry<bool> ReorderVanillaCharacterRows;
+
         public static List<CharacterData_SO> ArcadeModeLineup;
         public static List<CharacterData_SO> ArcadeModeLineupDisabled;
         public static List<CharacterData_SO> ArcadeModeLineupDefault;
@@ -83,8 +86,10 @@ namespace CharLoader
 
         public override void OnInitializeMelon()
         {
-            Preferences_General = MelonPreferences.CreateCategory("General");
-            Preferences_General.SetFilePath("UserData/CharLoader.cfg");
+            Preferences_CharacterSelect = MelonPreferences.CreateCategory("CharacterSelect");
+            MaxCharactersInOneRow = Preferences_CharacterSelect.CreateEntry("MaxCharactersInOneRow", 12, description: "How many character portraits to display in a single row. Default=12");
+            ReorderVanillaCharacterRows = Preferences_CharacterSelect.CreateEntry("ReorderVanillaCharacterRows", true, description: "Reorder vanilla character portraits to use max available space. true or false. Default=true");
+            Preferences_CharacterSelect.SetFilePath("UserData/CharLoader.cfg");
 
             LoggerInstance.Msg("Initialized.");
             Loaded = false;
@@ -464,24 +469,79 @@ namespace CharLoader
             private static void Prefix(CharacterSelectScript_Base __instance)
             {
                 Transform transform = GameObject.Find("Canvas").transform.Find("CharacterSelect");
-                if (!transform)
+                if (transform == null)
                     transform = GameObject.Find("Canvas").transform.Find("CharacterSelectPage");
 
                 Transform PortraitTableRoot = transform.Find("CharacterSelectPortraitTable");
-                Transform PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
-                GameObject PortraitNewRow = GameObject.Instantiate(PortraitRow.gameObject, PortraitTableRoot);
-                while (PortraitNewRow.transform.childCount > 0) GameObject.DestroyImmediate(PortraitNewRow.transform.GetChild(0).gameObject);
-                PortraitNewRow.name = "CustomRow";
-                PortraitNewRow.transform.localPosition = PortraitRow.localPosition + new Vector3(0, PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y);
+                GameObject PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1).gameObject;
+                GameObject LastRow = PortraitRow;
+                GameObject EmptyRow = GameObject.Instantiate(LastRow.gameObject);
+                while (EmptyRow.transform.childCount > 0) GameObject.DestroyImmediate(EmptyRow.transform.GetChild(0).gameObject);
+                EmptyRow.name = "CustomRow";
+                float deltaY = PortraitTableRoot.GetChild(1).localPosition.y - PortraitTableRoot.GetChild(0).localPosition.y;
+
+                GameObject PortraitNewRow;
+
+                if (ReorderVanillaCharacterRows.Value)
+                {
+                    int i = 0, j = 1;
+                    Transform TargetRow = PortraitTableRoot.GetChild(i);
+                    Transform SourceRow = PortraitTableRoot.GetChild(j);
+
+                    while (true)
+                    {
+                        if (TargetRow.childCount >= MaxCharactersInOneRow.Value)
+                        {
+                            i++;
+                            TargetRow = PortraitTableRoot.GetChild(i);
+                            if (i == j)
+                            {
+                                j++;
+                                if (j >= PortraitTableRoot.childCount)
+                                    break;
+                                SourceRow = PortraitTableRoot.GetChild(j);
+                            }
+                        }
+
+                        if (SourceRow.childCount == 0)
+                        {
+                            GameObject.DestroyImmediate(SourceRow.gameObject);
+                            if (j >= PortraitTableRoot.childCount)
+                            {
+                                SourceRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1);
+                                break;
+                            }
+                            SourceRow = PortraitTableRoot.GetChild(j);
+                        }
+
+                        SourceRow.GetChild(0).SetParent(TargetRow);
+                    }
+
+                    PortraitNewRow = SourceRow.gameObject;
+                    PortraitRow = PortraitTableRoot.GetChild(PortraitTableRoot.childCount - 1).gameObject;
+                }
+                else
+                {
+                    PortraitNewRow = GameObject.Instantiate(EmptyRow, PortraitTableRoot.transform);
+                    PortraitNewRow.transform.localPosition = LastRow.transform.localPosition + new Vector3(0, deltaY);
+                }
 
                 foreach (CustomCharacter cc in customCharacters)
                 {
-                    GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.GetChild(0).gameObject, PortraitNewRow.transform);
+                    if (PortraitNewRow.transform.childCount >= MaxCharactersInOneRow.Value)
+                    {
+                        LastRow = PortraitNewRow;
+                        PortraitNewRow = GameObject.Instantiate(EmptyRow, PortraitTableRoot.transform);
+                        PortraitNewRow.transform.localPosition = LastRow.transform.localPosition + new Vector3(0, deltaY);
+                    }
+
+                    GameObject PortraitGameObj = GameObject.Instantiate(PortraitRow.transform.GetChild(0).gameObject, PortraitNewRow.transform);
                     CharacterPortrait Portrait = PortraitGameObj.GetComponent<CharacterPortrait>();
                     Image PortraitImg = PortraitGameObj.GetComponent<Image>();
                     PortraitGameObj.name = $"Character_{cc.internalName}";
                     Portrait.Data = cc.characterData;
                     Portrait.isUnlockable = false;
+                    Portrait.IsRandom = false;
                     PortraitImg.sprite = cc.portrait;
                     __instance.CharacterPortraitList.Add(Portrait);
                 }
