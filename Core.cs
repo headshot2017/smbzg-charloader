@@ -63,7 +63,8 @@ namespace CharLoader
 
         public static MelonPreferences_Category Preferences_CharacterSelect;
         public static MelonPreferences_Entry<int> MaxCharactersInOneRow;
-        public static MelonPreferences_Entry<bool> ReorderVanillaCharacterRows;
+        public static MelonPreferences_Entry<bool> ReorderToUseMaxSpace;
+        public static MelonPreferences_Entry<int> CharacterPortraitSortType;
 
         public static List<CharacterData_SO> ArcadeModeLineup;
         public static List<CharacterData_SO> ArcadeModeLineupDisabled;
@@ -87,8 +88,27 @@ namespace CharLoader
         public override void OnInitializeMelon()
         {
             Preferences_CharacterSelect = MelonPreferences.CreateCategory("CharacterSelect");
-            MaxCharactersInOneRow = Preferences_CharacterSelect.CreateEntry("MaxCharactersInOneRow", 12, description: "How many character portraits to display in a single row. Default=12");
-            ReorderVanillaCharacterRows = Preferences_CharacterSelect.CreateEntry("ReorderVanillaCharacterRows", true, description: "Reorder vanilla character portraits to use max available space. true or false. Default=true");
+
+            MaxCharactersInOneRow = Preferences_CharacterSelect.CreateEntry(
+                "MaxCharactersInOneRow", 12,
+                description: "How many character portraits to display in a single row. Default=12"
+            );
+
+            ReorderToUseMaxSpace = Preferences_CharacterSelect.CreateEntry(
+                "ReorderToUseMaxSpace", true,
+                description: "Reorder character portraits to use max available space. true or false. Default=true"
+            );
+
+            CharacterPortraitSortType = Preferences_CharacterSelect.CreateEntry(
+                "CharacterPortraitSortType", 0,
+                description:
+                    "How to sort character portraits. Only works if ReorderToUseMaxSpace = true.\n" +
+                    "Options:\n" +
+                    "0 = Default: Vanilla characters first in default order, then custom characters in alphabetical order\n" +
+                    "1 = Balanced characters first, then unbalanced characters, both in alphabetical order. Random character in last\n" +
+                    "2 = Both vanilla and custom characters in alphabetical order. Random character in last"
+            );
+
             Preferences_CharacterSelect.SetFilePath("UserData/CharLoader.cfg");
 
             LoggerInstance.Msg("Initialized.");
@@ -482,7 +502,7 @@ namespace CharLoader
 
                 GameObject PortraitNewRow;
 
-                if (ReorderVanillaCharacterRows.Value)
+                if (ReorderToUseMaxSpace.Value)
                 {
                     int i = 0, j = 1;
                     Transform TargetRow = PortraitTableRoot.GetChild(i);
@@ -544,6 +564,51 @@ namespace CharLoader
                     Portrait.IsRandom = false;
                     PortraitImg.sprite = cc.portrait;
                     __instance.CharacterPortraitList.Add(Portrait);
+                }
+
+                if (!ReorderToUseMaxSpace.Value) return;
+
+                switch (CharacterPortraitSortType.Value)
+                {
+                    // Balanced characters first, then unbalanced characters, both in alphabetical order.
+                    case 1:
+                        var balanced = __instance.CharacterPortraitList.Except(__instance.CharacterPortraitList.FindAll(x => x.Data == null || x.Data.IsUnbalanced)).ToList();
+                        var unbalanced = __instance.CharacterPortraitList.Except(__instance.CharacterPortraitList.FindAll(x => x.Data != null && !x.Data.IsUnbalanced)).ToList();
+                        balanced.Sort((x, y) => x.name.CompareTo(y.name));
+                        unbalanced.Sort((x, y) => x.name.CompareTo(y.name));
+
+                        __instance.CharacterPortraitList.Clear();
+                        __instance.CharacterPortraitList.AddRange(balanced);
+                        __instance.CharacterPortraitList.AddRange(unbalanced);
+                        break;
+
+                    // Both vanilla and custom characters in alphabetical order.
+                    case 2:
+                        __instance.CharacterPortraitList.Sort((x, y) => x.name.CompareTo(y.name));
+                        break;
+                }
+
+                // Move random portrait to last position
+                CharacterPortrait random = __instance.CharacterPortraitList.Find(x => x.IsRandom);
+                __instance.CharacterPortraitList.Remove(random);
+                __instance.CharacterPortraitList.Add(random);
+
+                for (int i = 0; i < __instance.CharacterPortraitList.Count; i++)
+                {
+                    CharacterPortrait portrait = __instance.CharacterPortraitList[i];
+
+                    int row = i / MaxCharactersInOneRow.Value;
+                    int index = i % MaxCharactersInOneRow.Value;
+
+                    var anchor = portrait.GetComponentInChildren<UI_PlayerCurosrAnchorPoint>();
+                    if (anchor.RotationZ != 0)
+                    {
+                        var rt = anchor.GetComponent<RectTransform>();
+                        anchor.RotationZ = 0;
+                        rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, -rt.anchoredPosition.y);
+                    }
+                    portrait.transform.SetParent(PortraitTableRoot.GetChild(row));
+                    portrait.transform.SetSiblingIndex(index);
                 }
             }
         }
