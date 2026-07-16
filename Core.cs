@@ -84,6 +84,9 @@ namespace CharLoader
         public bool SetupLineup;
         public bool Loaded;
 
+        public static readonly string EXCEPTIONS_LOGFILE = "Game-Exceptions.log";
+        int ExceptionCount;
+
 
         public override void OnInitializeMelon()
         {
@@ -110,6 +113,9 @@ namespace CharLoader
             );
 
             Preferences_CharacterSelect.SetFilePath("UserData/CharLoader.cfg");
+
+            if (File.Exists(EXCEPTIONS_LOGFILE))
+                File.Delete(EXCEPTIONS_LOGFILE);
 
             LoggerInstance.Msg("Initialized.");
             Loaded = false;
@@ -234,6 +240,12 @@ namespace CharLoader
                 return;
 
             string msg = $"{message}\n{stacktrace}";
+
+            ExceptionCount++;
+            if (ExceptionCount < 20)
+                File.AppendAllText(EXCEPTIONS_LOGFILE, msg + "\n");
+            else if (ExceptionCount == 20)
+                File.AppendAllText(EXCEPTIONS_LOGFILE, "...More exceptions skipped\n");
 
             LoggerInstance.Msg(msg);
             ShowError(msg);
